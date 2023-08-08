@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -20,41 +21,56 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: items.isNotEmpty ? SingleChildScrollView(
-        child: Column(
-            children: List.generate(items.length, (index) {
-          var id = items[index]['id'];
-          var title = items[index]['title'];
-          return Row(
-            children: [
-              Expanded(
-                  child: ListTile(
-                leading: const CircleAvatar(
-                  radius: 22,
-                  child: Icon(Icons.ac_unit),
-                ),
-                title: Text(items[index]['title']),
-                subtitle: Text(items[index]['id']),
-                onTap: () async {
-                  return tampilkanDialog(context, id, title);
-                },
-                onLongPress: () async {
-                  setState(() {
-                    items.removeWhere((element) => element["id"] == id);
-                  });
-                },
-              ))
-            ],
-          );
-        })),
-      )
-      : const Center(child: Text('😮\nItem Anda kosong', style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 156, 210, 255)), textAlign: TextAlign.center,),),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addList,
-        tooltip: 'Tambah Data',
-        child: const Icon(Icons.add),
+      body: items.isNotEmpty ? listItems(context)
+      : Center(child: Text(AppLocalizations.of(context)!.thisRoomEmpty, style: const TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 156, 210, 255)), textAlign: TextAlign.center,),),
+      floatingActionButton: Tooltip(
+        message: AppLocalizations.of(context)!.addData,
+        child: InkWell(
+          onTap: () => _addList(),
+          radius: 35,
+          borderRadius: BorderRadius.circular(30),
+          child: const CircleAvatar(
+            radius: 35,
+            child: Icon(Icons.add, size: 30,),
+          ),
+        ),
       ),
     );
+  }
+
+  Widget listItems(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+          children: List.generate(items.length, (index) {
+        var id = items[index]['id'];
+        var title = items[index]['title'];
+        return buildItem(index, context, id, title);
+      })),
+    );
+  }
+
+  Widget buildItem(int index, BuildContext context, id, title) {
+    return Row(
+        children: [
+          Expanded(
+              child: ListTile(
+            leading: const CircleAvatar(
+              radius: 22,
+              child: Icon(Icons.ac_unit),
+            ),
+            title: Text(items[index]['title']),
+            subtitle: Text(items[index]['id']),
+            onTap: () async {
+              return tampilkanDialog(context, id, title);
+            },
+            onLongPress: () async {
+              setState(() {
+                items.removeWhere((element) => element["id"] == id);
+              });
+            },
+          ))
+        ],
+      );
   }
 
   Future<void> tampilkanDialog(BuildContext context, id, title) {
@@ -69,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
               },
-              child: const Text('Tutup'),
+              child: Text(AppLocalizations.of(context)!.close),
             ),
           ],
         );
