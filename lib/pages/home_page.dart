@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'pages.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -13,7 +15,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Map> items = [];
+  List items = [
+    {"id": "ini id unik", "title": "ini title"}
+  ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    log('in homePage');
+    getItems();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +33,34 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: items.isNotEmpty ? listItems(context)
-      : Center(child: Text(AppLocalizations.of(context)!.thisRoomEmpty, style: const TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 156, 210, 255)), textAlign: TextAlign.center,),),
-      floatingActionButton: Tooltip(
-        message: AppLocalizations.of(context)!.addData,
-        child: InkWell(
-          onTap: () => _addList(),
+      body: items.isNotEmpty
+          ? listItems(context)
+          : Center(
+              child: Text(
+                AppLocalizations.of(context)!.thisRoomEmpty,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 156, 210, 255)),
+                textAlign: TextAlign.center,
+              ),
+            ),
+      floatingActionButton: addButton(context),
+    );
+  }
+
+  Widget addButton(BuildContext context) {
+    return Tooltip(
+      message: AppLocalizations.of(context)!.addItem,
+      child: InkWell(
+        onTap: () => Navigator.push(
+            context, MaterialPageRoute(builder: (ctx) => const ViewItemPage())),
+        radius: 35,
+        borderRadius: BorderRadius.circular(30),
+        child: const CircleAvatar(
           radius: 35,
-          borderRadius: BorderRadius.circular(30),
-          child: const CircleAvatar(
-            radius: 35,
-            child: Icon(Icons.add, size: 30,),
+          child: Icon(
+            Icons.add,
+            size: 30,
           ),
         ),
       ),
@@ -51,45 +80,30 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget buildItem(int index, BuildContext context, id, title) {
     return Row(
-        children: [
-          Expanded(
-              child: ListTile(
-            leading: const CircleAvatar(
-              radius: 22,
-              child: Icon(Icons.ac_unit),
-            ),
-            title: Text(items[index]['title']),
-            subtitle: Text(items[index]['id']),
-            onTap: () async {
-              return tampilkanDialog(context, id, title);
-            },
-            onLongPress: () async {
-              setState(() {
-                items.removeWhere((element) => element["id"] == id);
-              });
-            },
-          ))
-        ],
-      );
-  }
-
-  Future<void> tampilkanDialog(BuildContext context, id, title) {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('🦗'),
-          content: Text('🤔id: $id\n-----\n😅title: $title'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-              },
-              child: Text(AppLocalizations.of(context)!.close),
-            ),
-          ],
-        );
-      },
+      children: [
+        Expanded(
+            child: ListTile(
+          leading: const CircleAvatar(
+            radius: 22,
+            child: Icon(Icons.ac_unit),
+          ),
+          title: Text(items[index]['title']),
+          subtitle: Text(items[index]['id']),
+          onTap: () async {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (ctx) => ViewItemPage(
+                          itemMap: items[index],
+                        )));
+          },
+          onLongPress: () async {
+            setState(() {
+              items.removeWhere((element) => element["id"] == id);
+            });
+          },
+        ))
+      ],
     );
   }
 
@@ -102,5 +116,30 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
     log('DONE _adList');
+  }
+
+  void saveItems() async {
+    log('START saveItems');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String a = jsonEncode(items);
+
+    await prefs.setString('items', a);
+    log('DONE saveItems');
+  }
+
+  void getItems() async {
+    log('START getItems');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    log(prefs.getString('items') == null ? 'items null' : 'items ada');
+    String a = prefs.getString('items') ?? jsonEncode(items);
+
+    List b = jsonDecode(a);
+
+    setState(() {
+      items = b;
+    });
+    log('DONE getItems');
   }
 }

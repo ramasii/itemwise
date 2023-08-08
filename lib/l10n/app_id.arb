@@ -1,5 +1,6 @@
 {
-    "addData": "Tambah Data",
+    "addItem": "Tambah Item",
     "thisRoomEmpty": "Ruangan ini kosong",
-    "close": "Tutup"
+    "close": "Tutup",
+    "itemDetail": "Detail Item"
 }

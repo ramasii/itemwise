@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
         centerTitle: true,
         titleTextStyle: TextStyle(fontFamily: "Montserrat", fontSize: 20, fontWeight: FontWeight.w500, color: Colors.blue),
         color: Colors.white,
-        iconTheme: IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
+        iconTheme: IconThemeData(color: Colors.blue),
         elevation: 0,
       );
   }
