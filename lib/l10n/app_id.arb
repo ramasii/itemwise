@@ -2,5 +2,11 @@
     "addItem": "Tambah Item",
     "thisRoomEmpty": "Ruangan ini kosong",
     "close": "Tutup",
-    "itemDetail": "Detail Item"
+    "itemDetail": "Detail Item",
+    "itemName": "Nama Barang",
+    "description": "Deskripsi",
+    "itemStock": "Stok Barang",
+    "purPrice": "Harga Beli",
+    "selPrice": "Harga Jual",
+    "mustFilled": "Wajib diisi!"
 }
