@@ -4,5 +4,6 @@
         "itemwise",
         "Tambah",
         "tampilkan"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

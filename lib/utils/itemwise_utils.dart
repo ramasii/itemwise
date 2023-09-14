@@ -1,4 +1,5 @@
 import 'package:itemwise/allpackages.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ItemWise {
   static List items = [];
@@ -13,7 +14,7 @@ class ItemWise {
     log('DONE saveItems');
   }
 
-  static Future<void> getItems() async {
+  static getItems() async {
     log('START getItems');
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 

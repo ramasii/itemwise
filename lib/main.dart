@@ -5,7 +5,7 @@ import './pages/pages.dart';
 
 void main() {
   runApp(const MyApp());
-  ItemWise.getItems();
+  // ItemWise.getItems();
 }
 
 class MyApp extends StatelessWidget {
