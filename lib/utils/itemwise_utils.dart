@@ -25,11 +25,13 @@ class ItemWise {
     List b = jsonDecode(a);
 
     ItemWise.items = b;
+
     log('DONE getItems');
+    return b;
   }
 
-  static Future<void> addItem(
-      String name, String desc, String stock, String purPrice, String selPrice) async {
+  static Future<void> addItem(String name, String desc, String stock,
+      String purPrice, String selPrice) async {
     log('START addItem');
     var a = DateTime.now().millisecondsSinceEpoch.toString();
     ItemWise.items.add({
@@ -43,5 +45,24 @@ class ItemWise {
       "editedTime": a,
     });
     log('DONE addItem');
+  }
+
+  static Future<void> editItem(String id, String name, String desc,
+      String stock, String purPrice, String selPrice) async {
+    log('START editItem id:$id');
+    var a = DateTime.now().millisecondsSinceEpoch.toString();
+
+    ItemWise.items[items.indexWhere((element) => element['id'] == id)] = {
+      "id": id,
+      "name": name,
+      "desc": desc,
+      "stock": stock,
+      "purPrice": purPrice,
+      "selPrice": selPrice,
+      "addedTime": ItemWise.items
+          .firstWhere((element) => element['id'] == id)['addedTime'],
+      "editedTime": a,
+    };
+    log('DONE editItem id:$id');
   }
 }

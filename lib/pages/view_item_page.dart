@@ -16,9 +16,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
   bool isEdit = true;
 
   final TextEditingController _itemNameController = TextEditingController();
-  final TextEditingController _itemDescriptionController = TextEditingController();
+  final TextEditingController _itemDescriptionController =
+      TextEditingController();
   final TextEditingController _itemStockController = TextEditingController();
-  final TextEditingController _purchasePriceController = TextEditingController();
+  final TextEditingController _purchasePriceController =
+      TextEditingController();
   final TextEditingController _sellingPriceController = TextEditingController();
 
   @override
@@ -26,12 +28,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
     super.initState();
     log('in viewItemPage');
     if (widget.itemMap != null) {
-      isEdit = false;
+      isEdit = true;
       _itemNameController.text = widget.itemMap!['name'];
       _itemDescriptionController.text = widget.itemMap!['desc'];
       _itemStockController.text = widget.itemMap!['stock'].toString();
       _purchasePriceController.text = widget.itemMap!['purPrice'].toString();
       _sellingPriceController.text = widget.itemMap!['selPrice'].toString();
+    } else if (widget.itemMap == null) {
+      isEdit == false;
     }
   }
 
@@ -75,8 +79,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Item name is required';
-                }
-                else {
+                } else {
                   return null; // Validasi berhasil
                 }
               },
@@ -88,40 +91,53 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 clearNotNumber(value, _itemStockController);
               },
             ),
-            // harga beli | purchase price | buy price
-            TextFormField(
-              controller: _purchasePriceController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Item name is required';
-                }
-                return null; // Validasi berhasil
-              },
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.purPrice),
-              onChanged: (value) {
-                // Membersihkan karakter selain angka
-                clearNotNumber(value, _purchasePriceController);
-              },
-            ),
-            // harga jual | sell price
-            TextFormField(
-              controller: _sellingPriceController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Item name is required';
-                }
-                return null; // Validasi berhasil
-              },
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.selPrice),
-              onChanged: (value) {
-                // Membersihkan karakter selain angka
-                clearNotNumber(value, _sellingPriceController);
-              },
-            ),
+            Row(
+              children: [
+                // harga beli | purchase price | buy price
+                Expanded(
+                  child: TextFormField(
+                    controller: _purchasePriceController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Item name is required';
+                      }
+                      return null; // Validasi berhasil
+                    },
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.purPrice),
+                    onChanged: (value) {
+                      // Membersihkan karakter selain angka
+                      clearNotNumber(value, _purchasePriceController);
+                    },
+                  ),
+                ),
+
+                Container(
+                  width: 10,
+                ),
+
+                // harga jual | sell price
+                Expanded(
+                  child: TextFormField(
+                    controller: _sellingPriceController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Item name is required';
+                      }
+                      return null; // Validasi berhasil
+                    },
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.selPrice),
+                    onChanged: (value) {
+                      // Membersihkan karakter selain angka
+                      clearNotNumber(value, _sellingPriceController);
+                    },
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -167,6 +183,15 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 context,
                 MaterialPageRoute(builder: (_) => const MyHomePage()),
                 (route) => false);
+          } else if (widget.itemMap != null) {
+            String name = _itemNameController.text;
+            String desc = _itemDescriptionController.text;
+            String stock = _itemStockController.text;
+            String purPrice = _purchasePriceController.text;
+            String selPrice = _sellingPriceController.text;
+            await ItemWise.editItem(
+                widget.itemMap!['id'], name, desc, stock, purPrice, selPrice);
+            await ItemWise.saveItems();
           }
         },
         radius: 35,

@@ -17,7 +17,14 @@ class _MyHomePageState extends State<MyHomePage> {
     // TODO: implement initState
     super.initState();
     log('in homePage');
-    ItemWise.getItems();
+    getItems();
+  }
+
+  Future getItems() async {
+    List a = await ItemWise.getItems();
+    setState(() {
+      ItemWise.items = a;
+    });
   }
 
   @override
