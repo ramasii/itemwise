@@ -86,33 +86,55 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget buildItem(int index, BuildContext context, id, title) {
     return Row(
       children: [
+        Container(
+          width: 70,
+          height: 70,
+          decoration: const BoxDecoration(color: Colors.blue),
+          child: Center(
+            child: Text("70x70", style: TextStyle(color: Colors.white),),
+          ),
+        ),
         Expanded(
-            child: ListTile(
-          leading: const CircleAvatar(
-            radius: 22,
-            child: Icon(Icons.ac_unit),
-          ),
-          title: Text(
-            ItemWise.items[index]['name'],
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(ItemWise.items[index]['desc'],
-              overflow: TextOverflow.ellipsis),
-          onTap: () async {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (ctx) => ViewItemPage(
-                          itemMap: ItemWise.items[index],
-                        )));
-          },
-          onLongPress: () async {
-            setState(() {
-              ItemWise.items.removeWhere((element) => element["id"] == id);
-            });
-          },
-        ))
+          child: MyListTile(context, index, id, tinggi: 70),
+        )
       ],
     );
+  }
+
+  //-----------------------------------------------------------------------------//
+
+  InkWell MyListTile(BuildContext context, int index, id, {double tinggi = 60}) {
+    return InkWell(
+          onTap: () async {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (ctx) => ViewItemPage(
+                            itemMap: ItemWise.items[index],
+                          )));
+            },
+            onLongPress: () async {
+              setState(() {
+                ItemWise.items.removeWhere((element) => element["id"] == id);
+              });
+            },
+          child: Container(
+            height: tinggi,
+            padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ItemWise.items[index]['name'],
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  ItemWise.items[index]['desc'],
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey[600]),),
+              ],
+            ),
+          ),
+        );
   }
 }
