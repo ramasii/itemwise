@@ -65,6 +65,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.itemName),
             ),
+
             // deskripsi | description
             TextFormField(
               controller: _itemDescriptionController,
@@ -72,6 +73,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   labelText: AppLocalizations.of(context)!.description),
               maxLines: null,
             ),
+
             // stok | stock
             TextFormField(
               key: GlobalKey(),
@@ -91,10 +93,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 clearNotNumber(value, _itemStockController);
               },
             ),
+
+            Container(height: 15,),
+
+            // harga beli | purchase price | buy price
             Row(
               children: [
-                // harga beli | purchase price | buy price
                 Expanded(
+                  flex: 5,
                   child: TextFormField(
                     controller: _purchasePriceController,
                     validator: (value) {
@@ -105,7 +111,13 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     },
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.purPrice),
+                      labelText: AppLocalizations.of(context)!.purPrice,
+                      border: OutlineInputBorder(
+                        // Mengatur border
+                        borderRadius: BorderRadius.circular(
+                            10.0), // Mengatur sudut border
+                      ),
+                    ),
                     onChanged: (value) {
                       // Membersihkan karakter selain angka
                       clearNotNumber(value, _purchasePriceController);
@@ -113,12 +125,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   ),
                 ),
 
-                Container(
-                  width: 10,
-                ),
+                const Spacer(),
 
                 // harga jual | sell price
                 Expanded(
+                  flex: 5,
                   child: TextFormField(
                     controller: _sellingPriceController,
                     validator: (value) {
@@ -129,7 +140,13 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     },
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.selPrice),
+                      labelText: AppLocalizations.of(context)!.selPrice,
+                      border: OutlineInputBorder(
+                        // Mengatur border
+                        borderRadius: BorderRadius.circular(
+                            10.0), // Mengatur sudut border
+                      ),
+                    ),
                     onChanged: (value) {
                       // Membersihkan karakter selain angka
                       clearNotNumber(value, _sellingPriceController);
