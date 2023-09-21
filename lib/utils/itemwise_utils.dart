@@ -31,7 +31,7 @@ class ItemWise {
   }
 
   static Future<void> addItem(String name, String desc, String stock,
-      String purPrice, String selPrice) async {
+      String purPrice, String selPrice, String img) async {
     log('START addItem');
     var a = DateTime.now().millisecondsSinceEpoch.toString();
     ItemWise.items.add({
@@ -43,12 +43,13 @@ class ItemWise {
       "selPrice": selPrice,
       "addedTime": a,
       "editedTime": a,
+      "img":img
     });
     log('DONE addItem');
   }
 
   static Future<void> editItem(String id, String name, String desc,
-      String stock, String purPrice, String selPrice) async {
+      String stock, String purPrice, String selPrice, String img) async {
     log('START editItem id:$id');
     var a = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -62,6 +63,7 @@ class ItemWise {
       "addedTime": ItemWise.items
           .firstWhere((element) => element['id'] == id)['addedTime'],
       "editedTime": a,
+      "img":img
     };
     log('DONE editItem id:$id');
   }

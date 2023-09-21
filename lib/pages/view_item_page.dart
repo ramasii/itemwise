@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
@@ -15,6 +17,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
   List items = [];
   bool isEdit = true;
   bool isEdited = false;
+  bool isImgLscape = true;
+  String img = "";
 
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _itemDescriptionController =
@@ -35,6 +39,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
       _itemStockController.text = widget.itemMap!['stock'].toString();
       _purchasePriceController.text = widget.itemMap!['purPrice'].toString();
       _sellingPriceController.text = widget.itemMap!['selPrice'].toString();
+      img = widget.itemMap!["img"];
+
+      CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
     } else if (widget.itemMap == null) {
       isEdit == false;
     }
@@ -183,7 +190,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     ),
                   ),
                 ],
-              )
+              ),
+              Divider(),
+              // algoritma: jika widget.itemMap!['img'] != "" maka tampilkan gambar, jika tidak maka tampilkan "Tambahkan Gambar", bisa ngambil gambar dari kamera dan file
+              cardFotoBarang(context)
             ],
           ),
         ),
@@ -211,6 +221,91 @@ class _ViewItemPageState extends State<ViewItemPage> {
     });
   }
 
+  Future<void> _pickImage() async {
+    log("START _pickImage");
+
+    final imagePicker = ImagePicker();
+    final pickedImage = await imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxHeight:
+            700); // Ganti dengan ImageSource.camera jika ingin menggunakan kamera
+
+    if (pickedImage != null) {
+      // Mengencode gambar ke dalam bentuk string (base64)
+      final bytes = await pickedImage.readAsBytes();
+      final encodedImage = base64Encode(bytes);
+
+
+      // Lakukan sesuatu dengan gambar yang sudah diencode
+      setState(() {
+        img = encodedImage;
+      });
+      await CheckIsImgLscape(bytes);
+    }
+
+    log("DONE _pickedImage");
+  }
+
+  Future<void> CheckIsImgLscape(Uint8List bytes) async {
+    if (img != "") {
+      final size = ImageSizeGetter.getSize(MemoryInput(bytes));
+
+      if (size.height > size.width) {
+        setState(() {
+          isImgLscape = false;
+        });
+      }
+    }
+  }
+
+  Widget cardFotoBarang(BuildContext context) {
+    return Card(
+      elevation: 5,
+      color: Color.fromARGB(255, 232, 232, 232),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Container(
+          height: isImgLscape ? 200 : 500,
+          width: MediaQuery.of(context).size.width - 10,
+          child: img == ""
+              ? Center(
+                  child: InkWell(
+                    onTap: () {
+                      _pickImage();
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.addPhoto,
+                            style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500),
+                          ),
+                          const Icon(
+                            Icons.add_photo_alternate_rounded,
+                            color: Colors.grey,
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              // TODO: tampilkan gambar dari String hasil encode gambar
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.memory(
+                    Uint8List.fromList(base64.decode(img)),
+                    fit: BoxFit.cover,
+                  ),
+                )),
+    );
+  }
+
   Widget saveButton(BuildContext context) {
     return Tooltip(
       message: "",
@@ -222,7 +317,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String stock = _itemStockController.text;
             String purPrice = _purchasePriceController.text;
             String selPrice = _sellingPriceController.text;
-            await ItemWise.addItem(name, desc, stock, purPrice, selPrice);
+
+            await ItemWise.addItem(name, desc, stock, purPrice, selPrice, img);
             await ItemWise.saveItems();
             clearTextController();
             // ignore: use_build_context_synchronously
@@ -242,9 +338,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
               widget.itemMap!["desc"],
               widget.itemMap!["stock"],
               widget.itemMap!["purPrice"],
-              widget.itemMap!["selPrice"]
+              widget.itemMap!["selPrice"],
+              widget.itemMap!["img"],
             ];
-            List b = [name, desc, stock, purPrice, selPrice];
+            List b = [name, desc, stock, purPrice, selPrice, img];
 
             for (var i = 0; i < a.length; i++) {
               if (a[i] != b[i]) {
@@ -253,8 +350,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
             }
 
             if (isEdited) {
-              await ItemWise.editItem(
-                  widget.itemMap!['id'], name, desc, stock, purPrice, selPrice);
+              await ItemWise.editItem(widget.itemMap!['id'], name, desc, stock,
+                  purPrice, selPrice, img);
               await ItemWise.saveItems();
             }
           }

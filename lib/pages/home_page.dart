@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
           width: 70,
           height: 70,
           decoration: const BoxDecoration(color: Colors.blue),
-          child: Center(
+          child: const Center(
             child: Text("70x70", style: TextStyle(color: Colors.white),),
           ),
         ),

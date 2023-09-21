@@ -8,5 +8,6 @@
     "itemStock": "Stok Barang",
     "purPrice": "Harga Beli",
     "selPrice": "Harga Jual",
-    "mustFilled": "Wajib diisi!"
+    "mustFilled": "Wajib diisi!",
+    "addPhoto": "Tambah foto"
 }
