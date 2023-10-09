@@ -10,5 +10,8 @@
     "selPrice": "Harga Jual",
     "mustFilled": "Wajib diisi!",
     "addPhoto": "Tambah foto",
-    "stok": "Stok"
+    "stok": "Stok",
+    "itemNameAlert": "Nama barang wajib diisi!",
+    "itemStockAlert": "Stok barang wajib diisi!",
+    "successSave": "Sukses menyimpan data"
 }

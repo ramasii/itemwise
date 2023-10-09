@@ -216,8 +216,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxHeight:700);
+        source: ImageSource.gallery, maxHeight: 700);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
@@ -296,51 +295,62 @@ class _ViewItemPageState extends State<ViewItemPage> {
       message: "",
       child: InkWell(
         onTap: () async {
-          // add item
-          if (widget.itemMap == null) {
-            String name = _itemNameController.text;
-            String desc = _itemDescriptionController.text;
-            String stock = _itemStockController.text;
-            String purPrice = _purchasePriceController.text;
-            String selPrice = _sellingPriceController.text;
+          if (_itemNameController.text.trim() != "" &&
+              _itemStockController.text.trim() != "") {
+            // add item
+            if (widget.itemMap == null) {
+              String name = _itemNameController.text;
+              String desc = _itemDescriptionController.text;
+              String stock = _itemStockController.text;
+              String purPrice = _purchasePriceController.text;
+              String selPrice = _sellingPriceController.text;
 
-            await ItemWise.addItem(name, desc, stock, purPrice, selPrice, img);
-            await ItemWise.saveItems();
-            clearTextController();
-            // ignore: use_build_context_synchronously
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const MyHomePage()),
-                (route) => false);
-          } 
-          // edit item
-          else if (widget.itemMap != null) {
-            String name = _itemNameController.text.trim();
-            String desc = _itemDescriptionController.text.trim();
-            String stock = _itemStockController.text.trim();
-            String purPrice = _purchasePriceController.text.trim();
-            String selPrice = _sellingPriceController.text.trim();
+              await ItemWise.addItem(
+                  name, desc, stock, purPrice, selPrice, img);
+              await ItemWise.saveItems();
+              clearTextController();
+              // ignore: use_build_context_synchronously
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MyHomePage()),
+                  (route) => false);
+            }
+            // edit item
+            else if (widget.itemMap != null) {
+              String name = _itemNameController.text.trim();
+              String desc = _itemDescriptionController.text.trim();
+              String stock = _itemStockController.text.trim();
+              String purPrice = _purchasePriceController.text.trim();
+              String selPrice = _sellingPriceController.text.trim();
 
-            List a = [
-              widget.itemMap!['nama'],
-              widget.itemMap!["desc"],
-              widget.itemMap!["stock"],
-              widget.itemMap!["purPrice"],
-              widget.itemMap!["selPrice"],
-              widget.itemMap!["img"],
-            ];
-            List b = [name, desc, stock, purPrice, selPrice, img];
+              List a = [
+                widget.itemMap!['nama'],
+                widget.itemMap!["desc"],
+                widget.itemMap!["stock"],
+                widget.itemMap!["purPrice"],
+                widget.itemMap!["selPrice"],
+                widget.itemMap!["img"],
+              ];
+              List b = [name, desc, stock, purPrice, selPrice, img];
 
-            for (var i = 0; i < a.length; i++) {
-              if (a[i] != b[i]) {
-                isEdited = true;
+              for (var i = 0; i < a.length; i++) {
+                if (a[i] != b[i]) {
+                  isEdited = true;
+                }
+              }
+
+              if (isEdited) {
+                await ItemWise.editItem(widget.itemMap!['id'], name, desc,
+                    stock, purPrice, selPrice, img);
+                await ItemWise.saveItems();
               }
             }
-
-            if (isEdited) {
-              await ItemWise.editItem(widget.itemMap!['id'], name, desc, stock,
-                  purPrice, selPrice, img);
-              await ItemWise.saveItems();
+            ScaffoldMessenger.of(context).showSnackBar(successSnackbar(context, AppLocalizations.of(context)!.successSave));
+          } else {
+            if (_itemNameController.text.trim() == "") {
+              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(context,AppLocalizations.of(context)!.itemNameAlert));
+            } else if (_itemStockController.text.trim() == "") {
+              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(context, AppLocalizations.of(context)!.itemStockAlert));
             }
           }
         },
@@ -355,5 +365,21 @@ class _ViewItemPageState extends State<ViewItemPage> {
         ),
       ),
     );
+  }
+
+  SnackBar dangerSnackbar(BuildContext context, String msg) {
+    return SnackBar(
+              content: Text(msg),
+              dismissDirection: DismissDirection.horizontal,
+              backgroundColor: Colors.redAccent,
+            );
+  }
+
+  SnackBar successSnackbar(BuildContext context, String msg) {
+    return SnackBar(
+            content: Text(msg),
+            dismissDirection: DismissDirection.horizontal,
+            backgroundColor: Colors.green,
+          );
   }
 }
