@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
@@ -110,7 +108,6 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
               // stok | stock
               TextFormField(
-                key: GlobalKey(),
                 controller: _itemStockController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -123,7 +120,6 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.itemStock),
                 onChanged: (value) {
-                  // Membersihkan karakter selain angka
                   clearNotNumber(value, _itemStockController);
                 },
               ),
@@ -143,19 +139,16 @@ class _ViewItemPageState extends State<ViewItemPage> {
                         if (value == null || value.isEmpty) {
                           return 'Item name is required';
                         }
-                        return null; // Validasi berhasil
+                        return null;
                       },
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.purPrice,
                         border: OutlineInputBorder(
-                          // Mengatur border
-                          borderRadius: BorderRadius.circular(
-                              10.0), // Mengatur sudut border
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
                       onChanged: (value) {
-                        // Membersihkan karakter selain angka
                         clearNotNumber(value, _purchasePriceController);
                       },
                     ),
@@ -172,19 +165,16 @@ class _ViewItemPageState extends State<ViewItemPage> {
                         if (value == null || value.isEmpty) {
                           return 'Item name is required';
                         }
-                        return null; // Validasi berhasil
+                        return null;
                       },
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.selPrice,
                         border: OutlineInputBorder(
-                          // Mengatur border
-                          borderRadius: BorderRadius.circular(
-                              10.0), // Mengatur sudut border
+                          borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
                       onChanged: (value) {
-                        // Membersihkan karakter selain angka
                         clearNotNumber(value, _sellingPriceController);
                       },
                     ),
@@ -227,16 +217,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(
         source: ImageSource.gallery,
-        maxHeight:
-            700); // Ganti dengan ImageSource.camera jika ingin menggunakan kamera
+        maxHeight:700);
 
     if (pickedImage != null) {
-      // Mengencode gambar ke dalam bentuk string (base64)
       final bytes = await pickedImage.readAsBytes();
       final encodedImage = base64Encode(bytes);
 
-
-      // Lakukan sesuatu dengan gambar yang sudah diencode
       setState(() {
         img = encodedImage;
       });
@@ -295,7 +281,6 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     ),
                   ),
                 )
-              // TODO: tampilkan gambar dari String hasil encode gambar
               : ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.memory(
@@ -311,6 +296,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       message: "",
       child: InkWell(
         onTap: () async {
+          // add item
           if (widget.itemMap == null) {
             String name = _itemNameController.text;
             String desc = _itemDescriptionController.text;
@@ -326,7 +312,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 context,
                 MaterialPageRoute(builder: (_) => const MyHomePage()),
                 (route) => false);
-          } else if (widget.itemMap != null) {
+          } 
+          // edit item
+          else if (widget.itemMap != null) {
             String name = _itemNameController.text.trim();
             String desc = _itemDescriptionController.text.trim();
             String stock = _itemStockController.text.trim();

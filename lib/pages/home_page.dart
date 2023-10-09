@@ -48,6 +48,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  //-----------------------------------------------------------------------------//
+
   Widget addButton(BuildContext context) {
     return Tooltip(
       message: AppLocalizations.of(context)!.addItem,
@@ -84,57 +86,87 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildItem(int index, BuildContext context, id, title) {
-    return Row(
+    return Column(
       children: [
-        Container(
-          width: 70,
-          height: 70,
-          decoration: const BoxDecoration(color: Colors.blue),
-          child: const Center(
-            child: Text("70x70", style: TextStyle(color: Colors.white),),
+        Padding(
+          padding: const EdgeInsets.only(left: 10,right: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 70,
+                height: 70,
+                decoration: const BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.all(Radius.circular(15))),
+                child: ItemWise.items[index]["img"] != ""
+                    ? ClipRRect(
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                      child: Image.memory(
+                          Uint8List.fromList(
+                              base64.decode(ItemWise.items[index]["img"])),
+                          fit: BoxFit.cover,
+                        ),
+                    )
+                    : Center(
+                        child: Icon(
+                          Icons.image_rounded,
+                          color: Colors.white,
+                          size: 45,
+                        ),
+                      ),
+              ),
+              Expanded(
+                child: MyListTile(context, index, id, tinggi: 70),
+              )
+            ],
           ),
         ),
-        Expanded(
-          child: MyListTile(context, index, id, tinggi: 70),
-        )
+        Divider(height: 10,)
       ],
     );
   }
 
-  //-----------------------------------------------------------------------------//
-
-  InkWell MyListTile(BuildContext context, int index, id, {double tinggi = 60}) {
+  InkWell MyListTile(BuildContext context, int index, id,
+      {double tinggi = 60}) {
     return InkWell(
-          onTap: () async {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (ctx) => ViewItemPage(
-                            itemMap: ItemWise.items[index],
-                          )));
-            },
-            onLongPress: () async {
-              setState(() {
-                ItemWise.items.removeWhere((element) => element["id"] == id);
-              });
-            },
-          child: Container(
-            height: tinggi,
-            padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  ItemWise.items[index]['name'],
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  ItemWise.items[index]['desc'],
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey[600]),),
-              ],
+      onTap: () async {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (ctx) => ViewItemPage(
+                      itemMap: ItemWise.items[index],
+                    )));
+      },
+      onLongPress: () async {
+        setState(() {
+          ItemWise.items.removeWhere((element) => element["id"] == id);
+        });
+      },
+      borderRadius: BorderRadius.all(Radius.circular(15)),
+      child: Container(
+        // height: tinggi,
+        padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ItemWise.items[index]['name'],
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 18),
             ),
-          ),
-        );
+            Text(
+              ItemWise.items[index]['desc'],
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            Text(
+              "${AppLocalizations.of(context)!.stok}: ${ItemWise.items[index]['stock']}",
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
