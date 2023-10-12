@@ -13,5 +13,6 @@
     "stok": "Stok",
     "itemNameAlert": "Nama barang wajib diisi!",
     "itemStockAlert": "Stok barang wajib diisi!",
-    "successSave": "Sukses menyimpan data"
+    "successSave": "Sukses menyimpan data",
+    "holdToRemoveImg": "Tekan dan tahan untuk menghapus gambar"
 }

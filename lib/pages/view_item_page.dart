@@ -183,7 +183,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
               ),
               Divider(),
               // algoritma: jika widget.itemMap!['img'] != "" maka tampilkan gambar, jika tidak maka tampilkan "Tambahkan Gambar", bisa ngambil gambar dari kamera dan file
-              cardFotoBarang(context)
+              cardFotoBarang(context),
+              Container(height: 10,),
+              Text(AppLocalizations.of(context)!.holdToRemoveImg, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),),
+              Container(height: 100,)
             ],
           ),
         ),
@@ -280,11 +283,21 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     ),
                   ),
                 )
-              : ClipRRect(
+              : InkWell(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.memory(
-                    Uint8List.fromList(base64.decode(img)),
-                    fit: BoxFit.cover,
+                  onLongPress: () {
+                    log('delete gambar');
+                    setState(() {
+                      img = "";
+                      isImgLscape = true;
+                    });
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.memory(
+                      Uint8List.fromList(base64.decode(img)),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 )),
     );
@@ -345,12 +358,15 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 await ItemWise.saveItems();
               }
             }
-            ScaffoldMessenger.of(context).showSnackBar(successSnackbar(context, AppLocalizations.of(context)!.successSave));
+            ScaffoldMessenger.of(context).showSnackBar(successSnackbar(
+                context, AppLocalizations.of(context)!.successSave));
           } else {
             if (_itemNameController.text.trim() == "") {
-              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(context,AppLocalizations.of(context)!.itemNameAlert));
+              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
+                  context, AppLocalizations.of(context)!.itemNameAlert));
             } else if (_itemStockController.text.trim() == "") {
-              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(context, AppLocalizations.of(context)!.itemStockAlert));
+              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
+                  context, AppLocalizations.of(context)!.itemStockAlert));
             }
           }
         },
@@ -369,17 +385,17 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
   SnackBar dangerSnackbar(BuildContext context, String msg) {
     return SnackBar(
-              content: Text(msg),
-              dismissDirection: DismissDirection.horizontal,
-              backgroundColor: Colors.redAccent,
-            );
+      content: Text(msg),
+      dismissDirection: DismissDirection.horizontal,
+      backgroundColor: Colors.redAccent,
+    );
   }
 
   SnackBar successSnackbar(BuildContext context, String msg) {
     return SnackBar(
-            content: Text(msg),
-            dismissDirection: DismissDirection.horizontal,
-            backgroundColor: Colors.green,
-          );
+      content: Text(msg),
+      dismissDirection: DismissDirection.horizontal,
+      backgroundColor: Colors.green,
+    );
   }
 }
