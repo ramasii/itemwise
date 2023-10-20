@@ -12,6 +12,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<String> selectedItems = [];
+
   @override
   void initState() {
     // TODO: implement initState
@@ -31,10 +33,56 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: selectedItems.isEmpty
+            ? Text(widget.title)
+            : Text(
+                "${selectedItems.length}",
+                style: TextStyle(color: Colors.white),
+              ),
+        centerTitle: selectedItems.isEmpty,
+        titleSpacing: 25,
+        backgroundColor: selectedItems.isNotEmpty ? Colors.blue : Colors.white,
+        actions: selectedItems.isEmpty
+            ? null
+            : [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      color: Colors.white,
+                      size: 45,
+                    ),
+                    IconButton(
+                        highlightColor: Colors.red,
+                        splashColor: Colors.transparent,
+                        onPressed: () {
+                          log("delete ${selectedItems}", name: "delete button");
+                          deleteDialog(context);
+                        },
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ))
+                  ],
+                ),
+                IconButton(
+                    onPressed: () {
+                      log("cancel");
+                      setState(() {
+                        selectedItems.clear();
+                      });
+                    },
+                    splashRadius: 20,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                    ))
+              ],
       ),
       body: ItemWise.items.isNotEmpty
-          ? listItems(context)
+          ? Padding(
+              padding: EdgeInsets.only(top: 10), child: listItems(context))
           : Center(
               child: Text(
                 AppLocalizations.of(context)!.thisRoomEmpty,
@@ -44,7 +92,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 textAlign: TextAlign.center,
               ),
             ),
-      floatingActionButton: addButton(context),
+      floatingActionButton: Visibility(
+        child: addButton(context),
+        visible: selectedItems.isEmpty,
+      ),
     );
   }
 
@@ -89,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 10,right: 10),
+          padding: const EdgeInsets.only(left: 10, right: 10),
           child: Row(
             children: [
               Container(
@@ -100,14 +151,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     borderRadius: BorderRadius.all(Radius.circular(15))),
                 child: ItemWise.items[index]["img"] != ""
                     ? ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
-                      child: Image.memory(
+                        borderRadius: BorderRadius.all(Radius.circular(15)),
+                        child: Image.memory(
                           Uint8List.fromList(
                               base64.decode(ItemWise.items[index]["img"])),
                           fit: BoxFit.cover,
                         ),
-                    )
-                    : Center(
+                      )
+                    : const Center(
                         child: Icon(
                           Icons.image_rounded,
                           color: Colors.white,
@@ -115,13 +166,18 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
               ),
+              Container(
+                width: 5,
+              ),
               Expanded(
                 child: MyListTile(context, index, id, tinggi: 70),
               )
             ],
           ),
         ),
-        Divider(height: 10,)
+        const Divider(
+          height: 10,
+        )
       ],
     );
   }
@@ -130,22 +186,49 @@ class _MyHomePageState extends State<MyHomePage> {
       {double tinggi = 60}) {
     return InkWell(
       onTap: () async {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (ctx) => ViewItemPage(
-                      itemMap: ItemWise.items[index],
-                    )));
+        if (selectedItems.isEmpty) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (ctx) => ViewItemPage(
+                        itemMap: ItemWise.items[index],
+                      )));
+        } else {
+          if (selectedItems.contains(id)) {
+            log("deselect $id");
+            setState(() {
+              selectedItems.remove(id);
+            });
+          } else {
+            log("select $id");
+            setState(() {
+              selectedItems.add(id);
+            });
+          }
+        }
       },
       onLongPress: () async {
         setState(() {
-          ItemWise.items.removeWhere((element) => element["id"] == id);
+          if (selectedItems.contains(id)) {
+            log("deselect $id");
+            setState(() {
+              selectedItems.remove(id);
+            });
+          } else {
+            log("select $id");
+            setState(() {
+              selectedItems.add(id);
+            });
+          }
         });
       },
       borderRadius: BorderRadius.all(Radius.circular(15)),
       child: Container(
-        // height: tinggi,
         padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
+        decoration: BoxDecoration(
+            color: Color.fromARGB(
+                selectedItems.contains(id) == true ? 100 : 0, 255, 229, 59),
+            borderRadius: BorderRadius.circular(15)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -167,6 +250,74 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<dynamic> deleteDialog(BuildContext context, {String? id}) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(
+              "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: greyButton(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  for (var id in selectedItems) {
+                    setState(() {
+                      ItemWise.items
+                          .removeWhere((element) => element['id'] == id);
+                    });
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
+                      context,
+                      "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}"));
+                  selectedItems.clear();
+                });
+                Navigator.of(context).pop();
+              },
+              child: dangerButton(AppLocalizations.of(context)!.delete),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Container dangerButton(String msg) {
+    return Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Colors.redAccent),
+        child: Text(
+          msg,
+          style: TextStyle(color: Colors.white),
+        ));
+  }
+
+  Container greyButton(String msg) {
+    return Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Colors.grey),
+        child: Text(
+          msg,
+          style: TextStyle(color: Colors.white),
+        ));
+  }
+
+  SnackBar dangerSnackbar(BuildContext context, String msg) {
+    return SnackBar(
+      content: Text(msg),
+      dismissDirection: DismissDirection.horizontal,
+      backgroundColor: Colors.redAccent,
     );
   }
 }

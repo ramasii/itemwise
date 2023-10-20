@@ -184,9 +184,20 @@ class _ViewItemPageState extends State<ViewItemPage> {
               Divider(),
               // algoritma: jika widget.itemMap!['img'] != "" maka tampilkan gambar, jika tidak maka tampilkan "Tambahkan Gambar", bisa ngambil gambar dari kamera dan file
               cardFotoBarang(context),
-              Container(height: 10,),
-              Text(AppLocalizations.of(context)!.holdToRemoveImg, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),),
-              Container(height: 100,)
+              Container(
+                height: 10,
+              ),
+              img != ""
+                  ? Text(
+                      AppLocalizations.of(context)!.holdToRemoveImg,
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey),
+                    )
+                  : Container(),
+              Container(height: isImgLscape == true || img == "" ? 250 : 100,
+              )
             ],
           ),
         ),
@@ -286,11 +297,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               : InkWell(
                   borderRadius: BorderRadius.circular(10),
                   onLongPress: () {
-                    log('delete gambar');
-                    setState(() {
-                      img = "";
-                      isImgLscape = true;
-                    });
+                    confirmDialog(context);
                   },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
@@ -301,6 +308,57 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   ),
                 )),
     );
+  }
+
+  Future<dynamic> confirmDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(AppLocalizations.of(context)!.deleteImgCfrmation),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: greyButton(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  img = "";
+                  isImgLscape = true;
+                });
+                Navigator.of(context).pop();
+              },
+              child: dangerButton(AppLocalizations.of(context)!.delete),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Container dangerButton(String msg) {
+    return Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Colors.redAccent),
+        child: Text(
+          msg,
+          style: TextStyle(color: Colors.white),
+        ));
+  }
+
+  Container greyButton(String msg) {
+    return Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Colors.grey),
+        child: Text(
+          msg,
+          style: TextStyle(color: Colors.white),
+        ));
   }
 
   Widget saveButton(BuildContext context) {

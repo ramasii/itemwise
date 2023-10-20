@@ -14,5 +14,9 @@
     "itemNameAlert": "Nama barang wajib diisi!",
     "itemStockAlert": "Stok barang wajib diisi!",
     "successSave": "Sukses menyimpan data",
-    "holdToRemoveImg": "Tekan dan tahan untuk menghapus gambar"
+    "holdToRemoveImg": "Tekan dan tahan untuk menghapus foto",
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "deleteImgCfrmation": "Apakah Anda yakin ingin menghapus foto ini?",
+    "items": "barang"
 }

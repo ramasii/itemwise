@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       fontFamily: "Montserrat",
       primarySwatch: Colors.blue,
       secondaryHeaderColor: Colors.lightBlue,
-      splashColor: Color.fromARGB(255, 183, 223, 255),
+      splashColor: Colors.transparent,
       canvasColor: Colors.white,
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         elevation: 0,
