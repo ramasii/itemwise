@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
       ],
       theme: _themeData(),
       home: SplashPage(),
+      
     );
   }
 
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         elevation: 0,
       ),
       appBarTheme: _appBarTheme(),
+      iconTheme: const IconThemeData(color: Colors.blue, size: 35)
     );
   }
 

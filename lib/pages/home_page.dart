@@ -13,6 +13,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<String> selectedItems = [];
+  String invState = "all";
 
   @override
   void initState() {
@@ -32,9 +33,159 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(color: Colors.white),
+          width: MediaQuery.of(context).size.width - 100,
+          child: Container(
+            child: Column(
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.all(10),
+                      child: Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.inventory,
+                          style: const TextStyle(
+                              fontSize: 25,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ),
+                    Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                            onPressed: () async {
+                              log("nambah");
+                              var id_inventory = DateTime.now()
+                                  .millisecondsSinceEpoch
+                                  .toString();
+                              setState(() {
+                                inventoryWise()
+                                    .create(id_inventory, "asdas", "asdasda");
+                              });
+                            },
+                            tooltip: AppLocalizations.of(context)!.addInventory,
+                            icon: Icon(Icons.add_box)),
+                        IconButton(
+                          onPressed: () {
+                            log("ngedit");
+                          },
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            log("pilih");
+                          },
+                          icon: Icon(
+                            Icons.edit_attributes_rounded,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        Stack(alignment: Alignment.center, children: [
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                invState = "all";
+                              });
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              child: Icon(
+                                Icons.inventory,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                          if (invState == "all")
+                            Icon(
+                              Icons.circle,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          if (invState == "all")
+                            Icon(
+                              Icons.person,
+                              size: 20,
+                            ),
+                        ])
+                      ],
+                    ),
+                    Divider()
+                  ],
+                ),
+                Column(
+                  children:
+                      List.generate(inventoryWise.inventories.length, (index) {
+                    return Row(
+                      children: [
+                        Expanded(
+                            child: ListTile(
+                          onTap: () {
+                            log(inventoryWise.inventories[index]
+                                ["id_inventory"]);
+                            setState(() {
+                              invState = inventoryWise.inventories[index]
+                                  ["id_inventory"];
+                            });
+                            Navigator.pop(context);
+                          },
+                          title: Text(inventoryWise.inventories[index]
+                              ["nama_inventory"]),
+                          subtitle: Text("<jml_brg> items"),
+                          trailing: invState ==
+                                  inventoryWise.inventories[index]
+                                      ["id_inventory"]
+                              ? Icon(
+                                  Icons.person,
+                                  color: Colors.blue,
+                                )
+                              : Icon(Icons.chevron_right_rounded),
+                        ))
+                      ],
+                    );
+                  }),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
       appBar: AppBar(
+        toolbarHeight: 55,
         title: selectedItems.isEmpty
-            ? Text(widget.title)
+            ? Column(
+                children: [
+                  Text(widget.title),
+                  if (invState != "all")
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          WidgetSpan(
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 3),
+                              child: Icon(Icons.inventory,color: Colors.green,size: 17,),
+                            ),
+                          ),
+                          TextSpan(
+                            text: inventoryWise.inventories.firstWhere(
+                                (element) =>
+                                    element["id_inventory"] ==
+                                    invState)["nama_inventory"],
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    )
+                ],
+              )
             : Text(
                 "${selectedItems.length}",
                 style: TextStyle(color: Colors.white),
@@ -297,6 +448,17 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10), color: Colors.redAccent),
+        child: Text(
+          msg,
+          style: TextStyle(color: Colors.white),
+        ));
+  }
+
+  Container successButton(String msg) {
+    return Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Colors.green),
         child: Text(
           msg,
           style: TextStyle(color: Colors.white),

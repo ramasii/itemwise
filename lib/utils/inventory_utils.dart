@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class inventoryWise {
   // STRING id_inventory,id_user,nama_inventory
-  List inventories = [];
+  static List inventories = [];
 
   void create(
       String id_inventory, String id_user, String nama_inventory) async {
@@ -21,6 +21,7 @@ class inventoryWise {
     String str = jsonEncode(inventories);
     // simpan str di internal
     await prefs.setString('inventories', str);
+    log("DONE create - inventory");
   }
 
   void read() async {
@@ -30,7 +31,7 @@ class inventoryWise {
     String? str = await prefs.getString('inventories');
     // jika key nya ketemu
     if (str != null) {
-      log("inventories tidak ketemu");
+      log("inventories ketemu");
       // decode str menjadi List<Map>
       List decoded = jsonDecode(str);
       // ubah nilai inventories
@@ -67,7 +68,8 @@ class inventoryWise {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // delete dari inventories
-    inventories.removeWhere((element) => element["id_inventory"]==id_inventory);
+    inventories
+        .removeWhere((element) => element["id_inventory"] == id_inventory);
     // ubah inventories menjadi String
     String str = jsonEncode(inventories);
     // simpan str di internal

@@ -18,5 +18,7 @@
     "delete": "Hapus",
     "cancel": "Batal",
     "deleteImgCfrmation": "Apakah Anda yakin ingin menghapus foto ini?",
-    "items": "barang"
+    "items": "barang",
+    "inventory": "Inventaris",
+    "addInventory": "Tambah inventaris"
 }

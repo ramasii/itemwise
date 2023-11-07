@@ -9,4 +9,5 @@ export 'package:image_size_getter/image_size_getter.dart';
 export 'dart:typed_data';
 
 export './utils/itemwise_utils.dart';
+export './utils/inventory_utils.dart';
 export './functions/functions.dart';

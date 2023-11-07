@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itemwise/allpackages.dart';
 import 'pages.dart';
 
 class SplashPage extends StatefulWidget {
@@ -6,13 +7,17 @@ class SplashPage extends StatefulWidget {
   _SplashPageState createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _radiusAnimation;
 
   @override
   void initState() {
     super.initState();
+    inventoryWise().read();
+
+    // anim
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -24,7 +29,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     );
 
     final Animatable<double> growAnimation = Tween<double>(begin: 0, end: 100);
-    final Animatable<double> shrinkAnimation = Tween<double>(begin: 100, end: 75);
+    final Animatable<double> shrinkAnimation =
+        Tween<double>(begin: 100, end: 75);
 
     _radiusAnimation = TweenSequence<double>([
       TweenSequenceItem(tween: growAnimation, weight: 1),
