@@ -30,6 +30,11 @@ class ItemWise {
     return b;
   }
 
+  static deleteItem(String id) {
+    log('START deleteItem');
+    ItemWise.items.removeWhere((element) => element['id']==id);
+  }
+
   static Future<void> addItem(String name, String desc, String stock,
       String purPrice, String selPrice, String img) async {
     log('START addItem');
@@ -43,7 +48,7 @@ class ItemWise {
       "selPrice": selPrice,
       "addedTime": a,
       "editedTime": a,
-      "img":img
+      "img": img
     });
     log('DONE addItem');
   }
@@ -63,7 +68,7 @@ class ItemWise {
       "addedTime": ItemWise.items
           .firstWhere((element) => element['id'] == id)['addedTime'],
       "editedTime": a,
-      "img":img
+      "img": img
     };
     log('DONE editItem id:$id');
   }

@@ -143,28 +143,31 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.only(left: 10, right: 10),
           child: Row(
             children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: const BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.all(Radius.circular(15))),
-                child: ItemWise.items[index]["img"] != ""
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.all(Radius.circular(15)),
-                        child: Image.memory(
-                          Uint8List.fromList(
-                              base64.decode(ItemWise.items[index]["img"])),
-                          fit: BoxFit.cover,
+              Hero(
+                tag: "image$index",
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.all(Radius.circular(15))),
+                  child: ItemWise.items[index]["img"] != ""
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          child: Image.memory(
+                            Uint8List.fromList(
+                                base64.decode(ItemWise.items[index]["img"])),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(
+                            Icons.image_rounded,
+                            color: Colors.white,
+                            size: 45,
+                          ),
                         ),
-                      )
-                    : const Center(
-                        child: Icon(
-                          Icons.image_rounded,
-                          color: Colors.white,
-                          size: 45,
-                        ),
-                      ),
+                ),
               ),
               Container(
                 width: 5,
@@ -268,14 +271,12 @@ class _MyHomePageState extends State<MyHomePage> {
               child: greyButton(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   for (var id in selectedItems) {
-                    setState(() {
-                      ItemWise.items
-                          .removeWhere((element) => element['id'] == id);
-                    });
+                    ItemWise.deleteItem(id);
                   }
+                  ItemWise.saveItems();
                   ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                       context,
                       "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}"));
