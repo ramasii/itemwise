@@ -171,7 +171,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           WidgetSpan(
                             child: Padding(
                               padding: EdgeInsets.only(right: 3),
-                              child: Icon(Icons.inventory,color: Colors.green,size: 17,),
+                              child: Icon(
+                                Icons.inventory,
+                                color: Colors.green,
+                                size: 17,
+                              ),
                             ),
                           ),
                           TextSpan(
@@ -309,6 +313,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Uint8List.fromList(
                                 base64.decode(ItemWise.items[index]["img"])),
                             fit: BoxFit.cover,
+                            gaplessPlayback: true,
                           ),
                         )
                       : const Center(
