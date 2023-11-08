@@ -20,5 +20,8 @@
     "deleteImgCfrmation": "Apakah Anda yakin ingin menghapus foto ini?",
     "items": "barang",
     "inventory": "Inventaris",
-    "addInventory": "Tambah inventaris"
+    "addInventory": "Tambah inventaris",
+    "tapButtonToAddInventory":"Tekan tombol + untuk menambah inventaris",
+    "enterName":"Masukkan nama",
+    "save":"Simpan"
 }

@@ -14,6 +14,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<String> selectedItems = [];
   String invState = "all";
+  TextEditingController NamaInvController = TextEditingController();
+  bool invEditMode = false;
 
   @override
   void initState() {
@@ -33,131 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(color: Colors.white),
-          width: MediaQuery.of(context).size.width - 100,
-          child: Container(
-            child: Column(
-              children: [
-                Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.all(10),
-                      child: Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.inventory,
-                          style: const TextStyle(
-                              fontSize: 25,
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ),
-                    Divider(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                            onPressed: () async {
-                              log("nambah");
-                              var id_inventory = DateTime.now()
-                                  .millisecondsSinceEpoch
-                                  .toString();
-                              setState(() {
-                                inventoryWise()
-                                    .create(id_inventory, "asdas", "asdasda");
-                              });
-                            },
-                            tooltip: AppLocalizations.of(context)!.addInventory,
-                            icon: Icon(Icons.add_box)),
-                        IconButton(
-                          onPressed: () {
-                            log("ngedit");
-                          },
-                          icon: Icon(
-                            Icons.edit,
-                            color: Colors.green,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            log("pilih");
-                          },
-                          icon: Icon(
-                            Icons.edit_attributes_rounded,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        Stack(alignment: Alignment.center, children: [
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                invState = "all";
-                              });
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              child: Icon(
-                                Icons.inventory,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ),
-                          if (invState == "all")
-                            Icon(
-                              Icons.circle,
-                              color: Colors.white,
-                              size: 25,
-                            ),
-                          if (invState == "all")
-                            Icon(
-                              Icons.person,
-                              size: 20,
-                            ),
-                        ])
-                      ],
-                    ),
-                    Divider()
-                  ],
-                ),
-                Column(
-                  children:
-                      List.generate(inventoryWise.inventories.length, (index) {
-                    return Row(
-                      children: [
-                        Expanded(
-                            child: ListTile(
-                          onTap: () {
-                            log(inventoryWise.inventories[index]
-                                ["id_inventory"]);
-                            setState(() {
-                              invState = inventoryWise.inventories[index]
-                                  ["id_inventory"];
-                            });
-                            Navigator.pop(context);
-                          },
-                          title: Text(inventoryWise.inventories[index]
-                              ["nama_inventory"]),
-                          subtitle: Text("<jml_brg> items"),
-                          trailing: invState ==
-                                  inventoryWise.inventories[index]
-                                      ["id_inventory"]
-                              ? Icon(
-                                  Icons.person,
-                                  color: Colors.blue,
-                                )
-                              : Icon(Icons.chevron_right_rounded),
-                        ))
-                      ],
-                    );
-                  }),
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
+      drawer: _homeDrawer(context),
       appBar: AppBar(
         toolbarHeight: 55,
         title: selectedItems.isEmpty
@@ -179,14 +57,21 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           TextSpan(
-                            text: inventoryWise.inventories.firstWhere(
-                                (element) =>
-                                    element["id_inventory"] ==
-                                    invState)["nama_inventory"],
+                            text: RegExp('^.{1,25}').stringMatch(
+                              inventoryWise
+                                    .inventories
+                                    .firstWhere((element) =>
+                                        element["id_inventory"] ==
+                                        invState)["nama_inventory"])! +
+                                "...",
                             style: TextStyle(fontSize: 13),
                           ),
                         ],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                      textWidthBasis: TextWidthBasis.parent,
                     )
                 ],
               )
@@ -195,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(color: Colors.white),
               ),
         centerTitle: selectedItems.isEmpty,
-        titleSpacing: 25,
+        titleSpacing: 0,
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : Colors.white,
         actions: selectedItems.isEmpty
             ? null
@@ -255,6 +140,190 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //-----------------------------------------------------------------------------//
+
+  SafeArea _homeDrawer(BuildContext context) {
+    return SafeArea(
+      child: Drawer(
+        child: Container(
+          decoration: BoxDecoration(color: Colors.white),
+          child: Column(
+            children: [
+              Column(
+                children: [
+                  Container(
+                    margin: EdgeInsets.all(10),
+                    child: Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.inventory,
+                        style: const TextStyle(
+                            fontSize: 25,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                          onPressed: () async {
+                            log("nambah");
+                            var id_inventory = DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString();
+
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(AppLocalizations.of(context)!
+                                        .addInventory),
+                                    content: Container(
+                                      child: TextField(
+                                        controller: NamaInvController,
+                                        decoration: InputDecoration(
+                                            hintText:
+                                                AppLocalizations.of(context)!
+                                                    .enterName),
+                                      ),
+                                    ),
+                                    actions: [
+                                      InkWell(
+                                        onTap: () {
+                                          log("simpan");
+                                          setState(() {
+                                            inventoryWise().create(
+                                                id_inventory,
+                                                "id_user",
+                                                NamaInvController.text);
+                                            NamaInvController.clear();
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                        child: Padding(
+                                            padding: EdgeInsets.all(10),
+                                            child: successButton(
+                                                AppLocalizations.of(context)!
+                                                    .save)),
+                                      )
+                                    ],
+                                  );
+                                });
+                          },
+                          tooltip: AppLocalizations.of(context)!.addInventory,
+                          icon: Icon(Icons.add_box)),
+                      IconButton(
+                        onPressed: () {
+                          log("ngedit");
+                          setState(() {
+                            invEditMode = !invEditMode;
+                          });
+                        },
+                        icon: Icon(
+                          invEditMode ? Icons.edit : Icons.edit_off_rounded,
+                          color: Colors.green,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          log("pilih");
+                        },
+                        icon: Icon(
+                          Icons.edit_attributes_rounded,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      Stack(alignment: Alignment.center, children: [
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              invState = "all";
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: Icon(
+                            Icons.all_inbox_rounded,
+                            color: Colors.green,
+                          ),
+                        ),
+                        if (invState == "all")
+                          Icon(
+                            Icons.circle,
+                            color: Colors.white,
+                            size: 25,
+                          ),
+                        if (invState == "all")
+                          Icon(
+                            Icons.person,
+                            size: 20,
+                          ),
+                      ])
+                    ],
+                  ),
+                  Divider()
+                ],
+              ),
+              if (inventoryWise.inventories.length != 0)
+                Expanded(
+                  child: ListView(
+                    children: List.generate(inventoryWise.inventories.length,
+                        (index) {
+                      return _inventoryTile(index, context);
+                    }),
+                  ),
+                )
+              else
+                Text(
+                  AppLocalizations.of(context)!.tapButtonToAddInventory,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500, color: Colors.blue[200]),
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Row _inventoryTile(int index, BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+            child: ListTile(
+          onTap: () {
+            log(inventoryWise.inventories[index]["id_inventory"]);
+            setState(() {
+              invState = inventoryWise.inventories[index]["id_inventory"];
+            });
+            Navigator.pop(context);
+          },
+          // hapus
+          onLongPress: () {
+            if (invState != inventoryWise.inventories[index]["id_inventory"]) {
+              setState(() {
+                inventoryWise()
+                    .delete(inventoryWise.inventories[index]["id_inventory"]);
+              });
+            }
+          },
+          title: Text(
+            inventoryWise.inventories[index]["nama_inventory"],
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text("<jml_brg> items"),
+          trailing: invState == inventoryWise.inventories[index]["id_inventory"]
+              ? Icon(
+                  Icons.person,
+                  color: Colors.blue,
+                )
+              : Icon(Icons.chevron_right_rounded),
+        ))
+      ],
+    );
+  }
 
   Widget addButton(BuildContext context) {
     return Tooltip(
