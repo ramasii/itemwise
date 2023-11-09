@@ -46,6 +46,8 @@ class inventoryWise {
   void update(
       String id_inventory, String id_user, String nama_inventory) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    int index = inventories
+        .indexWhere((element) => element["id_inventory"] == id_inventory);
 
     // buat var obj
     Map obj = {
@@ -53,11 +55,8 @@ class inventoryWise {
       "id_user": id_user,
       "nama_inventory": nama_inventory
     };
-    // hapus obj di inventories berdasarkan id
-    inventories
-        .removeWhere((element) => element["id_inventory"] == id_inventory);
-    // tambah obj ke inventories
-    inventories.add(obj);
+    // ubah langsung di inventories
+    inventories[index] = obj;
     // ubah inventories menjadi String
     String str = jsonEncode(inventories);
     // simpan str di internal

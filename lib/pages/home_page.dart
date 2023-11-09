@@ -44,7 +44,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Text(widget.title),
                   if (invState != "all")
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width-150),
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width - 150),
                       child: Text.rich(
                         TextSpan(
                           children: [
@@ -95,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         splashColor: Colors.transparent,
                         onPressed: () {
                           log("delete $selectedItems", name: "delete button");
-                          deleteDialog(context);
+                          deleteItemDialog(context);
                         },
                         icon: const Icon(
                           Icons.delete,
@@ -161,9 +162,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   const Divider(),
+                  // menu
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      // tambah inventaris
                       IconButton(
                           onPressed: () async {
                             log("nambah");
@@ -171,46 +174,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 .millisecondsSinceEpoch
                                 .toString();
 
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text(AppLocalizations.of(context)!
-                                        .addInventory),
-                                    content: Container(
-                                      child: TextField(
-                                        controller: NamaInvController,
-                                        decoration: InputDecoration(
-                                            hintText:
-                                                AppLocalizations.of(context)!
-                                                    .enterName),
-                                      ),
-                                    ),
-                                    actions: [
-                                      InkWell(
-                                        onTap: () {
-                                          log("simpan");
-                                          setState(() {
-                                            inventoryWise().create(
-                                                id_inventory,
-                                                "id_user",
-                                                NamaInvController.text);
-                                            NamaInvController.clear();
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                        child: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: successButton(
-                                                AppLocalizations.of(context)!
-                                                    .save)),
-                                      )
-                                    ],
-                                  );
-                                });
+                            addInvDialog(context, id_inventory);
                           },
                           tooltip: AppLocalizations.of(context)!.addInventory,
                           icon: const Icon(Icons.add_box)),
+                      // edit
                       IconButton(
                         onPressed: () {
                           log("ngedit");
@@ -220,16 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                         icon: Icon(
                           invEditMode ? Icons.edit : Icons.edit_off_rounded,
-                          color: Colors.green,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          log("pilih");
-                        },
-                        icon: const Icon(
-                          Icons.edit_attributes_rounded,
-                          color: Colors.blue,
+                          color: invEditMode ? Colors.green : Colors.grey[400],
                         ),
                       ),
                       Stack(alignment: Alignment.center, children: [
@@ -285,13 +244,46 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<dynamic> addInvDialog(BuildContext context, String id_inventory) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.addInventory),
+            content: Container(
+              child: TextField(
+                controller: NamaInvController,
+                decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.enterName),
+              ),
+            ),
+            actions: [
+              InkWell(
+                onTap: () {
+                  log("simpan");
+                  setState(() {
+                    inventoryWise().create(
+                        id_inventory, "id_user", NamaInvController.text);
+                    NamaInvController.clear();
+                  });
+                  Navigator.pop(context);
+                },
+                child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: successButton(AppLocalizations.of(context)!.save)),
+              )
+            ],
+          );
+        });
+  }
+
   Row _inventoryTile(int index, BuildContext context) {
     return Row(
       children: [
         Expanded(
             child: ListTile(
           onTap: () {
-            log(inventoryWise.inventories[index]["id_inventory"]);
+            log("tap ${inventoryWise.inventories[index]["id_inventory"]}");
             setState(() {
               invState = inventoryWise.inventories[index]["id_inventory"];
             });
@@ -300,10 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // hapus
           onLongPress: () {
             if (invState != inventoryWise.inventories[index]["id_inventory"]) {
-              setState(() {
-                inventoryWise()
-                    .delete(inventoryWise.inventories[index]["id_inventory"]);
-              });
+              deleteInvDialog(context, inventoryWise.inventories[index]["id_inventory"]);
             }
           },
           title: Text(
@@ -480,7 +469,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<dynamic> deleteDialog(BuildContext context, {String? id}) {
+  Future<dynamic> deleteItemDialog(BuildContext context, {String? id}) {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -504,6 +493,45 @@ class _MyHomePageState extends State<MyHomePage> {
                   ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                       context,
                       "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}"));
+                  selectedItems.clear();
+                });
+                Navigator.of(context).pop();
+              },
+              child: dangerButton(AppLocalizations.of(context)!.delete),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<dynamic> deleteInvDialog(BuildContext context, String id) {
+    var idx =
+        inventoryWise.inventories.indexWhere((e) => e["id_inventory"] == id);
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(
+              "${AppLocalizations.of(context)!.delete} ${inventoryWise.inventories[idx]["nama_inventory"]}?"),
+          actions: <Widget>[
+            // tombol cancel
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: greyButton(AppLocalizations.of(context)!.cancel),
+            ),
+            // tombol hapus
+            TextButton(
+              onPressed: () async {
+                setState(() {
+                  // hapus
+                  inventoryWise().delete(id);
+                  // tampilkan snakbar
+                  ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
+                      context,
+                      "${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.inventory}"));
                   selectedItems.clear();
                 });
                 Navigator.of(context).pop();
