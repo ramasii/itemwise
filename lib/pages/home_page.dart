@@ -15,6 +15,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<String> selectedItems = [];
   String invState = "all";
   TextEditingController NamaInvController = TextEditingController();
+  ScrollController invScrollController =
+      ScrollController(keepScrollOffset: false);
   bool invEditMode = false;
 
   @override
@@ -221,16 +223,27 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Divider()
                 ],
               ),
-              if (inventoryWise.inventories.length != 0)
+              if (inventoryWise.inventories.isNotEmpty)
                 Expanded(
                   child: ListView(
-                    children: List.generate(inventoryWise.inventories.length,
-                        (index) {
-                      return _inventoryTile(index, context);
-                    }),
+                      controller: invScrollController,
+                      children:
+                          List.generate(inventoryWise.inventories.length, (index) {
+                        return _inventoryTile(index, context);
+                      }),
+                    ),
+                ),
+              if (inventoryWise.inventories.isNotEmpty)
+                Container(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    AppLocalizations.of(context)!.holdToRemoveInv,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500, color: Colors.blue[200]),
+                    textAlign: TextAlign.center,
                   ),
-                )
-              else
+                ),
+              if (inventoryWise.inventories.isEmpty)
                 Text(
                   AppLocalizations.of(context)!.tapButtonToAddInventory,
                   style: TextStyle(
@@ -292,7 +305,8 @@ class _MyHomePageState extends State<MyHomePage> {
           // hapus
           onLongPress: () {
             if (invState != inventoryWise.inventories[index]["id_inventory"]) {
-              deleteInvDialog(context, inventoryWise.inventories[index]["id_inventory"]);
+              deleteInvDialog(
+                  context, inventoryWise.inventories[index]["id_inventory"]);
             }
           },
           title: Text(
