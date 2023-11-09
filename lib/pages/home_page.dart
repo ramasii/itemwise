@@ -43,41 +43,38 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   Text(widget.title),
                   if (invState != "all")
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          WidgetSpan(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 3),
-                              child: Icon(
-                                Icons.inventory,
-                                color: Colors.green,
-                                size: 17,
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width-150),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              child: Padding(
+                                padding: EdgeInsets.only(right: 3),
+                                child: Icon(
+                                  Icons.inventory,
+                                  color: Colors.green,
+                                  size: 17,
+                                ),
                               ),
                             ),
-                          ),
-                          TextSpan(
-                            text: RegExp('^.{1,25}').stringMatch(
-                              inventoryWise
-                                    .inventories
-                                    .firstWhere((element) =>
-                                        element["id_inventory"] ==
-                                        invState)["nama_inventory"])! +
-                                "...",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
+                            TextSpan(
+                              text: inventoryWise.inventories.firstWhere(
+                                  (element) =>
+                                      element["id_inventory"] ==
+                                      invState)["nama_inventory"],
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        overflow: TextOverflow.fade,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
-                      textWidthBasis: TextWidthBasis.parent,
                     )
                 ],
               )
             : Text(
                 "${selectedItems.length}",
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
         centerTitle: selectedItems.isEmpty,
         titleSpacing: 0,
@@ -88,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.circle,
                       color: Colors.white,
                       size: 45,
@@ -97,10 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         highlightColor: Colors.red,
                         splashColor: Colors.transparent,
                         onPressed: () {
-                          log("delete ${selectedItems}", name: "delete button");
+                          log("delete $selectedItems", name: "delete button");
                           deleteDialog(context);
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.delete,
                           color: Colors.red,
                         ))
@@ -114,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       });
                     },
                     splashRadius: 20,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.close_rounded,
                       color: Colors.white,
                     ))
@@ -122,7 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: ItemWise.items.isNotEmpty
           ? Padding(
-              padding: EdgeInsets.only(top: 10), child: listItems(context))
+              padding: const EdgeInsets.only(top: 10),
+              child: listItems(context))
           : Center(
               child: Text(
                 AppLocalizations.of(context)!.thisRoomEmpty,
@@ -145,13 +143,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: Drawer(
         child: Container(
-          decoration: BoxDecoration(color: Colors.white),
+          decoration: const BoxDecoration(color: Colors.white),
           child: Column(
             children: [
               Column(
                 children: [
                   Container(
-                    margin: EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(10),
                     child: Center(
                       child: Text(
                         AppLocalizations.of(context)!.inventory,
@@ -162,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                  Divider(),
+                  const Divider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -202,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           Navigator.pop(context);
                                         },
                                         child: Padding(
-                                            padding: EdgeInsets.all(10),
+                                            padding: const EdgeInsets.all(10),
                                             child: successButton(
                                                 AppLocalizations.of(context)!
                                                     .save)),
@@ -212,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 });
                           },
                           tooltip: AppLocalizations.of(context)!.addInventory,
-                          icon: Icon(Icons.add_box)),
+                          icon: const Icon(Icons.add_box)),
                       IconButton(
                         onPressed: () {
                           log("ngedit");
@@ -229,7 +227,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           log("pilih");
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.edit_attributes_rounded,
                           color: Colors.blue,
                         ),
@@ -242,26 +240,26 @@ class _MyHomePageState extends State<MyHomePage> {
                             });
                             Navigator.pop(context);
                           },
-                          child: Icon(
+                          child: const Icon(
                             Icons.all_inbox_rounded,
                             color: Colors.green,
                           ),
                         ),
                         if (invState == "all")
-                          Icon(
+                          const Icon(
                             Icons.circle,
                             color: Colors.white,
                             size: 25,
                           ),
                         if (invState == "all")
-                          Icon(
+                          const Icon(
                             Icons.person,
                             size: 20,
                           ),
                       ])
                     ],
                   ),
-                  Divider()
+                  const Divider()
                 ],
               ),
               if (inventoryWise.inventories.length != 0)
@@ -313,13 +311,13 @@ class _MyHomePageState extends State<MyHomePage> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: Text("<jml_brg> items"),
+          subtitle: const Text("<jml_brg> items"),
           trailing: invState == inventoryWise.inventories[index]["id_inventory"]
-              ? Icon(
+              ? const Icon(
                   Icons.person,
                   color: Colors.blue,
                 )
-              : Icon(Icons.chevron_right_rounded),
+              : const Icon(Icons.chevron_right_rounded),
         ))
       ],
     );
@@ -377,7 +375,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.all(Radius.circular(15))),
                   child: ItemWise.items[index]["img"] != ""
                       ? ClipRRect(
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(15)),
                           child: Image.memory(
                             Uint8List.fromList(
                                 base64.decode(ItemWise.items[index]["img"])),
@@ -450,7 +449,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         });
       },
-      borderRadius: BorderRadius.all(Radius.circular(15)),
+      borderRadius: const BorderRadius.all(Radius.circular(15)),
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
         decoration: BoxDecoration(
@@ -463,7 +462,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               ItemWise.items[index]['name'],
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18),
             ),
             Text(
               ItemWise.items[index]['desc'],
@@ -519,34 +518,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Container dangerButton(String msg) {
     return Container(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10), color: Colors.redAccent),
         child: Text(
           msg,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ));
   }
 
   Container successButton(String msg) {
     return Container(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10), color: Colors.green),
         child: Text(
           msg,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ));
   }
 
   Container greyButton(String msg) {
     return Container(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10), color: Colors.grey),
         child: Text(
           msg,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ));
   }
 
