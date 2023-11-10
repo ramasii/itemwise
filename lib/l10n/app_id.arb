@@ -24,5 +24,7 @@
     "tapButtonToAddInventory":"Tekan tombol + untuk menambah inventaris",
     "enterName":"Masukkan nama",
     "save":"Simpan",
-    "holdToRemoveInv":"Tekan dan tahan untuk menghapus inventaris"
+    "holdToRemoveInv":"Tekan dan tahan untuk menghapus inventaris",
+    "tapToEditInv":"Tekan untuk mengedit inventaris",
+    "changeName":"Ubah nama"
 }

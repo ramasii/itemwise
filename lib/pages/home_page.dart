@@ -14,10 +14,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<String> selectedItems = [];
   String invState = "all";
+  String id_user = "id_user";
   TextEditingController NamaInvController = TextEditingController();
   ScrollController invScrollController =
       ScrollController(keepScrollOffset: false);
   bool invEditMode = false;
+  GlobalKey namaInvKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -176,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 .millisecondsSinceEpoch
                                 .toString();
 
-                            addInvDialog(context, id_inventory);
+                            invNameDialog(context, id_inventory, "add");
                           },
                           tooltip: AppLocalizations.of(context)!.addInventory,
                           icon: const Icon(Icons.add_box)),
@@ -226,18 +228,20 @@ class _MyHomePageState extends State<MyHomePage> {
               if (inventoryWise.inventories.isNotEmpty)
                 Expanded(
                   child: ListView(
-                      controller: invScrollController,
-                      children:
-                          List.generate(inventoryWise.inventories.length, (index) {
-                        return _inventoryTile(index, context);
-                      }),
-                    ),
+                    controller: invScrollController,
+                    children: List.generate(inventoryWise.inventories.length,
+                        (index) {
+                      return _inventoryTile(index, context);
+                    }),
+                  ),
                 ),
               if (inventoryWise.inventories.isNotEmpty)
                 Container(
                   padding: EdgeInsets.all(8),
                   child: Text(
-                    AppLocalizations.of(context)!.holdToRemoveInv,
+                    invEditMode
+                        ? AppLocalizations.of(context)!.tapToEditInv
+                        : AppLocalizations.of(context)!.holdToRemoveInv,
                     style: TextStyle(
                         fontWeight: FontWeight.w500, color: Colors.blue[200]),
                     textAlign: TextAlign.center,
@@ -257,14 +261,19 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<dynamic> addInvDialog(BuildContext context, String id_inventory) {
+  Future<dynamic> invNameDialog(
+      BuildContext context, String id_inventory, String mode) {
     return showDialog(
         context: context,
+        useRootNavigator: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text(AppLocalizations.of(context)!.addInventory),
+            key: namaInvKey,
+            title: mode == "add"
+                ? Text(AppLocalizations.of(context)!.addInventory)
+                : Text(AppLocalizations.of(context)!.changeName),
             content: Container(
-              child: TextField(
+              child: TextFormField(
                 controller: NamaInvController,
                 decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.enterName),
@@ -274,12 +283,25 @@ class _MyHomePageState extends State<MyHomePage> {
               InkWell(
                 onTap: () {
                   log("simpan");
-                  setState(() {
-                    inventoryWise().create(
-                        id_inventory, "id_user", NamaInvController.text);
+                  if (NamaInvController.text.trim().isNotEmpty) {
+                    setState(() {
+                      switch (mode) {
+                        case "add":
+                          inventoryWise().create(id_inventory, "id_user",
+                              NamaInvController.text.trim());
+                          break;
+                        case "edit":
+                          log("tekan simpan edit");
+                          inventoryWise().update(id_inventory, id_user,
+                              NamaInvController.text.trim());
+                          invEditMode = false;
+                          break;
+                        default:
+                      }
+                    });
                     NamaInvController.clear();
-                  });
-                  Navigator.pop(context);
+                    Navigator.pop(context);
+                  }
                 },
                 child: Padding(
                     padding: const EdgeInsets.all(10),
@@ -297,14 +319,31 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListTile(
           onTap: () {
             log("tap ${inventoryWise.inventories[index]["id_inventory"]}");
-            setState(() {
-              invState = inventoryWise.inventories[index]["id_inventory"];
-            });
-            Navigator.pop(context);
+            switch (invEditMode) {
+              case false:
+                setState(() {
+                  invState = inventoryWise.inventories[index]["id_inventory"];
+                });
+                Navigator.pop(context);
+                break;
+              case true:
+                log("edit anu");
+                var id = inventoryWise.inventories[index]["id_inventory"];
+                setState(() {
+                  // ubah isi textcontroller
+                  NamaInvController.text = inventoryWise.inventories.firstWhere(
+                      (element) =>
+                          element["id_inventory"] == id)["nama_inventory"];
+                });
+                invNameDialog(context,
+                    inventoryWise.inventories[index]["id_inventory"], "edit");
+                break;
+              default:
+            }
           },
           // hapus
           onLongPress: () {
-            if (invState != inventoryWise.inventories[index]["id_inventory"]) {
+            if (invState != inventoryWise.inventories[index]["id_inventory"] && invEditMode == false) {
               deleteInvDialog(
                   context, inventoryWise.inventories[index]["id_inventory"]);
             }
