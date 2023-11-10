@@ -566,7 +566,7 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           content: Text(
-              "${AppLocalizations.of(context)!.delete} ${inventoryWise.inventories[idx]["nama_inventory"]}?"),
+              "${AppLocalizations.of(context)!.delete} \"${inventoryWise.inventories[idx]["nama_inventory"]}\"?"),
           actions: <Widget>[
             // tombol cancel
             TextButton(
