@@ -85,7 +85,35 @@ class _MyHomePageState extends State<MyHomePage> {
         titleSpacing: 0,
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : Colors.white,
         actions: selectedItems.isEmpty
-            ? null
+            ? [
+                PopupMenuButton(onSelected: (value) {
+                  switch (value) {
+                    case "profil":
+                      log("msg2");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const userPage()));
+                      break;
+                    default:
+                  }
+                }, itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem(
+                        value: "profil",
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.account_box_rounded),
+                            Container(
+                              width: 10,
+                            ),
+                            Text(AppLocalizations.of(context)!.profile)
+                          ],
+                        )),
+                  ];
+                })
+              ]
             : [
                 Stack(
                   alignment: Alignment.center,
@@ -343,7 +371,8 @@ class _MyHomePageState extends State<MyHomePage> {
           },
           // hapus
           onLongPress: () {
-            if (invState != inventoryWise.inventories[index]["id_inventory"] && invEditMode == false) {
+            if (invState != inventoryWise.inventories[index]["id_inventory"] &&
+                invEditMode == false) {
               deleteInvDialog(
                   context, inventoryWise.inventories[index]["id_inventory"]);
             }
