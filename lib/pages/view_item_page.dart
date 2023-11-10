@@ -258,55 +258,60 @@ class _ViewItemPageState extends State<ViewItemPage> {
   }
 
   Widget cardFotoBarang(BuildContext context) {
-    return Card(
-      elevation: 5,
-      color: Color.fromARGB(255, 232, 232, 232),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Container(
-          height: isImgLscape ? 200 : 500,
-          width: MediaQuery.of(context).size.width - 10,
-          child: img == ""
-              ? Center(
-                  child: InkWell(
-                    onTap: () {
-                      _pickImage();
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.addPhoto,
-                            style: const TextStyle(
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 350),
+        child: Card(
+          elevation: 5,
+          color: Color.fromARGB(255, 232, 232, 232),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Container(
+              height: isImgLscape ? 200 : 500,
+              width: MediaQuery.of(context).size.width - 10,
+              child: img == ""
+                  ? Center(
+                      child: InkWell(
+                        onTap: () {
+                          _pickImage();
+                        },
+                        borderRadius: BorderRadius.circular(10),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context)!.addPhoto,
+                                style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              const Icon(
+                                Icons.add_photo_alternate_rounded,
                                 color: Colors.grey,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500),
+                              )
+                            ],
                           ),
-                          const Icon(
-                            Icons.add_photo_alternate_rounded,
-                            color: Colors.grey,
-                          )
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                )
-              : InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onLongPress: () {
-                    confirmDialog(context);
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.memory(
-                      Uint8List.fromList(base64.decode(img)),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                )),
+                    )
+                  : InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onLongPress: () {
+                        confirmDialog(context);
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.memory(
+                          Uint8List.fromList(base64.decode(img)),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    )),
+        ),
+      ),
     );
   }
 

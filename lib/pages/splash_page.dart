@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:itemwise/allpackages.dart';
+import 'package:itemwise/pages/user_page.dart';
 import 'pages.dart';
 
 class SplashPage extends StatefulWidget {
@@ -16,6 +17,7 @@ class _SplashPageState extends State<SplashPage>
   void initState() {
     super.initState();
     inventoryWise().read();
+    userWise().read();
 
     // anim
     _animationController = AnimationController(
@@ -44,7 +46,11 @@ class _SplashPageState extends State<SplashPage>
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const MyHomePage(title: 'Item Wise'),
+              builder: (context) => userWise.isLoggedIn
+                  ? const MyHomePage(
+                      title: "Item Wise",
+                    )
+                  : const userPage() /* MyHomePage(title: 'Item Wise') */,
             ),
           );
         });

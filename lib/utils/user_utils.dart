@@ -21,7 +21,8 @@ class userWise {
 
   static bool isLoggedIn = false;
 
-  void edit( // edit atau create sama saja lo
+  void edit(
+      // edit atau create sama saja lo
       {String? id_user,
       String? username_user,
       String? email_user,
@@ -50,13 +51,16 @@ class userWise {
 
     // ambil data encoded dari perangkat
     var encoded = await prefs.getString("userData");
+    var infoLogin = await prefs.getBool("isLoggedIn");
     // jika ditemukan
-    if (encoded != null) {
+    if (encoded != null && infoLogin != null) {
       log("data user ketemu");
+      log("$encoded\n$infoLogin");
       // deocode data encoded
       var decoded = jsonDecode(encoded);
-      // ubah value userData
+      // ubah value userData & info login
       userData = decoded;
+      isLoggedIn = infoLogin;
     }
     // jika tidak ketemu
     else {
