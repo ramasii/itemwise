@@ -26,14 +26,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // TODO: implement initState
     super.initState();
     log('in homePage');
-    getItems();
-  }
-
-  Future getItems() async {
-    List a = await ItemWise.getItems();
-    setState(() {
-      ItemWise.items = a;
-    });
   }
 
   @override
@@ -430,8 +422,8 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (BuildContext context, StateSetter setState) {
           return Column(
             children: List.generate(ItemWise.items.length, (index) {
-              var id = ItemWise.items[index]['id'];
-              var title = ItemWise.items[index]['name'];
+              var id = ItemWise.items[index]['id_barang'];
+              var title = ItemWise.items[index]['nama_barang'];
               return buildItem(index, context, id, title);
             }),
           );
@@ -455,13 +447,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: const BoxDecoration(
                       color: Colors.blue,
                       borderRadius: BorderRadius.all(Radius.circular(15))),
-                  child: ItemWise.items[index]["img"] != ""
+                  child: ItemWise.items[index]["photo_barang"] != ""
                       ? ClipRRect(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(15)),
                           child: Image.memory(
-                            Uint8List.fromList(
-                                base64.decode(ItemWise.items[index]["img"])),
+                            Uint8List.fromList(base64
+                                .decode(ItemWise.items[index]["photo_barang"])),
                             fit: BoxFit.cover,
                             gaplessPlayback: true,
                           ),
@@ -542,17 +534,17 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              ItemWise.items[index]['name'],
+              ItemWise.items[index]['nama_barang'],
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 18),
             ),
             Text(
-              ItemWise.items[index]['desc'],
+              ItemWise.items[index]['catatan'],
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[600]),
             ),
             Text(
-              "${AppLocalizations.of(context)!.stok}: ${ItemWise.items[index]['stock']}",
+              "${AppLocalizations.of(context)!.stok}: ${ItemWise.items[index]['stok_barang']}",
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[600]),
             ),
@@ -580,9 +572,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () async {
                 setState(() {
                   for (var id in selectedItems) {
-                    ItemWise.deleteItem(id);
+                    ItemWise().delete(id);
                   }
-                  ItemWise.saveItems();
                   ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                       context,
                       "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}"));

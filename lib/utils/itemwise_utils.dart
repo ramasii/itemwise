@@ -3,73 +3,131 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ItemWise {
   static List items = [];
+  Map item = {
+    "id_barang": "",
+    "id_user": "",
+    "id_inventory": "",
+    "kode_barang": "",
+    "nama_barang": "",
+    "catatan": "",
+    "stok_barang": 0,
+    "harga_beli": 0,
+    "harga_jual": 0,
+    "photo_barang": "",
+    "added": "",
+    "edited": "",
+  };
+  Map resetItem = {
+    "id_barang": "",
+    "id_user": "",
+    "id_inventory": "",
+    "kode_barang": "",
+    "nama_barang": "",
+    "catatan": "",
+    "stok_barang": 0,
+    "harga_beli": 0,
+    "harga_jual": 0,
+    "photo_barang": "",
+    "added": "",
+    "edited": "",
+  };
 
-  static Future<void> saveItems() async {
-    log('START saveItems');
+  void create(String id_barang, String id_user,
+      String nama_barang, int stok_barang, int harga_beli, int harga_jual,
+      {String? id_inventory,
+      String? kode_barang,
+      String? catatan,
+      String? photo_barang,
+      String? added,
+      String? edited}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    String a = jsonEncode(ItemWise.items);
+    // ubah nilai item
+    item["id_barang"] = id_barang;
+    item["id_user"] = id_user;
+    item["nama_barang"] = nama_barang;
+    item["stok_barang"] = stok_barang;
+    item["harga_beli"] = harga_beli;
+    item["harga_jual"] = harga_jual;
+    item["id_inventory"] = id_inventory ?? "all";
+    item["kode_barang"] = kode_barang ?? "";
+    item["catatan"] = catatan ?? "";
+    item["photo_barang"] = photo_barang ?? "";
+    item["added"] = added ?? "";
+    item["edited"] = edited ?? "";
 
-    await prefs.setString('items', a);
-    log('DONE saveItems');
+    // tambahkan item ke items
+    items.add(item);
+    // reset item
+    item = resetItem;
+    // encode items
+    var encoded = jsonEncode(items);
+
+    // simpan items di device
+    await prefs.setString("items", encoded);
   }
 
-  static getItems() async {
-    log('START getItems');
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    log(prefs.getString('items') == null ? 'items null' : 'items ada');
-
-    String a = prefs.getString('items') ?? "[]";
-
-    List b = jsonDecode(a);
-
-    ItemWise.items = b;
-
-    log('DONE getItems');
-    return b;
+  void read() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // ambil items(encoded) dari device
+    var encoded = prefs.getString("items");
+    // jika ketemu
+    if (encoded != null) {
+      log("items ketemu");
+      // decode encoded
+      var decoded = jsonDecode(encoded);
+      // ubah items
+      items = decoded;
+    } else {
+      log("items tidak ditemukan");
+    }
   }
 
-  static deleteItem(String id) {
-    log('START deleteItem');
-    ItemWise.items.removeWhere((element) => element['id']==id);
+  void update(String id_barang,
+      {String? id_user,
+      String? id_inventory,
+      String? nama_barang,
+      int? stok_barang,
+      int? harga_beli,
+      int? harga_jual,
+      String? kode_barang,
+      String? catatan,
+      String? photo_barang,
+      String? added,
+      String? edited}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // cari index berdasarkan id_barang
+    var idx = items.indexWhere((element) => element["id_barang"] == id_barang);
+
+    // ubah nilai element berdasarkan index
+    items[idx]["id_barang"] = id_barang;
+    items[idx]["id_user"] = id_user ?? items[idx]["id_user"];
+    items[idx]["id_inventory"] = id_inventory ?? items[idx]["id_inventory"];
+    items[idx]["nama_barang"] = nama_barang ?? items[idx]["nama_barang"];
+    items[idx]["stok_barang"] = stok_barang ?? items[idx]["stok_barang"];
+    items[idx]["harga_beli"] = harga_beli ?? items[idx]["harga_beli"];
+    items[idx]["harga_jual"] = harga_jual ?? items[idx]["harga_jual"];
+    items[idx]["kode_barang"] = kode_barang ?? items[idx]["kode_barang"];
+    items[idx]["catatan"] = catatan ?? items[idx]["catatan"];
+    items[idx]["photo_barang"] = photo_barang ?? items[idx]["photo_barang"];
+    items[idx]["added"] = added ?? items[idx]["added"];
+    items[idx]["edited"] = edited ?? items[idx]["edited"];
+    // dengan begini nilai di dalam items bakal berubah
+
+    // encode items
+    var encoded = jsonEncode(items);
+    // simpan items di device
+    await prefs.setString("items", encoded);
   }
 
-  static Future<void> addItem(String name, String desc, String stock,
-      String purPrice, String selPrice, String img) async {
-    log('START addItem');
-    var a = DateTime.now().millisecondsSinceEpoch.toString();
-    ItemWise.items.add({
-      "id": a,
-      "name": name,
-      "desc": desc,
-      "stock": stock,
-      "purPrice": purPrice,
-      "selPrice": selPrice,
-      "addedTime": a,
-      "editedTime": a,
-      "img": img
-    });
-    log('DONE addItem');
-  }
+  void delete(String id_barang) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  static Future<void> editItem(String id, String name, String desc,
-      String stock, String purPrice, String selPrice, String img) async {
-    log('START editItem id:$id');
-    var a = DateTime.now().millisecondsSinceEpoch.toString();
-
-    ItemWise.items[items.indexWhere((element) => element['id'] == id)] = {
-      "id": id,
-      "name": name,
-      "desc": desc,
-      "stock": stock,
-      "purPrice": purPrice,
-      "selPrice": selPrice,
-      "addedTime": ItemWise.items
-          .firstWhere((element) => element['id'] == id)['addedTime'],
-      "editedTime": a,
-      "img": img
-    };
-    log('DONE editItem id:$id');
+    // hapus dari items
+    items.removeWhere((element) => element["id_barang"] == id_barang);
+    // encode items
+    var encoded = jsonEncode(items);
+    // simpan items di device
+    await prefs.setString("items", encoded);
   }
 }

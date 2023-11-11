@@ -32,12 +32,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
     log('in viewItemPage');
     if (widget.itemMap != null) {
       isEdit = true;
-      _itemNameController.text = widget.itemMap!['name'];
-      _itemDescriptionController.text = widget.itemMap!['desc'];
-      _itemStockController.text = widget.itemMap!['stock'].toString();
-      _purchasePriceController.text = widget.itemMap!['purPrice'].toString();
-      _sellingPriceController.text = widget.itemMap!['selPrice'].toString();
-      img = widget.itemMap!["img"];
+      _itemNameController.text = widget.itemMap!['nama_barang'];
+      _itemDescriptionController.text = widget.itemMap!['catatan'];
+      _itemStockController.text = widget.itemMap!['stok_barang'].toString();
+      _purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
+      _sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
+      img = widget.itemMap!["photo_barang"];
 
       CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
     } else if (widget.itemMap == null) {
@@ -196,7 +196,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           color: Colors.grey),
                     )
                   : Container(),
-              Container(height: isImgLscape == true || img == "" ? 250 : 100,
+              Container(
+                height: isImgLscape == true || img == "" ? 250 : 100,
               )
             ],
           ),
@@ -264,7 +265,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
         child: Card(
           elevation: 5,
           color: Color.fromARGB(255, 232, 232, 232),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Container(
               height: isImgLscape ? 200 : 500,
               width: MediaQuery.of(context).size.width - 10,
@@ -375,15 +377,20 @@ class _ViewItemPageState extends State<ViewItemPage> {
               _itemStockController.text.trim() != "") {
             // add item
             if (widget.itemMap == null) {
-              String name = _itemNameController.text;
-              String desc = _itemDescriptionController.text;
-              String stock = _itemStockController.text;
-              String purPrice = _purchasePriceController.text;
-              String selPrice = _sellingPriceController.text;
+              String nama_barang = _itemNameController.text;
+              String catatan = _itemDescriptionController.text;
+              int stok_barang = int.parse(_itemStockController.text);
+              int harga_beli = int.parse(_purchasePriceController.text);
+              int harga_jual = int.parse(_sellingPriceController.text);
+              String id_user = userWise.userData["id_user"];
+              String id_barang =
+                  id_user + DateTime.now().millisecondsSinceEpoch.toString();
 
-              await ItemWise.addItem(
-                  name, desc, stock, purPrice, selPrice, img);
-              await ItemWise.saveItems();
+              setState(() {
+                ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
+                    harga_beli, harga_jual,catatan: catatan);
+              });
+
               clearTextController();
               // ignore: use_build_context_synchronously
               Navigator.pushAndRemoveUntil(
@@ -393,34 +400,49 @@ class _ViewItemPageState extends State<ViewItemPage> {
             }
             // edit item
             else if (widget.itemMap != null) {
-              String name = _itemNameController.text.trim();
-              String desc = _itemDescriptionController.text.trim();
-              String stock = _itemStockController.text.trim();
-              String purPrice = _purchasePriceController.text.trim();
-              String selPrice = _sellingPriceController.text.trim();
+              String nama_barang = _itemNameController.text.trim();
+              String catatan = _itemDescriptionController.text.trim();
+              int stok_barang = int.parse(_itemStockController.text.trim());
+              int harga_beli = int.parse(_purchasePriceController.text.trim());
+              int harga_jual = int.parse(_sellingPriceController.text.trim());
 
-              List a = [
-                widget.itemMap!['nama'],
-                widget.itemMap!["desc"],
-                widget.itemMap!["stock"],
-                widget.itemMap!["purPrice"],
-                widget.itemMap!["selPrice"],
-                widget.itemMap!["img"],
+              List lama = [
+                widget.itemMap!['nama_barang'],
+                widget.itemMap!["catatan"],
+                widget.itemMap!["stok_barang"],
+                widget.itemMap!["harga_beli"],
+                widget.itemMap!["harga_jual"],
+                widget.itemMap!["photo_barang"],
               ];
-              List b = [name, desc, stock, purPrice, selPrice, img];
+              List baru = [
+                nama_barang,
+                catatan,
+                stok_barang,
+                harga_beli,
+                harga_jual,
+                img
+              ];
 
-              for (var i = 0; i < a.length; i++) {
-                if (a[i] != b[i]) {
+              // cek apakah data berbeda, jika beda berarti diedit
+              for (var i = 0; i < lama.length; i++) {
+                if (lama[i] != baru[i]) {
                   isEdited = true;
                 }
               }
 
+              // jika menekan tombol save dan diedit maka simpan
+              // jadi ketika tidak ada perubahan maka sistem tidak melakukan proses edit
               if (isEdited) {
-                await ItemWise.editItem(widget.itemMap!['id'], name, desc,
-                    stock, purPrice, selPrice, img);
-                await ItemWise.saveItems();
+                ItemWise().update(widget.itemMap!['id_barang'],
+                    nama_barang: nama_barang,
+                    catatan: catatan,
+                    stok_barang: stok_barang,
+                    harga_beli: harga_beli,
+                    harga_jual: harga_jual,
+                    photo_barang: img);
               }
             }
+            // ignore: use_build_context_synchronously
             ScaffoldMessenger.of(context).showSnackBar(successSnackbar(
                 context, AppLocalizations.of(context)!.successSave));
           } else {
