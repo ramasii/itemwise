@@ -31,7 +31,9 @@ class _userPageState extends State<userPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(userWise.isLoggedIn ? AppLocalizations.of(context)!.profile : AppLocalizations.of(context)!.login),
+        title: Text(userWise.isLoggedIn
+            ? AppLocalizations.of(context)!.profile
+            : AppLocalizations.of(context)!.login),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -54,12 +56,14 @@ class _userPageState extends State<userPage> {
         ),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 350),
-          child: _loginForm(AppLocalizations.of(context)!.email, emailController),
+          child:
+              _loginForm(AppLocalizations.of(context)!.email, emailController),
         ),
         _customSpace(25),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 350),
-          child: _loginForm(AppLocalizations.of(context)!.password, passwordController),
+          child: _loginForm(
+              AppLocalizations.of(context)!.password, passwordController),
         ),
         _customSpace(25),
         Row(
@@ -77,8 +81,8 @@ class _userPageState extends State<userPage> {
 
   Container _customSpace(double pixel) {
     return Container(
-        height: pixel,
-      );
+      height: pixel,
+    );
   }
 
   TextButton _tombolLogInOut() {
@@ -155,8 +159,10 @@ class _userPageState extends State<userPage> {
                       : Colors.grey[400],
               borderRadius: BorderRadius.circular(10)),
           child: userWise.isLoggedIn
-              ? Text(AppLocalizations.of(context)!.logout, style: TextStyle(color: Colors.white))
-              : Text(AppLocalizations.of(context)!.login, style: TextStyle(color: Colors.white)),
+              ? Text(AppLocalizations.of(context)!.logout,
+                  style: TextStyle(color: Colors.white))
+              : Text(AppLocalizations.of(context)!.login,
+                  style: TextStyle(color: Colors.white)),
         ));
   }
 
@@ -193,34 +199,70 @@ class _userPageState extends State<userPage> {
       validator: (value) {
         if (value == "") {
           return AppLocalizations.of(context)!.required;
-        } else if (controller == passwordController &&
-            passwordController.text.trim().length <= 8) {
-          return AppLocalizations.of(context)!.minimum8Characters;
-        } else if (controller == emailController) {
+        }
+        // cek password
+        else if (controller == passwordController) {
+          // password minimal 8 karakter
+          if (passwordController.text.trim().length < 8) {
+            return AppLocalizations.of(context)!.minimum8Characters;
+          }
+          // password tidak boleh lebih dari 50 karakter
+          else if (passwordController.text.trim().length > 50) {
+            return AppLocalizations.of(context)!.max50Characters;
+          }
+        }
+        // cek email
+        else if (controller == emailController) {
           String email_user = emailController.text.trim();
-          bool emailValid =
+          // regex format email
+          bool isValid =
               RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$')
                   .hasMatch(email_user);
-          if (emailValid == false) {
+          // email harus cocok denga format email
+          if (isValid == false) {
             return AppLocalizations.of(context)!.enterValidEmail;
           }
         }
       },
       onChanged: (value) {
+        RegExp emailExp =
+            RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$');
+        // email
         if (controller == emailController) {
-          // cek email
-          String email_user = emailController.text.trim();
-          setState(() {
-            emailValid = RegExp(
-                    r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$')
-                .hasMatch(email_user);
-          });
-        } else if (controller == passwordController) {
-          // cek password
-          String password_user = passwordController.text.trim();
-          setState(() {
-            passwordValid = password_user != "" && password_user.length >= 8;
-          });
+          switch (emailExp.hasMatch(value.trim())) {
+            case true:
+              setState(() {
+                emailValid = true;
+              });
+              break;
+            case false:
+              setState(() {
+                emailValid = false;
+              });
+              break;
+            default:
+          }
+        }
+        // password
+        if (controller == passwordController) {
+          // password minimal 8 karakter
+          if (value.trim().length < 8) {
+            setState(() {
+              passwordValid = false;
+            });
+          }
+          // password tidak boleh lebih dari 50 karakter
+          else if (value.trim().length > 50) {
+            setState(() {
+              passwordValid = false;
+            });
+          }
+          // password valid
+          else {
+            setState(() {
+              passwordValid = true;
+            });
+          }
         }
       },
       obscureText: isPass && userWise.isLoggedIn == false,

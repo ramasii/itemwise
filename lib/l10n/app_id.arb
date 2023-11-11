@@ -35,6 +35,7 @@
     "skip":"Lewati",
     "required":"Wajib disi",
     "minimum8Characters":"Minimal 8 karakter",
+    "max50Characters":"Maksimal 50 karakter",
     "enterValidEmail":"Masukkan e-mail dengan benar"
 
 }
