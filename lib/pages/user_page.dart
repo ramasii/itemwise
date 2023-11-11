@@ -17,6 +17,9 @@ class _userPageState extends State<userPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  bool emailValid = false;
+  bool passwordValid = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -28,7 +31,7 @@ class _userPageState extends State<userPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(userWise.isLoggedIn ? "Profil" : "Login"),
+        title: Text(userWise.isLoggedIn ? AppLocalizations.of(context)!.profile : AppLocalizations.of(context)!.login),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -51,225 +54,133 @@ class _userPageState extends State<userPage> {
         ),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 350),
-          child: _loginForm("E-mail", emailController),
+          child: _loginForm(AppLocalizations.of(context)!.email, emailController),
         ),
-        Container(
-          height: 20,
-        ),
+        _customSpace(25),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 350),
-          child: _loginForm("Kata sandi", passwordController),
+          child: _loginForm(AppLocalizations.of(context)!.password, passwordController),
         ),
-        Container(
-          height: 25,
-        ),
+        _customSpace(25),
         Row(
           mainAxisAlignment: userWise.isLoggedIn
               ? MainAxisAlignment.center
               : MainAxisAlignment.spaceEvenly,
           children: [
-            userWise.isLoggedIn
-                ? Container()
-                : TextButton(
-                    onPressed: () {
-                      log("skip dulu");
-                      log("skip dulu");
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                    title: "Item Wise",
-                                  )));
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: Colors.grey[400],
-                          borderRadius: BorderRadius.circular(10)),
-                      child: const Text(
-                        "skip dulu",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    )),
-            TextButton(
-                onPressed: () {
-                  // login
-                  if (userWise.isLoggedIn == false) {
-                    log("login");
-
-                    // cek email
-                    String email_user = emailController.text.trim();
-                    bool emailValid = RegExp(
-                            r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$')
-                        .hasMatch(email_user);
-                    // cek password
-                    String password_user = passwordController.text.trim();
-                    bool passwordValid =
-                        password_user != "" && password_user.length >= 8;
-
-                    if (emailValid && passwordValid) {
-                      // buat id
-                      String namaEmail =
-                          RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
-                      String id_user =
-                          "${DateTime.now().millisecondsSinceEpoch}$namaEmail";
-
-                      // cek ke database apakah ada email yang cocok
-                      // jika iya maka cocokkan password
-                      // jika tidak maka tambahkan baru
-                      // ubah nilai class user (ini jika 'tambah baru' atau 'login')
-                      setState(() {
-                        userWise().edit(
-                            username_user: namaEmail,
-                            email_user: email_user,
-                            password_user: password_user,
-                            id_user: id_user);
-                        userWise.isLoggedIn = true;
-                      });
-
-                      log("$id_user");
-                    }
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MyHomePage(
-                                title: "Item Wise",
-                              )),
-                    );
-
-                    log("$emailValid,$passwordValid");
-                  }
-                  // logout
-                  else {
-                    log("logging-out");
-                    setState(() {
-                      userWise().logout();
-                      emailController.clear();
-                      passwordController.clear();
-                    });
-                    log("logged-out");
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      color: userWise.isLoggedIn ? Colors.red : Colors.blue,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: userWise.isLoggedIn
-                      ? const Text("logout",
-                          style: TextStyle(color: Colors.white))
-                      : const Text("login",
-                          style: TextStyle(color: Colors.white)),
-                ))
+            userWise.isLoggedIn ? Container() : _tombolSkip(),
+            _tombolLogInOut()
           ],
         )
       ]),
     );
   }
 
-  Widget _tampilanLogin() {
+  Container _customSpace(double pixel) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-      child: Column(children: [
-        Container(
-          height: MediaQuery.of(context).size.height * 0.30,
-        ),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 350),
-          child: _loginForm("E-mail", emailController),
-        ),
-        Container(
-          height: 20,
-        ),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 350),
-          child: _loginForm("Kata sandi", passwordController),
-        ),
-        Container(
-          height: 25,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            TextButton(
-                onPressed: () {
-                  log("skip dulu");
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MyHomePage(
-                              title: "Item Wise",
-                            )),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(10)),
-                  child: const Text(
-                    "skip dulu",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )),
-            TextButton(
-                onPressed: () {
-                  log("login");
+        height: pixel,
+      );
+  }
 
-                  // cek email
-                  String email_user = emailController.text.trim();
-                  bool emailValid = RegExp(
-                          r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$')
-                      .hasMatch(email_user);
-                  // cek password
-                  String password_user = passwordController.text.trim();
-                  bool passwordValid =
-                      password_user != "" && password_user.length >= 8;
+  TextButton _tombolLogInOut() {
+    return TextButton(
+        onPressed: () {
+          // login
+          if (userWise.isLoggedIn == false) {
+            log("login");
 
-                  if (emailValid && passwordValid) {
-                    // buat id
-                    String namaEmail =
-                        RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
-                    String id_user =
-                        "${DateTime.now().millisecondsSinceEpoch}$namaEmail";
+            if (emailValid && passwordValid) {
+              // buat id
+              String email_user = emailController.text.trim();
+              String namaEmail =
+                  RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
+              String id_user =
+                  "${DateTime.now().millisecondsSinceEpoch}$namaEmail";
 
-                    // cek ke database apakah ada email yang cocok
-                    // jika iya maka cocokkan password
-                    // jika tidak maka tambahkan baru
-                    // ubah nilai class user (ini jika 'tambah baru' atau 'login')
-                    setState(() {
-                      userWise().edit(
-                          username_user: namaEmail,
-                          email_user: email_user,
-                          password_user: password_user,
-                          id_user: id_user);
-                      userWise.isLoggedIn = true;
-                    });
+              // cek ke database apakah ada email yang cocok
+              /* 
+                    if(adaInternet){
+                      cocokkan dengan database
+                      if(emailAda){
+                        if(passwordCocok){
+                          login: ubah value dari class userWise
+                        }else{
+                          login gagal "password salah"
+                        }
+                      }else{
+                        tambah ke database bahwa ini akun baru
+                        login: ubah value dari class userWise
+                      }
+                    }
+                    */
+              // ubah nilai class user (ini jika 'tambah baru' atau 'login')
+              setState(() {
+                userWise().edit(
+                    username_user: namaEmail,
+                    email_user: email_user,
+                    password_user: passwordController.text.trim(),
+                    id_user: id_user);
+                userWise.isLoggedIn = true;
+              });
 
-                    log("$id_user");
-                  }
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MyHomePage(
-                              title: "Item Wise",
-                            )),
-                  );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const MyHomePage(
+                          title: "Item Wise",
+                        )),
+              );
 
-                  log("$emailValid,$passwordValid");
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: const Text("login",
-                      style: TextStyle(color: Colors.white)),
-                ))
-          ],
-        )
-      ]),
-    );
+              log("$id_user");
+            }
+            log("$emailValid,$passwordValid");
+          }
+          // logout
+          else {
+            log("logging-out");
+            setState(() {
+              userWise().logout();
+              emailController.clear();
+              passwordController.clear();
+            });
+            log("logged-out");
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+              color: userWise.isLoggedIn
+                  ? Colors.red
+                  : emailValid && passwordValid
+                      ? Colors.blue
+                      : Colors.grey[400],
+              borderRadius: BorderRadius.circular(10)),
+          child: userWise.isLoggedIn
+              ? Text(AppLocalizations.of(context)!.logout, style: TextStyle(color: Colors.white))
+              : Text(AppLocalizations.of(context)!.login, style: TextStyle(color: Colors.white)),
+        ));
+  }
+
+  TextButton _tombolSkip() {
+    return TextButton(
+        onPressed: () {
+          log("skip dulu");
+          log("skip dulu");
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const MyHomePage(
+                        title: "Item Wise",
+                      )));
+        },
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+              color: Colors.grey[400], borderRadius: BorderRadius.circular(10)),
+          child: Text(
+            AppLocalizations.of(context)!.skip,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ));
   }
 
   TextFormField _loginForm(String label, TextEditingController controller) {
@@ -281,10 +192,35 @@ class _userPageState extends State<userPage> {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {
         if (value == "") {
-          return "Wajib diisi";
+          return AppLocalizations.of(context)!.required;
         } else if (controller == passwordController &&
             passwordController.text.trim().length <= 8) {
-          return "Minimal 8 karakter";
+          return AppLocalizations.of(context)!.minimum8Characters;
+        } else if (controller == emailController) {
+          String email_user = emailController.text.trim();
+          bool emailValid =
+              RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$')
+                  .hasMatch(email_user);
+          if (emailValid == false) {
+            return AppLocalizations.of(context)!.enterValidEmail;
+          }
+        }
+      },
+      onChanged: (value) {
+        if (controller == emailController) {
+          // cek email
+          String email_user = emailController.text.trim();
+          setState(() {
+            emailValid = RegExp(
+                    r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$')
+                .hasMatch(email_user);
+          });
+        } else if (controller == passwordController) {
+          // cek password
+          String password_user = passwordController.text.trim();
+          setState(() {
+            passwordValid = password_user != "" && password_user.length >= 8;
+          });
         }
       },
       obscureText: isPass && userWise.isLoggedIn == false,

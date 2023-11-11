@@ -27,5 +27,14 @@
     "holdToRemoveInv":"Tekan dan tahan untuk menghapus inventaris",
     "tapToEditInv":"Tekan untuk mengedit inventaris",
     "changeName":"Ubah nama",
-    "profile":"Profil"
+    "profile":"Profil",
+    "login":"Masuk",
+    "email":"E-mail",
+    "password":"Kata sandi",
+    "logout":"Keluar",
+    "skip":"Lewati",
+    "required":"Wajib disi",
+    "minimum8Characters":"Minimal 8 karakter",
+    "enterValidEmail":"Masukkan e-mail dengan benar"
+
 }
