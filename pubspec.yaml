@@ -19,6 +19,7 @@ dependencies:
   shared_preferences: ^2.2.0
   image_picker: any
   image_size_getter: any
+  device_info_plus: any
 
 dev_dependencies:
   flutter_test:

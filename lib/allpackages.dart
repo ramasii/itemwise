@@ -7,7 +7,9 @@ export 'package:intl/intl.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:image_size_getter/image_size_getter.dart';
 export 'dart:typed_data';
+export 'package:device_info_plus/device_info_plus.dart';
 
+export './utils/devicedata_utils.dart';
 export './utils/itemwise_utils.dart';
 export './utils/inventory_utils.dart';
 export 'package:itemwise/utils/user_utils.dart';

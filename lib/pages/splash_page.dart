@@ -18,6 +18,7 @@ class _SplashPageState extends State<SplashPage>
     super.initState();
     inventoryWise().read();
     userWise().read();
+    checkDeviceId();
 
     // anim
     _animationController = AnimationController(
@@ -46,7 +47,7 @@ class _SplashPageState extends State<SplashPage>
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => userWise.isLoggedIn
+              builder: (context) => deviceData.id != ""
                   ? const MyHomePage(
                       title: "Item Wise",
                     )
@@ -58,6 +59,21 @@ class _SplashPageState extends State<SplashPage>
     });
 
     _animationController.forward();
+  }
+
+  void checkDeviceId() async {
+    var isIdSaved = await deviceData().isKeyAvailable("deviceId");
+    // A.K.A pertama kali buka,
+    // deviceId ini digunakan untuk pengganti idUser di atribut inv dan brg,
+    // ketika login nanti muncul dialog: (judul: "Pindahkan aset saat ini ke akun Anda?", msg: "Jika iya maka aset hanya bisa diakses ketika menggunakan akun ini, jika tidak maka aset hanya bisa diakses ketika tidak terhubung dengan akun apapun, harap pikirkan dengan bijak")
+    if (isIdSaved == false) {
+      var a = await DeviceInfoPlugin().deviceInfo;
+      var b = a.data;
+      var c = '${b["deviceId"]}';
+      await deviceData().edit(c);
+    } else {
+      log(deviceData.id);
+    }
   }
 
   @override

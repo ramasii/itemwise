@@ -202,9 +202,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       IconButton(
                           onPressed: () async {
                             log("nambah");
-                            var id_inventory = DateTime.now()
-                                .millisecondsSinceEpoch
-                                .toString();
+                            var id_inventory =
+                                "inv${DateTime.now().millisecondsSinceEpoch.toString()}";
 
                             invNameDialog(context, id_inventory, "add");
                           },
@@ -309,14 +308,26 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             actions: [
               InkWell(
-                onTap: () {
+                onTap: () async {
                   log("simpan");
                   if (NamaInvController.text.trim().isNotEmpty) {
                     setState(() {
+                      // cek apakah sudah login
+                      if (userWise.isLoggedIn) {
+                        log("sudah login");
+                        id_user = userWise.userData["id_user"];
+                      }
+                      // belum login
+                      else {
+                        log("belum login");
+                        id_user = deviceData.id;
+                      }
+
                       switch (mode) {
                         case "add":
-                          inventoryWise().create(id_inventory, "id_user",
+                          inventoryWise().create(id_inventory, id_user,
                               NamaInvController.text.trim());
+                          log("create: $id_inventory - $id_user - ${NamaInvController.text.trim()}");
                           break;
                         case "edit":
                           log("tekan simpan edit");

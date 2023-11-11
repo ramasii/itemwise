@@ -98,7 +98,7 @@ class _userPageState extends State<userPage> {
               String namaEmail =
                   RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
               String id_user =
-                  "${DateTime.now().millisecondsSinceEpoch}$namaEmail";
+                  "${deviceData.id}${DateTime.now().millisecondsSinceEpoch}";
 
               // cek ke database apakah ada email yang cocok
               /* 
