@@ -32,8 +32,8 @@ class ItemWise {
     "edited": "",
   };
 
-  void create(String id_barang, String id_user,
-      String nama_barang, int stok_barang, int harga_beli, int harga_jual,
+  void create(String id_barang, String id_user, String nama_barang,
+      int stok_barang, int harga_beli, int harga_jual,
       {String? id_inventory,
       String? kode_barang,
       String? catatan,
@@ -81,6 +81,11 @@ class ItemWise {
     } else {
       log("items tidak ditemukan");
     }
+  }
+
+  List readByUser(String id_user) {
+    var filtered = items.where((element) => element["id_user"] == id_user);
+    return filtered.toList();
   }
 
   void update(String id_barang,

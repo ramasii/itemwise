@@ -85,6 +85,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /* // tampilkan id barang
+              if (widget.itemMap != null)
+                Text("barang: ${widget.itemMap!['id_barang']}"),
+              // tampilkan id user pemilik barang
+              if (widget.itemMap != null)
+                Text("pemilik: ${widget.itemMap!['id_user']}"),
+              // tampilkan user saat ini
+              if (userWise.isLoggedIn)
+                Text("user now: ${userWise.userData['id_user']}")
+              else
+                Text("tanpa akun: ${deviceData.id}"), */
+
               // nama item | item name
               TextFormField(
                 controller: _itemNameController,
@@ -382,13 +394,16 @@ class _ViewItemPageState extends State<ViewItemPage> {
               int stok_barang = int.parse(_itemStockController.text);
               int harga_beli = int.parse(_purchasePriceController.text);
               int harga_jual = int.parse(_sellingPriceController.text);
-              String id_user = userWise.userData["id_user"];
+              String id_user = userWise.userData["id_user"] != ""
+                  ? userWise.userData["id_user"]
+                  : deviceData.id;
               String id_barang =
-                  id_user + DateTime.now().millisecondsSinceEpoch.toString();
+                  "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
 
               setState(() {
                 ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
-                    harga_beli, harga_jual,catatan: catatan);
+                    harga_beli, harga_jual,
+                    catatan: catatan);
               });
 
               clearTextController();

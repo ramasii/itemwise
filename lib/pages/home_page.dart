@@ -14,7 +14,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<String> selectedItems = [];
   String invState = "all";
-  String id_user = "id_user";
+  String id_user =
+      userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
   TextEditingController NamaInvController = TextEditingController();
   ScrollController invScrollController =
       ScrollController(keepScrollOffset: false);
@@ -26,6 +27,25 @@ class _MyHomePageState extends State<MyHomePage> {
     // TODO: implement initState
     super.initState();
     log('in homePage');
+    checkDeviceId();
+  }
+
+  void checkDeviceId() async {
+    var isIdSaved = await deviceData().isKeyAvailable("deviceId");
+    // A.K.A pertama kali buka,
+    // deviceId ini digunakan untuk pengganti idUser di atribut inv dan brg,
+    // ketika login nanti muncul dialog: (judul: "Pindahkan aset saat ini ke akun Anda?", msg: "Jika iya maka aset hanya bisa diakses ketika menggunakan akun ini, jika tidak maka aset hanya bisa diakses ketika tidak terhubung dengan akun apapun, harap pikirkan dengan bijak")
+    if (isIdSaved == false) {
+      var a = await DeviceInfoPlugin().deviceInfo;
+      var b = a.data;
+      var c = '${b["deviceId"]}';
+      await deviceData().edit(c);
+      if (userWise.isLoggedIn == false) {
+        id_user = c;
+      }
+    } else {
+      log("device id: ${deviceData.id}");
+    }
   }
 
   @override
@@ -421,10 +441,10 @@ class _MyHomePageState extends State<MyHomePage> {
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           return Column(
-            children: List.generate(ItemWise.items.length, (index) {
-              var id = ItemWise.items[index]['id_barang'];
-              var title = ItemWise.items[index]['nama_barang'];
-              return buildItem(index, context, id, title);
+            children: List.generate(ItemWise().readByUser(id_user).length, (index) {
+              var id = ItemWise().readByUser(id_user)[index]['id_barang'];
+              var title = ItemWise().readByUser(id_user)[index]['nama_barang'];
+              return buildItem(index, context, id, title, ItemWise().readByUser(id_user)[index]);
             }),
           );
         },
@@ -432,7 +452,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildItem(int index, BuildContext context, id, title) {
+  Widget buildItem(int index, BuildContext context, id, title, barang) {
     return Column(
       children: [
         Padding(
@@ -447,13 +467,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: const BoxDecoration(
                       color: Colors.blue,
                       borderRadius: BorderRadius.all(Radius.circular(15))),
-                  child: ItemWise.items[index]["photo_barang"] != ""
+                  child: barang["photo_barang"] != ""
                       ? ClipRRect(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(15)),
                           child: Image.memory(
                             Uint8List.fromList(base64
-                                .decode(ItemWise.items[index]["photo_barang"])),
+                                .decode(barang["photo_barang"])),
                             fit: BoxFit.cover,
                             gaplessPlayback: true,
                           ),
@@ -471,7 +491,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: 5,
               ),
               Expanded(
-                child: MyListTile(context, index, id, tinggi: 70),
+                child: MyListTile(context, index, id, barang, tinggi: 70),
               )
             ],
           ),
@@ -483,7 +503,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  InkWell MyListTile(BuildContext context, int index, id,
+  InkWell MyListTile(BuildContext context, int index, id, barang,
       {double tinggi = 60}) {
     return InkWell(
       onTap: () async {
@@ -492,7 +512,7 @@ class _MyHomePageState extends State<MyHomePage> {
               context,
               MaterialPageRoute(
                   builder: (ctx) => ViewItemPage(
-                        itemMap: ItemWise.items[index],
+                        itemMap: barang,
                       )));
         } else {
           if (selectedItems.contains(id)) {
@@ -534,17 +554,17 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              ItemWise.items[index]['nama_barang'],
+              barang['nama_barang'],
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 18),
             ),
             Text(
-              ItemWise.items[index]['catatan'],
+              barang['catatan'],
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[600]),
             ),
             Text(
-              "${AppLocalizations.of(context)!.stok}: ${ItemWise.items[index]['stok_barang']}",
+              "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.grey[600]),
             ),

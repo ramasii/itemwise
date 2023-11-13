@@ -12,12 +12,14 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _radiusAnimation;
+  bool firstTime = true;
 
   @override
   void initState() {
     super.initState();
     inventoryWise().read();
     userWise().read();
+    ItemWise().read();
     checkDeviceId();
 
     // anim
@@ -62,18 +64,21 @@ class _SplashPageState extends State<SplashPage>
   }
 
   void checkDeviceId() async {
-    var isIdSaved = await deviceData().isKeyAvailable("deviceId");
+    var pernahBuka = await deviceData().isKeyAvailable("deviceId");
     // A.K.A pertama kali buka,
     // deviceId ini digunakan untuk pengganti idUser di atribut inv dan brg,
     // ketika login nanti muncul dialog: (judul: "Pindahkan aset saat ini ke akun Anda?", msg: "Jika iya maka aset hanya bisa diakses ketika menggunakan akun ini, jika tidak maka aset hanya bisa diakses ketika tidak terhubung dengan akun apapun, harap pikirkan dengan bijak")
-    if (isIdSaved == false) {
-      var a = await DeviceInfoPlugin().deviceInfo;
-      var b = a.data;
-      var c = '${b["deviceId"]}';
-      await deviceData().edit(c);
-    } else {
-      log(deviceData.id);
-    }
+
+    setState(() {
+      // ini kalo pertama kali
+      if (pernahBuka == false) {
+        firstTime = true;
+        log("pertama kali");
+      } else {
+        firstTime = false;
+        log("pernah buka");
+      }
+    });
   }
 
   @override

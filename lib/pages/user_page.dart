@@ -116,7 +116,7 @@ class _userPageState extends State<userPage> {
                       }
                     }
                     */
-              // ubah nilai class user (ini jika 'tambah baru' atau 'login')
+              // ubah nilai class user (ini jika 'tambah baru' atau 'login'), kalau 'login' ubah userWise berdasarkan data dari DB
               setState(() {
                 userWise().edit(
                     username_user: namaEmail,
