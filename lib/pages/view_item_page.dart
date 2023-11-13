@@ -40,7 +40,21 @@ class _ViewItemPageState extends State<ViewItemPage> {
       _purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
       _sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
       img = widget.itemMap!["photo_barang"];
-      invDropdownValue = widget.itemMap!["id_inventory"];
+      // kalo bukan null, dicek dulu apakah masih ada di inventoryWise
+      // takutnya kalo inventorynya dihapus, trs viewItem yang punya id_inventory yang dihapus malah eror
+      // antisipasinya adalah mengubah invdropdownvalue jadi null
+      if (widget.itemMap!["id_inventory"] != null) {
+        Map? cek = inventoryWise().readById(widget.itemMap!["id_inventory"]);
+        // jika null berarti ga ada
+        if (cek == null) {
+          invDropdownValue = null;
+          // langsung edit aja ga si :v
+          // biar ga repot"
+          ItemWise().update(widget.itemMap!["id_barang"], id_inventory: null);
+        } else {
+          invDropdownValue = widget.itemMap!["id_inventory"];
+        }
+      }
 
       CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
     } else if (widget.itemMap == null) {
@@ -216,6 +230,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           padding: const EdgeInsets.all(10),
                           child: Text(AppLocalizations.of(context)!.selectInv)),
                       underline: Container(),
+                      // kalo itemMap = null berarti nambah
+                      // kalo ga null bearti ngedit
+                      // nah kalo ngedit ini trs buka, kemungkinan valuenya null
+                      // trss waduh, anu ini tak edit di initstate
                       value: invDropdownValue,
                       borderRadius: BorderRadius.circular(10),
                       menuMaxHeight: 300,

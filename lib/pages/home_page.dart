@@ -441,10 +441,12 @@ class _MyHomePageState extends State<MyHomePage> {
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           return Column(
-            children: List.generate(ItemWise().readByUser(id_user).length, (index) {
+            children:
+                List.generate(ItemWise().readByUser(id_user).length, (index) {
               var id = ItemWise().readByUser(id_user)[index]['id_barang'];
               var title = ItemWise().readByUser(id_user)[index]['nama_barang'];
-              return buildItem(index, context, id, title, ItemWise().readByUser(id_user)[index]);
+              return buildItem(index, context, id, title,
+                  ItemWise().readByUser(id_user)[index]);
             }),
           );
         },
@@ -472,8 +474,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           borderRadius:
                               const BorderRadius.all(Radius.circular(15)),
                           child: Image.memory(
-                            Uint8List.fromList(base64
-                                .decode(barang["photo_barang"])),
+                            Uint8List.fromList(
+                                base64.decode(barang["photo_barang"])),
                             fit: BoxFit.cover,
                             gaplessPlayback: true,
                           ),
@@ -632,6 +634,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   // hapus
                   inventoryWise().delete(id);
+                  // ubah id_inventory menjadi null ke semua barang yang mengandung id ini
+                  ItemWise.items.forEach((element) {
+                    if (element["id_inventory"] == id) {
+                      ItemWise().update(element["id_barang"], id_inventory: null);
+                    }
+                  });
                   // tampilkan snakbar
                   ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                       context,

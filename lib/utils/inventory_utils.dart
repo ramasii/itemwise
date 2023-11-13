@@ -43,6 +43,12 @@ class inventoryWise {
     }
   }
 
+  Map? readById(String id_inventory) {
+    Map? inv = inventories.firstWhere((element) => element["id_inventory"] == id_inventory,
+        orElse: () => null);
+    return inv;
+  }
+
   void update(
       String id_inventory, String id_user, String nama_inventory) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
