@@ -49,7 +49,7 @@ class ItemWise {
     item["stok_barang"] = stok_barang;
     item["harga_beli"] = harga_beli;
     item["harga_jual"] = harga_jual;
-    item["id_inventory"] = id_inventory ?? "all";
+    item["id_inventory"] = id_inventory /* ?? "all" */;
     item["kode_barang"] = kode_barang ?? "";
     item["catatan"] = catatan ?? "";
     item["photo_barang"] = photo_barang ?? "";
@@ -107,7 +107,7 @@ class ItemWise {
     // ubah nilai element berdasarkan index
     items[idx]["id_barang"] = id_barang;
     items[idx]["id_user"] = id_user ?? items[idx]["id_user"];
-    items[idx]["id_inventory"] = id_inventory ?? items[idx]["id_inventory"];
+    items[idx]["id_inventory"] = id_inventory /* ?? items[idx]["id_inventory"] */;
     items[idx]["nama_barang"] = nama_barang ?? items[idx]["nama_barang"];
     items[idx]["stok_barang"] = stok_barang ?? items[idx]["stok_barang"];
     items[idx]["harga_beli"] = harga_beli ?? items[idx]["harga_beli"];

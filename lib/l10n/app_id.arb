@@ -36,6 +36,8 @@
     "required":"Wajib disi",
     "minimum8Characters":"Minimal 8 karakter",
     "max50Characters":"Maksimal 50 karakter",
-    "enterValidEmail":"Masukkan e-mail dengan benar"
+    "enterValidEmail":"Masukkan e-mail dengan benar",
+    "selectInv":"Pilih inventaris",
+    "clearSelection":"Bersihkan pilihan"
 
 }

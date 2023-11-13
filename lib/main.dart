@@ -35,8 +35,10 @@ class MyApp extends StatelessWidget {
       fontFamily: "Montserrat",
       primarySwatch: Colors.blue,
       secondaryHeaderColor: Colors.lightBlue,
+      hoverColor: Colors.transparent,
       splashColor: Colors.transparent,
       canvasColor: Colors.white,
+      scaffoldBackgroundColor: const Color.fromARGB(255, 244, 250, 255),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         elevation: 0,
       ),
@@ -53,7 +55,7 @@ class MyApp extends StatelessWidget {
           fontSize: 20,
           fontWeight: FontWeight.w500,
           color: Colors.blue),
-      color: Colors.white,
+      color: Color.fromARGB(255, 244, 250, 255),
       iconTheme: IconThemeData(color: Colors.blue),
       elevation: 0,
     );

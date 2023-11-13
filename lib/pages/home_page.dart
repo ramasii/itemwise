@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
         centerTitle: selectedItems.isEmpty,
         titleSpacing: 0,
-        backgroundColor: selectedItems.isNotEmpty ? Colors.blue : Colors.white,
+        backgroundColor: selectedItems.isNotEmpty ? Colors.blue : null,
         actions: selectedItems.isEmpty
             ? [
                 PopupMenuButton(onSelected: (value) {
@@ -311,7 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title: mode == "add"
                 ? Text(AppLocalizations.of(context)!.addInventory)
                 : Text(AppLocalizations.of(context)!.changeName),
-            content: Container(
+            content: SingleChildScrollView(
               child: TextFormField(
                 controller: NamaInvController,
                 decoration: InputDecoration(
