@@ -116,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.account_box_rounded),
+                            const Icon(Icons.account_box_rounded),
                             Container(
                               width: 10,
                             ),
@@ -216,7 +216,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             log("nambah");
                             var id_inventory =
                                 "inv${DateTime.now().millisecondsSinceEpoch.toString()}";
-
+                            setState(() {
+                              invEditMode = false;
+                            });
                             invNameDialog(context, id_inventory, "add");
                           },
                           tooltip: AppLocalizations.of(context)!.addInventory,
@@ -261,6 +263,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       ])
                     ],
                   ),
+                  if (invEditMode)
+                    Text(AppLocalizations.of(context)!.tapToEditInv,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.blue[300])),
                   const Divider()
                 ],
               ),
@@ -275,17 +282,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               if (inventoryWise.inventories.isNotEmpty)
-                Container(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    invEditMode
-                        ? AppLocalizations.of(context)!.tapToEditInv
-                        : AppLocalizations.of(context)!.holdToRemoveInv,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w500, color: Colors.blue[200]),
-                    textAlign: TextAlign.center,
+                if (invEditMode == false)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      AppLocalizations.of(context)!.holdToRemoveInv,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500, color: Colors.blue[200]),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
               if (inventoryWise.inventories.isEmpty)
                 Text(
                   AppLocalizations.of(context)!.tapButtonToAddInventory,
@@ -302,6 +308,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<dynamic> invNameDialog(
       BuildContext context, String id_inventory, String mode) {
+    NamaInvController.clear();
     return showDialog(
         context: context,
         useRootNavigator: false,
@@ -422,7 +429,11 @@ class _MyHomePageState extends State<MyHomePage> {
       message: AppLocalizations.of(context)!.addItem,
       child: InkWell(
         onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (ctx) => ViewItemPage(invState: invState,))),
+            context,
+            MaterialPageRoute(
+                builder: (ctx) => ViewItemPage(
+                      invState: invState,
+                    ))),
         radius: 35,
         borderRadius: BorderRadius.circular(30),
         child: const CircleAvatar(
@@ -440,10 +451,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return SingleChildScrollView(
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-
           List brgs = invState == "all"
-            ? ItemWise().readByUser(id_user)
-            : ItemWise().readByInventory(invState, id_user);
+              ? ItemWise().readByUser(id_user)
+              : ItemWise().readByInventory(invState, id_user);
           return Column(
             children: List.generate(brgs.length, (index) {
               var id = brgs[index]['id_barang'];
