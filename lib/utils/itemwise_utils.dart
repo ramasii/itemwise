@@ -89,10 +89,14 @@ class ItemWise {
   }
 
   List readByInventory(String id_inventory, String id_user) {
-    var filtered = items.where((element) =>
-        element["id_inventory"] == id_inventory &&
-        element["id_user"] == id_user);
-    return filtered.toList();
+    if (id_inventory != "all") {
+      var filtered = items.where((element) =>
+          element["id_inventory"] == id_inventory &&
+          element["id_user"] == id_user);
+      return filtered.toList();
+    } else {
+      return items;
+    }
   }
 
   void update(String id_barang,
