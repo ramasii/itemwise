@@ -88,6 +88,13 @@ class ItemWise {
     return filtered.toList();
   }
 
+  List readByInventory(String id_inventory, String id_user) {
+    var filtered = items.where((element) =>
+        element["id_inventory"] == id_inventory &&
+        element["id_user"] == id_user);
+    return filtered.toList();
+  }
+
   void update(String id_barang,
       {String? id_user,
       String? id_inventory,
@@ -107,7 +114,8 @@ class ItemWise {
     // ubah nilai element berdasarkan index
     items[idx]["id_barang"] = id_barang;
     items[idx]["id_user"] = id_user ?? items[idx]["id_user"];
-    items[idx]["id_inventory"] = id_inventory /* ?? items[idx]["id_inventory"] */;
+    items[idx]["id_inventory"] =
+        id_inventory /* ?? items[idx]["id_inventory"] */;
     items[idx]["nama_barang"] = nama_barang ?? items[idx]["nama_barang"];
     items[idx]["stok_barang"] = stok_barang ?? items[idx]["stok_barang"];
     items[idx]["harga_beli"] = harga_beli ?? items[idx]["harga_beli"];

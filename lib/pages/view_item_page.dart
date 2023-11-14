@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
 
 class ViewItemPage extends StatefulWidget {
-  const ViewItemPage({super.key, this.itemMap});
+  const ViewItemPage({super.key, this.itemMap, this.invState});
 
   final Map? itemMap;
+  final String? invState;
 
   @override
   State<ViewItemPage> createState() => _ViewItemPageState();
@@ -59,6 +60,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
     } else if (widget.itemMap == null) {
       isEdit == false;
+      invDropdownValue = widget.invState;
     }
   }
 
@@ -213,6 +215,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               ),
               Row(
                 children: [
+                  // pilihan inventaris
                   DropdownButton(
                       items: List.generate(inventoryWise.inventories.length,
                           (index) {
@@ -247,6 +250,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                       child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      // clear pilihan inventaris
                       IconButton(
                           onPressed: () {
                             log("bersihkan pilihan");
@@ -259,6 +263,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                             Icons.clear_rounded,
                             color: Colors.red,
                           )),
+                      // tambahkan inventaris
                       IconButton(
                           onPressed: () {
                             log("tambah inventory");

@@ -422,7 +422,7 @@ class _MyHomePageState extends State<MyHomePage> {
       message: AppLocalizations.of(context)!.addItem,
       child: InkWell(
         onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (ctx) => const ViewItemPage())),
+            context, MaterialPageRoute(builder: (ctx) => ViewItemPage(invState: invState,))),
         radius: 35,
         borderRadius: BorderRadius.circular(30),
         child: const CircleAvatar(
@@ -440,13 +440,15 @@ class _MyHomePageState extends State<MyHomePage> {
     return SingleChildScrollView(
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
+
+          List brgs = invState == "all"
+            ? ItemWise().readByUser(id_user)
+            : ItemWise().readByInventory(invState, id_user);
           return Column(
-            children:
-                List.generate(ItemWise().readByUser(id_user).length, (index) {
-              var id = ItemWise().readByUser(id_user)[index]['id_barang'];
-              var title = ItemWise().readByUser(id_user)[index]['nama_barang'];
-              return buildItem(index, context, id, title,
-                  ItemWise().readByUser(id_user)[index]);
+            children: List.generate(brgs.length, (index) {
+              var id = brgs[index]['id_barang'];
+              var title = brgs[index]['nama_barang'];
+              return buildItem(index, context, id, title, brgs[index]);
             }),
           );
         },
@@ -637,7 +639,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   // ubah id_inventory menjadi null ke semua barang yang mengandung id ini
                   ItemWise.items.forEach((element) {
                     if (element["id_inventory"] == id) {
-                      ItemWise().update(element["id_barang"], id_inventory: null);
+                      ItemWise()
+                          .update(element["id_barang"], id_inventory: null);
                     }
                   });
                   // tampilkan snakbar

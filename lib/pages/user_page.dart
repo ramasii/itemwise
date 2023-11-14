@@ -126,13 +126,10 @@ class _userPageState extends State<userPage> {
                 userWise.isLoggedIn = true;
               });
 
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const MyHomePage(
-                          title: "Item Wise",
-                        )),
-              );
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const MyHomePage()), (route) {
+              return true;
+            });
 
               log("$id_user");
             }
@@ -145,6 +142,10 @@ class _userPageState extends State<userPage> {
               userWise().logout();
               emailController.clear();
               passwordController.clear();
+            });
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const MyHomePage()), (route) {
+              return true;
             });
             log("logged-out");
           }
@@ -160,9 +161,9 @@ class _userPageState extends State<userPage> {
               borderRadius: BorderRadius.circular(10)),
           child: userWise.isLoggedIn
               ? Text(AppLocalizations.of(context)!.logout,
-                  style: TextStyle(color: Colors.white))
+                  style: const TextStyle(color: Colors.white))
               : Text(AppLocalizations.of(context)!.login,
-                  style: TextStyle(color: Colors.white)),
+                  style: const TextStyle(color: Colors.white)),
         ));
   }
 
