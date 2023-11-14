@@ -60,7 +60,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
     } else if (widget.itemMap == null) {
       isEdit == false;
-      invDropdownValue = widget.invState;
+      invDropdownValue = widget.invState == "all" ? null : widget.invState;
     }
   }
 
@@ -121,10 +121,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 controller: _itemNameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Item name is required';
+                    return AppLocalizations.of(context)!.required;
                   }
-                  return null; // Validasi berhasil
+                  return null;
                 },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.itemName),
               ),
@@ -140,13 +141,6 @@ class _ViewItemPageState extends State<ViewItemPage> {
               // stok | stock
               TextFormField(
                 controller: _itemStockController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Item name is required';
-                  } else {
-                    return null; // Validasi berhasil
-                  }
-                },
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.itemStock),
@@ -545,15 +539,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
       message: "",
       child: InkWell(
         onTap: () async {
-          if (_itemNameController.text.trim() != "" &&
-              _itemStockController.text.trim() != "") {
+          if (_itemNameController.text.trim() != "") {
             // add item
             if (widget.itemMap == null) {
               String nama_barang = _itemNameController.text;
               String catatan = _itemDescriptionController.text;
-              int stok_barang = int.parse(_itemStockController.text);
-              int harga_beli = int.parse(_purchasePriceController.text);
-              int harga_jual = int.parse(_sellingPriceController.text);
+              String stok = _itemStockController.text.trim();
+              String hbli = _purchasePriceController.text.trim();
+              String hjal = _sellingPriceController.text.trim();
+
+              int stok_barang = int.parse(stok == "" ? "0" : stok);
+              int harga_beli = int.parse(hbli == "" ? "0" : hbli);
+              int harga_jual = int.parse(hjal == "" ? "0" : hjal);
               String id_user = userWise.userData["id_user"] != ""
                   ? userWise.userData["id_user"]
                   : deviceData.id;
@@ -578,9 +575,13 @@ class _ViewItemPageState extends State<ViewItemPage> {
             else if (widget.itemMap != null) {
               String nama_barang = _itemNameController.text.trim();
               String catatan = _itemDescriptionController.text.trim();
-              int stok_barang = int.parse(_itemStockController.text.trim());
-              int harga_beli = int.parse(_purchasePriceController.text.trim());
-              int harga_jual = int.parse(_sellingPriceController.text.trim());
+              String stok = _itemStockController.text.trim();
+              String hbli = _purchasePriceController.text.trim();
+              String hjal = _sellingPriceController.text.trim();
+
+              int stok_barang = int.parse(stok == "" ? "0" : stok);
+              int harga_beli = int.parse(hbli == "" ? "0" : hbli);
+              int harga_jual = int.parse(hjal == "" ? "0" : hjal);
               // String? id_inventory = invDropdownValue;
 
               List lama = [
@@ -653,6 +654,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.redAccent,
+      duration: Duration(seconds: 1),
     );
   }
 
@@ -661,6 +663,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.green,
+      duration: Duration(seconds: 1),
     );
   }
 }

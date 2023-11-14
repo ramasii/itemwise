@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'pages.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, this.title = "Item Wise"});
+  const MyHomePage({super.key, this.title = "Item Wise", this.id_inv});
 
   final String title;
+  final String? id_inv;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -21,6 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ScrollController(keepScrollOffset: false);
   bool invEditMode = false;
   GlobalKey namaInvKey = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -52,8 +54,16 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _homeDrawer(context),
+      drawerEnableOpenDragGesture: selectedItems.isEmpty,
+      key: _scaffoldKey,
       appBar: AppBar(
         toolbarHeight: 55,
+        leading: selectedItems.isEmpty
+            ? IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () => _scaffoldKey.currentState!.openDrawer(),
+              )
+            : Container(),
         title: selectedItems.isEmpty
             ? Column(
                 children: [
@@ -371,40 +381,39 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Row _inventoryTile(int index, BuildContext context) {
+    String id_inventory = inventoryWise.inventories[index]["id_inventory"];
+    int jml_brg = ItemWise().readByInventory(id_inventory, id_user).length;
     return Row(
       children: [
         Expanded(
             child: ListTile(
           onTap: () {
-            log("tap ${inventoryWise.inventories[index]["id_inventory"]}");
+            log("tap ${id_inventory}");
             switch (invEditMode) {
               case false:
                 setState(() {
-                  invState = inventoryWise.inventories[index]["id_inventory"];
+                  invState = id_inventory;
                 });
                 Navigator.pop(context);
                 break;
               case true:
                 log("edit anu");
-                var id = inventoryWise.inventories[index]["id_inventory"];
+                var id = id_inventory;
                 setState(() {
                   // ubah isi textcontroller
                   NamaInvController.text = inventoryWise.inventories.firstWhere(
                       (element) =>
                           element["id_inventory"] == id)["nama_inventory"];
                 });
-                invNameDialog(context,
-                    inventoryWise.inventories[index]["id_inventory"], "edit");
+                invNameDialog(context, id_inventory, "edit");
                 break;
               default:
             }
           },
           // hapus
           onLongPress: () {
-            if (invState != inventoryWise.inventories[index]["id_inventory"] &&
-                invEditMode == false) {
-              deleteInvDialog(
-                  context, inventoryWise.inventories[index]["id_inventory"]);
+            if (invState != id_inventory && invEditMode == false) {
+              deleteInvDialog(context, id_inventory);
             }
           },
           title: Text(
@@ -412,8 +421,8 @@ class _MyHomePageState extends State<MyHomePage> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: const Text("<jml_brg> items"),
-          trailing: invState == inventoryWise.inventories[index]["id_inventory"]
+          subtitle: Text("$jml_brg ${AppLocalizations.of(context)!.items}"),
+          trailing: invState == id_inventory
               ? const Icon(
                   Icons.person,
                   color: Colors.blue,
@@ -707,6 +716,7 @@ class _MyHomePageState extends State<MyHomePage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.redAccent,
+      duration: Duration(seconds: 1),
     );
   }
 }
