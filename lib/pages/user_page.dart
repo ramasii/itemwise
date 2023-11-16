@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
@@ -86,6 +88,18 @@ class _userPageState extends State<userPage> {
     );
   }
 
+  // cek koneksi internet
+  Future<bool> isConnected() async {
+    var internet = await InternetConnectionCheckerPlus().hasConnection;
+    if (internet == false) {
+      print('Tidak terhubung ke internet');
+      return false;
+    } else {
+      print('Terhubung ke internet');
+      return true;
+    }
+  }
+
   TextButton _tombolLogInOut() {
     return TextButton(
         onPressed: () async {
@@ -101,64 +115,78 @@ class _userPageState extends State<userPage> {
               String password_user = passwordController.text.trim();
               String namaEmail =
                   RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
+              
+              // cek koneksi internet
+              bool tekonekKah = await isConnected();
+              if (tekonekKah) {
+                try {
+                  // coba hubungkan dengan api
+                  Response tryLogin = await userApiWise()
+                      .readByEmail(email_user, password_user);
+                  // ubah respon api ke json
+                  Map respon = jsonDecode(tryLogin.body);
 
-              // coba hubungkan dengan api
-              Response tryLogin =
-                  await userApiWise().readByEmail(email_user, password_user);
-              // ubah respon api ke json
-              Map respon = jsonDecode(tryLogin.body);
-
-              // pengondisian status respon
-              switch (tryLogin.statusCode) {
-                // login sukses: ubah data user di device berdasarkan respon
-                case 200:
-                  log(tryLogin.body);
-                  setState(() {
-                    userWise().edit(
-                        username_user: respon['result']['username_user'],
-                        email_user: respon['result']['email_user'],
-                        password_user: respon['result']['password_user'],
-                        id_user: respon['result']['id_user'],
-                        photo_user: respon['result']['photo_user']);
-                    userWise.isLoggedIn = true;
-                  });
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const MyHomePage()),
-                      (route) {
-                    return true;
-                  });
-                  break;
-                // password salah
-                case 406:
-                  log("password salah");
-                  // ignore: use_build_context_synchronously
-                  showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                            content: Text(
-                                AppLocalizations.of(context)!.wrongPassword),
-                          ));
-                  break;
-                // kalo user ga ada, maka tambahkan user
-                case 202:
-                  log("user ga ada");
-                  // fungsi ini sekaligus nambahin data user ke device
-                  await userApiWise().create(
-                      id_user: id_user,
-                      username_user: namaEmail,
-                      email_user: email_user,
-                      password_user: password_user);
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const MyHomePage()),
-                      (route) {
-                    return true;
-                  });
-                  break;
-                default:
-                  log('mungkin server eror: ${tryLogin.statusCode}');
+                  // pengondisian status respon
+                  switch (tryLogin.statusCode) {
+                    // login sukses: ubah data user di device berdasarkan respon
+                    case 200:
+                      log(tryLogin.body);
+                      setState(() {
+                        userWise().edit(
+                            username_user: respon['result']['username_user'],
+                            email_user: respon['result']['email_user'],
+                            password_user: respon['result']['password_user'],
+                            id_user: respon['result']['id_user'],
+                            photo_user: respon['result']['photo_user']);
+                        userWise.isLoggedIn = true;
+                      });
+                      Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const MyHomePage()),
+                          (route) {
+                        return true;
+                      });
+                      break;
+                    // password salah
+                    case 406:
+                      log("password salah");
+                      // ignore: use_build_context_synchronously
+                      showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                                content: Text(AppLocalizations.of(context)!
+                                    .wrongPassword),
+                              ));
+                      break;
+                    // kalo user ga ada, maka tambahkan user
+                    case 202:
+                      log("user ga ada");
+                      // fungsi ini sekaligus nambahin data user ke device
+                      await userApiWise().create(
+                          id_user: id_user,
+                          username_user: namaEmail,
+                          email_user: email_user,
+                          password_user: password_user);
+                      Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const MyHomePage()),
+                          (route) {
+                        return true;
+                      });
+                      break;
+                    default:
+                      log('mungkin server eror: ${tryLogin.statusCode}');
+                  }
+                } catch (e) {
+                  print(e);
+                }
+              } else {
+                showDialog(
+                    context: context,
+                    builder: (_) {
+                      return AlertDialog(
+                        content: Text(AppLocalizations.of(context)!.noInternet),
+                      );
+                    });
               }
-
-              log("$id_user");
             }
             log("$emailValid,$passwordValid");
           }

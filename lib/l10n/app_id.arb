@@ -39,5 +39,6 @@
     "enterValidEmail":"Masukkan e-mail dengan benar",
     "selectInv":"Pilih inventaris",
     "clearSelection":"Bersihkan pilihan",
-    "wrongPassword":"Password salah"
+    "wrongPassword":"Password salah",
+    "noInternet":"Tidak ada internet"
 }

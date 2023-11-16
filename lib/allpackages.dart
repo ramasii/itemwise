@@ -8,6 +8,7 @@ export 'package:image_picker/image_picker.dart';
 export 'package:image_size_getter/image_size_getter.dart';
 export 'dart:typed_data';
 export 'package:device_info_plus/device_info_plus.dart';
+export 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 export './utils/devicedata_utils.dart';
 export './utils/itemwise_utils.dart';

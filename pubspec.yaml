@@ -21,6 +21,7 @@ dependencies:
   image_size_getter: any
   device_info_plus: any
   http: any
+  internet_connection_checker_plus: any
 
 dev_dependencies:
   flutter_test:
