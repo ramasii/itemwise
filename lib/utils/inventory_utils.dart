@@ -43,8 +43,15 @@ class inventoryWise {
     }
   }
 
+  List readByUser(String id_user) {
+    List inv =
+        inventories.where((element) => element['id_user'] == id_user).toList();
+    return inv;
+  }
+
   Map? readById(String id_inventory) {
-    Map? inv = inventories.firstWhere((element) => element["id_inventory"] == id_inventory,
+    Map? inv = inventories.firstWhere(
+        (element) => element["id_inventory"] == id_inventory,
         orElse: () => null);
     return inv;
   }

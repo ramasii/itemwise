@@ -17,8 +17,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
   bool isEdit = true;
   bool isEdited = false;
   bool isImgLscape = true;
-  String img = "";
   String? invDropdownValue;
+  String img = "";
+  String id_user =
+      userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
 
   final TextEditingController _itemNameController = TextEditingController();
   final TextEditingController _itemDescriptionController =
@@ -211,9 +213,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 children: [
                   // pilihan inventaris
                   DropdownButton(
-                      items: List.generate(inventoryWise.inventories.length,
+                      items: List.generate(inventoryWise().readByUser(id_user).length,
                           (index) {
-                        Map inv = inventoryWise.inventories[index];
+                        Map inv = inventoryWise().readByUser(id_user)[index];
                         return DropdownMenuItem(
                           value: inv["id_inventory"],
                           child: Container(

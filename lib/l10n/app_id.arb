@@ -38,6 +38,6 @@
     "max50Characters":"Maksimal 50 karakter",
     "enterValidEmail":"Masukkan e-mail dengan benar",
     "selectInv":"Pilih inventaris",
-    "clearSelection":"Bersihkan pilihan"
-
+    "clearSelection":"Bersihkan pilihan",
+    "wrongPassword":"Password salah"
 }

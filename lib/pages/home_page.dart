@@ -86,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                             TextSpan(
-                              text: inventoryWise.inventories.firstWhere(
+                              text: inventoryWise().readByUser(id_user).firstWhere(
                                   (element) =>
                                       element["id_inventory"] ==
                                       invState)["nama_inventory"],
@@ -281,17 +281,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Divider()
                 ],
               ),
-              if (inventoryWise.inventories.isNotEmpty)
+              if (inventoryWise().readByUser(id_user).isNotEmpty)
                 Expanded(
                   child: ListView(
                     controller: invScrollController,
-                    children: List.generate(inventoryWise.inventories.length,
+                    children: List.generate(inventoryWise().readByUser(id_user).length,
                         (index) {
                       return _inventoryTile(index, context);
                     }),
                   ),
                 ),
-              if (inventoryWise.inventories.isNotEmpty)
+              if (inventoryWise().readByUser(id_user).isNotEmpty)
                 if (invEditMode == false)
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -302,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-              if (inventoryWise.inventories.isEmpty)
+              if (inventoryWise().readByUser(id_user).isEmpty)
                 Text(
                   AppLocalizations.of(context)!.tapButtonToAddInventory,
                   style: TextStyle(
@@ -381,7 +381,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Row _inventoryTile(int index, BuildContext context) {
-    String id_inventory = inventoryWise.inventories[index]["id_inventory"];
+    String id_inventory = inventoryWise().readByUser(id_user)[index]["id_inventory"];
     int jml_brg = ItemWise().readByInventory(id_inventory, id_user).length;
     return Row(
       children: [
@@ -401,7 +401,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 var id = id_inventory;
                 setState(() {
                   // ubah isi textcontroller
-                  NamaInvController.text = inventoryWise.inventories.firstWhere(
+                  NamaInvController.text = inventoryWise().readByUser(id_user).firstWhere(
                       (element) =>
                           element["id_inventory"] == id)["nama_inventory"];
                 });
@@ -417,7 +417,7 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           },
           title: Text(
-            inventoryWise.inventories[index]["nama_inventory"],
+            inventoryWise().readByUser(id_user)[index]["nama_inventory"],
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -634,13 +634,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<dynamic> deleteInvDialog(BuildContext context, String id) {
     var idx =
-        inventoryWise.inventories.indexWhere((e) => e["id_inventory"] == id);
+        inventoryWise().readByUser(id_user).indexWhere((e) => e["id_inventory"] == id);
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           content: Text(
-              "${AppLocalizations.of(context)!.delete} \"${inventoryWise.inventories[idx]["nama_inventory"]}\"?"),
+              "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readByUser(id_user)[idx]["nama_inventory"]}\"?"),
           actions: <Widget>[
             // tombol cancel
             TextButton(

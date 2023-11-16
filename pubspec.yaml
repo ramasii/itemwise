@@ -20,6 +20,7 @@ dependencies:
   image_picker: any
   image_size_getter: any
   device_info_plus: any
+  http: any
 
 dev_dependencies:
   flutter_test:

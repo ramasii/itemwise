@@ -12,5 +12,6 @@ export 'package:device_info_plus/device_info_plus.dart';
 export './utils/devicedata_utils.dart';
 export './utils/itemwise_utils.dart';
 export './utils/inventory_utils.dart';
-export 'package:itemwise/utils/user_utils.dart';
+export './utils/user_utils.dart';
+export './apis/userapi_utils.dart';
 export './functions/functions.dart';
