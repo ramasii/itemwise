@@ -20,6 +20,7 @@ class _SplashPageState extends State<SplashPage>
     inventoryWise().read();
     userWise().read();
     ItemWise().read();
+    authapi().loadAuth();
     checkDeviceId();
 
     // anim

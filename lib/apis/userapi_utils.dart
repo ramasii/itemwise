@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class userApiWise {
-  String url = "http://localhost:8003/xiirpl1_03/api/users";
+  String url = "${anu.emm}/users";
 
   create(
       {String? id_user,

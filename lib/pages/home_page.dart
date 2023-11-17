@@ -1,5 +1,6 @@
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
+import 'package:itemwise/apis/inventoryapi_utils.dart';
 import 'pages.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -109,14 +110,33 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : null,
         actions: selectedItems.isEmpty
             ? [
-                PopupMenuButton(onSelected: (value) {
+                PopupMenuButton(onSelected: (value) async {
                   switch (value) {
                     case "profil":
-                      log("msg2");
+                      log("profil");
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const userPage()));
+                      break;
+                    case "ekspor":
+                      log("ekspor aset");
+                      var terkonek = await isConnected();
+                      List inv = inventoryWise().readByUser(id_user);
+
+                      if (inventoryWise().readByUser(id_user).isNotEmpty ||
+                          ItemWise().readByUser(id_user).isNotEmpty) {
+                        if (terkonek && userWise.isLoggedIn) {
+                          for (var element in inv) {
+                            await inventoryApiWise().create(
+                                id_inventory: element["id_inventory"],
+                                id_user: element["id_user"],
+                                nama_inventory: element["nama_inventory"]);
+                          }
+                          // TODO LANJUTKAN BACKUP BARANG
+                        }
+                      }
+                      // inventoryApiWise().create(id_inventory: )
                       break;
                     default:
                   }
@@ -134,6 +154,18 @@ class _MyHomePageState extends State<MyHomePage> {
                             Text(AppLocalizations.of(context)!.profile)
                           ],
                         )),
+                    PopupMenuItem(
+                        value: "ekspor",
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.backup_rounded),
+                            Container(
+                              width: 10,
+                            ),
+                            Text("Cadangkan")
+                          ],
+                        ))
                   ];
                 })
               ]
@@ -194,6 +226,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //-----------------------------------------------------------------------------//
+  // cek koneksi internet
+  Future<bool> isConnected() async {
+    var internet = await InternetConnectionCheckerPlus().hasConnection;
+    if (internet == false) {
+      print('Tidak terhubung ke internet');
+      return false;
+    } else {
+      print('Terhubung ke internet');
+      return true;
+    }
+  }
 
   SafeArea _homeDrawer(BuildContext context) {
     return SafeArea(
