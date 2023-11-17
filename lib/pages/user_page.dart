@@ -20,6 +20,8 @@ class _userPageState extends State<userPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  final connection = InternetConnectionCheckerPlus();
+
   bool emailValid = false;
   bool passwordValid = false;
 
@@ -90,7 +92,7 @@ class _userPageState extends State<userPage> {
 
   // cek koneksi internet
   Future<bool> isConnected() async {
-    var internet = await InternetConnectionCheckerPlus().hasConnection;
+    var internet = await connection.hasConnection;
     if (internet == false) {
       print('Tidak terhubung ke internet');
       return false;
@@ -115,7 +117,7 @@ class _userPageState extends State<userPage> {
               String password_user = passwordController.text.trim();
               String namaEmail =
                   RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
-              
+
               // cek koneksi internet
               bool tekonekKah = await isConnected();
               if (tekonekKah) {

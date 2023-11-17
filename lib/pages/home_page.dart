@@ -86,8 +86,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                             TextSpan(
-                              text: inventoryWise().readByUser(id_user).firstWhere(
-                                  (element) =>
+                              text: inventoryWise()
+                                  .readByUser(id_user)
+                                  .firstWhere((element) =>
                                       element["id_inventory"] ==
                                       invState)["nama_inventory"],
                               style: const TextStyle(fontSize: 13),
@@ -172,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ))
               ],
       ),
-      body: ItemWise().readByInventory(invState,id_user).isNotEmpty
+      body: ItemWise().readByInventory(invState, id_user).isNotEmpty
           ? Padding(
               padding: const EdgeInsets.only(top: 10),
               child: listItems(context))
@@ -236,10 +237,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       // edit
                       IconButton(
                         onPressed: () {
-                          log("ngedit");
-                          setState(() {
-                            invEditMode = !invEditMode;
-                          });
+                          if (inventoryWise().readByUser(id_user).isNotEmpty) {
+                            log("ngedit");
+                            setState(() {
+                              invEditMode = !invEditMode;
+                            });
+                          }
                         },
                         icon: Icon(
                           invEditMode ? Icons.edit : Icons.edit_off_rounded,
@@ -285,8 +288,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(
                   child: ListView(
                     controller: invScrollController,
-                    children: List.generate(inventoryWise().readByUser(id_user).length,
-                        (index) {
+                    children: List.generate(
+                        inventoryWise().readByUser(id_user).length, (index) {
                       return _inventoryTile(index, context);
                     }),
                   ),
@@ -381,7 +384,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Row _inventoryTile(int index, BuildContext context) {
-    String id_inventory = inventoryWise().readByUser(id_user)[index]["id_inventory"];
+    String id_inventory =
+        inventoryWise().readByUser(id_user)[index]["id_inventory"];
     int jml_brg = ItemWise().readByInventory(id_inventory, id_user).length;
     return Row(
       children: [
@@ -401,8 +405,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 var id = id_inventory;
                 setState(() {
                   // ubah isi textcontroller
-                  NamaInvController.text = inventoryWise().readByUser(id_user).firstWhere(
-                      (element) =>
+                  NamaInvController.text = inventoryWise()
+                      .readByUser(id_user)
+                      .firstWhere((element) =>
                           element["id_inventory"] == id)["nama_inventory"];
                 });
                 invNameDialog(context, id_inventory, "edit");
@@ -633,8 +638,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<dynamic> deleteInvDialog(BuildContext context, String id) {
-    var idx =
-        inventoryWise().readByUser(id_user).indexWhere((e) => e["id_inventory"] == id);
+    var idx = inventoryWise()
+        .readByUser(id_user)
+        .indexWhere((e) => e["id_inventory"] == id);
     return showDialog(
       context: context,
       builder: (BuildContext context) {
