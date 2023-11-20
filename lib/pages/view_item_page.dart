@@ -70,16 +70,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (isEdited) {
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const MyHomePage()),
-              (route) => false);
-          return false;
-        } else {
-          Navigator.of(context).pop(true);
-          return false;
-        }
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (_) => MyHomePage(
+                      id_inv: widget.invState,
+                    )),
+            (route) => false);
+        return false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -89,7 +87,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
               if (isEdited) {
                 Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const MyHomePage()),
+                    MaterialPageRoute(
+                        builder: (_) => MyHomePage(
+                              id_inv: widget.invState,
+                            )),
                     (route) => false);
               } else {
                 Navigator.of(context).pop();
@@ -213,8 +214,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 children: [
                   // pilihan inventaris
                   DropdownButton(
-                      items: List.generate(inventoryWise().readByUser(id_user).length,
-                          (index) {
+                      items: List.generate(
+                          inventoryWise().readByUser(id_user).length, (index) {
                         Map inv = inventoryWise().readByUser(id_user)[index];
                         return DropdownMenuItem(
                           value: inv["id_inventory"],
@@ -570,7 +571,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
               // ignore: use_build_context_synchronously
               Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (_) => const MyHomePage()),
+                  MaterialPageRoute(
+                      builder: (_) => MyHomePage(
+                            id_inv: widget.invState,
+                          )),
                   (route) => false);
             }
             // edit item

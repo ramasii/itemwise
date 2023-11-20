@@ -14,7 +14,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<String> selectedItems = [];
-  String invState = "all";
+  late String invState;
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
   TextEditingController NamaInvController = TextEditingController();
@@ -30,6 +30,8 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     log('in homePage');
     checkDeviceId();
+    invState = widget.id_inv ?? "all";
+    log("WOIIII${widget.id_inv}$invState");
   }
 
   void checkDeviceId() async {
@@ -122,17 +124,22 @@ class _MyHomePageState extends State<MyHomePage> {
                       log("ekspor aset");
                       var terkonek = await isConnected();
                       List inv = inventoryWise().readByUser(id_user);
+                      List itm = ItemWise().readByUser(id_user);
 
                       if (inventoryWise().readByUser(id_user).isNotEmpty ||
                           ItemWise().readByUser(id_user).isNotEmpty) {
                         if (terkonek && userWise.isLoggedIn) {
+                          // bakcup inventory
                           for (var element in inv) {
                             await inventoryApiWise().create(
                                 id_inventory: element["id_inventory"],
                                 id_user: element["id_user"],
                                 nama_inventory: element["nama_inventory"]);
                           }
-                          // TODO LANJUTKAN BACKUP BARANG
+                          // backup barang
+                          for (var element in itm) {
+                            await itemApiWise().create(element['id_barang']);
+                          }
                         }
                       }
                       // inventoryApiWise().create(id_inventory: )
@@ -583,6 +590,7 @@ class _MyHomePageState extends State<MyHomePage> {
               MaterialPageRoute(
                   builder: (ctx) => ViewItemPage(
                         itemMap: barang,
+                        invState: invState == "all" ? null : invState,
                       )));
         } else {
           if (selectedItems.contains(id)) {

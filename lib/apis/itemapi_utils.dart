@@ -19,9 +19,9 @@ class itemApiWise {
     String kode_barang = item['kode_barang'];
     String nama_barang = item['nama_barang'];
     String catatan = item['catatan'];
-    String stok_barang = item['stok_barang'];
-    String harga_beli = item['harga_beli'];
-    String harga_jual = item['harga_jual'];
+    int stok_barang = item['stok_barang'];
+    int harga_beli = item['harga_beli'];
+    int harga_jual = item['harga_jual'];
     String photo_barang = item['photo_barang'];
     String added = item['added'];
     String edited = item['id_inventory'];
