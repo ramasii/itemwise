@@ -169,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Container(
                               width: 10,
                             ),
-                            Text("Cadangkan")
+                            Text(AppLocalizations.of(context)!.bakcup)
                           ],
                         ))
                   ];

@@ -40,5 +40,6 @@
     "selectInv":"Pilih inventaris",
     "clearSelection":"Bersihkan pilihan",
     "wrongPassword":"Password salah",
-    "noInternet":"Tidak ada internet"
+    "noInternet":"Tidak ada internet",
+    "bakcup":"Cadangkan"
 }
