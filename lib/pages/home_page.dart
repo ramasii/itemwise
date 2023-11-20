@@ -1,6 +1,5 @@
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
-import 'package:itemwise/apis/inventoryapi_utils.dart';
 import 'pages.dart';
 
 class MyHomePage extends StatefulWidget {
