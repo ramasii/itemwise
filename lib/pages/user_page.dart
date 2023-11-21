@@ -105,6 +105,14 @@ class _userPageState extends State<userPage> {
   TextButton _tombolLogInOut() {
     return TextButton(
         onPressed: () async {
+          // berikan loading
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) => Center(
+                    child: CircularProgressIndicator(),
+                  ));
+
           // login
           if (userWise.isLoggedIn == false) {
             log("login");
@@ -142,6 +150,10 @@ class _userPageState extends State<userPage> {
                             photo_user: respon['result']['photo_user']);
                         userWise.isLoggedIn = true;
                       });
+
+                      // tutup loading
+                      Navigator.pop(context);
+
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const MyHomePage()),
                           (route) {
@@ -151,6 +163,9 @@ class _userPageState extends State<userPage> {
                     // password salah
                     case 406:
                       log("password salah");
+                      // tutup loading
+                      Navigator.pop(context);
+
                       // ignore: use_build_context_synchronously
                       showDialog(
                           context: context,
@@ -168,6 +183,10 @@ class _userPageState extends State<userPage> {
                           username_user: namaEmail,
                           email_user: email_user,
                           password_user: password_user);
+
+                      // tutup loading
+                      Navigator.pop(context);
+
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const MyHomePage()),
                           (route) {
@@ -200,6 +219,8 @@ class _userPageState extends State<userPage> {
               emailController.clear();
               passwordController.clear();
             });
+            // tutup loading
+            Navigator.pop(context);
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const MyHomePage()), (route) {
               return true;

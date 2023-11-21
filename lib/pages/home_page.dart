@@ -121,28 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               builder: (context) => const userPage()));
                       break;
                     case "ekspor":
-                      log("ekspor aset");
-                      var terkonek = await isConnected();
-                      List inv = inventoryWise().readByUser(id_user);
-                      List itm = ItemWise().readByUser(id_user);
-
-                      if (inventoryWise().readByUser(id_user).isNotEmpty ||
-                          ItemWise().readByUser(id_user).isNotEmpty) {
-                        if (terkonek && userWise.isLoggedIn) {
-                          // bakcup inventory
-                          for (var element in inv) {
-                            await inventoryApiWise().create(
-                                id_inventory: element["id_inventory"],
-                                id_user: element["id_user"],
-                                nama_inventory: element["nama_inventory"]);
-                          }
-                          // backup barang
-                          for (var element in itm) {
-                            await itemApiWise().create(element['id_barang']);
-                          }
-                        }
-                      }
-                      // inventoryApiWise().create(id_inventory: )
+                      await backupAsset();
+                      Navigator.pop(context);
                       break;
                     default:
                   }
@@ -153,25 +133,30 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.account_box_rounded),
+                            Icon(userWise.isLoggedIn
+                                ? Icons.account_box_rounded
+                                : Icons.login_rounded),
                             Container(
                               width: 10,
                             ),
-                            Text(AppLocalizations.of(context)!.profile)
+                            Text(userWise.isLoggedIn
+                                ? AppLocalizations.of(context)!.profile
+                                : AppLocalizations.of(context)!.login)
                           ],
                         )),
-                    PopupMenuItem(
-                        value: "ekspor",
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.backup_rounded),
-                            Container(
-                              width: 10,
-                            ),
-                            Text(AppLocalizations.of(context)!.bakcup)
-                          ],
-                        ))
+                    if (userWise.isLoggedIn)
+                      PopupMenuItem(
+                          value: "ekspor",
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.backup_rounded),
+                              Container(
+                                width: 10,
+                              ),
+                              Text(AppLocalizations.of(context)!.bakcup)
+                            ],
+                          ))
                   ];
                 })
               ]
@@ -242,6 +227,42 @@ class _MyHomePageState extends State<MyHomePage> {
       print('Terhubung ke internet');
       return true;
     }
+  }
+
+  Future backupAsset() async {
+    log("ekspor aset");
+
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    var terkonek = await isConnected();
+    List inv = inventoryWise().readByUser(id_user);
+    List itm = ItemWise().readByUser(id_user);
+
+    if (inventoryWise().readByUser(id_user).isNotEmpty ||
+        ItemWise().readByUser(id_user).isNotEmpty) {
+      if (terkonek && userWise.isLoggedIn) {
+        // bakcup inventory
+        for (var element in inv) {
+          await inventoryApiWise().create(
+              id_inventory: element["id_inventory"],
+              id_user: element["id_user"],
+              nama_inventory: element["nama_inventory"]);
+        }
+        // backup barang
+        for (var element in itm) {
+          await itemApiWise().create(element['id_barang']);
+        }
+      }
+    }
+
+    log("bakcup func done");
   }
 
   SafeArea _homeDrawer(BuildContext context) {
