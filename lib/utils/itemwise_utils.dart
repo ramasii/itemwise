@@ -147,4 +147,24 @@ class ItemWise {
     // simpan items di device
     await prefs.setString("items", encoded);
   }
+
+  clear() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    items.clear();
+    // encode items
+    var encoded = jsonEncode(items);
+    // simpan items di device
+    await prefs.setString("items", encoded);
+  }
+
+  setAll(List itms) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    items = itms;
+    // encode items
+    var encoded = jsonEncode(items);
+    // simpan items di device
+    await prefs.setString("items", encoded);
+  }
 }

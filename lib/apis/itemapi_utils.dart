@@ -62,4 +62,50 @@ class itemApiWise {
       print(e);
     }
   }
+
+  read() async {
+    log("START: IMPORT CONNECT TO SERVER");
+
+    try {
+      var response = await http.get(Uri.parse("$url/byUser"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log("sukses");
+          var itms = jsonDecode(response.body);
+          log("$itms");
+
+          // clear ItemWise
+          await ItemWise().clear();
+          // ubah data ItemWise
+          await ItemWise().setAll(itms);
+          break;
+        case 401:
+          log("token expired");
+          // ambil token baru
+          await authapi().auth();
+          // impor ulang
+          read();
+          break;
+        case 403:
+          // auth baru
+          log("auth baru");
+          if (response.body == "token invalid") {
+            await authapi().auth();
+            // impor ulang
+            read();
+          } else if (response.body == "token not found") {
+            await authapi().auth();
+            // impor ulang
+            read();
+          }
+          break;
+        default:
+          log(response.statusCode.toString());
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 }

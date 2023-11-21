@@ -297,16 +297,17 @@ class _MyHomePageState extends State<MyHomePage> {
     var terkonek = await isConnected();
 
     if (terkonek && userWise.isLoggedIn) {
-        // load aset dari cloud db
-        await inventoryApiWise().read();
-        // TODO: load barang
+      // load inventory
+      await inventoryApiWise().read();
+      // load barang
+      await itemApiWise().read();
 
-        // tutup loading
-        setState(() {
+      // tutup loading
+      setState(() {
         // ignore: use_build_context_synchronously
-          Navigator.pop(context);
-        });
-      }
+        Navigator.pop(context);
+      });
+    }
 
     log("load func done");
   }
