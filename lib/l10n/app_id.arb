@@ -41,5 +41,6 @@
     "clearSelection":"Bersihkan pilihan",
     "wrongPassword":"Password salah",
     "noInternet":"Tidak ada internet",
-    "bakcup":"Cadangkan"
+    "bakcup":"Cadangkan",
+    "loadData":"Muat data"
 }

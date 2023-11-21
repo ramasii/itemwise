@@ -87,4 +87,26 @@ class inventoryWise {
     // simpan str di internal
     await prefs.setString('inventories', str);
   }
+
+  clear() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // bersihkan inventories
+    inventories.clear();
+    // ubah inventories menjadi String
+    String str = jsonEncode(inventories);
+    // simpan str di internal
+    await prefs.setString('inventories', str);
+  }
+
+  setAll(List invs) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // bersihkan inventories
+    inventories = invs;
+    // ubah inventories menjadi String
+    String str = jsonEncode(inventories);
+    // simpan str di internal
+    await prefs.setString('inventories', str);
+  }
 }

@@ -122,7 +122,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       break;
                     case "ekspor":
                       await backupAsset();
-                      Navigator.pop(context);
+                      break;
+                    case "impor":
+                      await loadAsset();
                       break;
                     default:
                   }
@@ -155,6 +157,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                 width: 10,
                               ),
                               Text(AppLocalizations.of(context)!.bakcup)
+                            ],
+                          )),
+                    if (userWise.isLoggedIn)
+                      PopupMenuItem(
+                          value: "impor",
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.download_rounded),
+                              Container(
+                                width: 10,
+                              ),
+                              Text(AppLocalizations.of(context)!.loadData)
                             ],
                           ))
                   ];
@@ -259,10 +274,41 @@ class _MyHomePageState extends State<MyHomePage> {
         for (var element in itm) {
           await itemApiWise().create(element['id_barang']);
         }
+        // tutup loading
+        Navigator.pop(context);
       }
     }
 
     log("bakcup func done");
+  }
+
+  Future loadAsset() async {
+    log("load aset");
+
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    var terkonek = await isConnected();
+
+    if (terkonek && userWise.isLoggedIn) {
+        // load aset dari cloud db
+        await inventoryApiWise().read();
+        // TODO: load barang
+
+        // tutup loading
+        setState(() {
+        // ignore: use_build_context_synchronously
+          Navigator.pop(context);
+        });
+      }
+
+    log("load func done");
   }
 
   SafeArea _homeDrawer(BuildContext context) {
