@@ -89,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             TextSpan(
                               text: inventoryWise()
-                                  .readByUser(id_user)
+                                  .readByUser()
                                   .firstWhere((element) =>
                                       element["id_inventory"] ==
                                       invState)["nama_inventory"],
@@ -257,25 +257,20 @@ class _MyHomePageState extends State<MyHomePage> {
         });
 
     var terkonek = await isConnected();
-    List inv = inventoryWise().readByUser(id_user);
-    List itm = ItemWise().readByUser(id_user);
+    List inv = inventoryWise().readByUser();
+    List itm = ItemWise().readByUser();
 
-    if (inventoryWise().readByUser(id_user).isNotEmpty ||
-        ItemWise().readByUser(id_user).isNotEmpty) {
+    if (inventoryWise().readByUser().isNotEmpty ||
+        ItemWise().readByUser().isNotEmpty) {
       if (terkonek && userWise.isLoggedIn) {
         // bakcup inventory
-        for (var element in inv) {
-          await inventoryApiWise().create(
-              id_inventory: element["id_inventory"],
-              id_user: element["id_user"],
-              nama_inventory: element["nama_inventory"]);
-        }
+        await inventoryApiWise().create();
         // backup barang
-        for (var element in itm) {
-          await itemApiWise().create(element['id_barang']);
-        }
+        await itemApiWise().create();
         // tutup loading
-        Navigator.pop(context);
+        setState(() {
+          Navigator.pop(context);
+        });
       }
     }
 
@@ -307,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         // ignore: use_build_context_synchronously
         Navigator.pop(context);
-        log(ItemWise().readByUser(id_user).toString());
+        log(ItemWise().readByUser().toList().toString());
       });
     }
 
@@ -356,7 +351,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       // edit
                       IconButton(
                         onPressed: () {
-                          if (inventoryWise().readByUser(id_user).isNotEmpty) {
+                          if (inventoryWise().readByUser().isNotEmpty) {
                             log("ngedit");
                             setState(() {
                               invEditMode = !invEditMode;
@@ -403,17 +398,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Divider()
                 ],
               ),
-              if (inventoryWise().readByUser(id_user).isNotEmpty)
+              if (inventoryWise().readByUser().isNotEmpty)
                 Expanded(
                   child: ListView(
                     controller: invScrollController,
                     children: List.generate(
-                        inventoryWise().readByUser(id_user).length, (index) {
+                        inventoryWise().readByUser().length, (index) {
                       return _inventoryTile(index, context);
                     }),
                   ),
                 ),
-              if (inventoryWise().readByUser(id_user).isNotEmpty)
+              if (inventoryWise().readByUser().isNotEmpty)
                 if (invEditMode == false)
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -424,7 +419,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-              if (inventoryWise().readByUser(id_user).isEmpty)
+              if (inventoryWise().readByUser().isEmpty)
                 Text(
                   AppLocalizations.of(context)!.tapButtonToAddInventory,
                   style: TextStyle(
@@ -504,7 +499,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Row _inventoryTile(int index, BuildContext context) {
     String id_inventory =
-        inventoryWise().readByUser(id_user)[index]["id_inventory"];
+        inventoryWise().readByUser()[index]["id_inventory"];
     int jml_brg = ItemWise().readByInventory(id_inventory, id_user).length;
     return Row(
       children: [
@@ -525,7 +520,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   // ubah isi textcontroller
                   NamaInvController.text = inventoryWise()
-                      .readByUser(id_user)
+                      .readByUser()
                       .firstWhere((element) =>
                           element["id_inventory"] == id)["nama_inventory"];
                 });
@@ -541,7 +536,7 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           },
           title: Text(
-            inventoryWise().readByUser(id_user)[index]["nama_inventory"],
+            inventoryWise().readByUser()[index]["nama_inventory"],
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -585,7 +580,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           List brgs = invState == "all"
-              ? ItemWise().readByUser(id_user)
+              ? ItemWise().readByUser()
               : ItemWise().readByInventory(invState, id_user);
           return Column(
             children: List.generate(brgs.length, (index) {
@@ -759,14 +754,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<dynamic> deleteInvDialog(BuildContext context, String id) {
     var idx = inventoryWise()
-        .readByUser(id_user)
+        .readByUser()
         .indexWhere((e) => e["id_inventory"] == id);
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           content: Text(
-              "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readByUser(id_user)[idx]["nama_inventory"]}\"?"),
+              "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readByUser()[idx]["nama_inventory"]}\"?"),
           actions: <Widget>[
             // tombol cancel
             TextButton(

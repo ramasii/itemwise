@@ -4,15 +4,16 @@ import 'package:http/http.dart' as http;
 class inventoryApiWise {
   String url = "${anu.emm}/inventory";
 
-  create(
-      {String? id_inventory, String? id_user, String? nama_inventory}) async {
+  create() async {
     log("backup inv");
+    // log(jsonEncode(inventoryWise.inventories));
 
     try {
       var response = await http.post(
           Uri.parse(
-              "$url/add?id_inventory=$id_inventory&id_user=$id_user&nama_inventory=$nama_inventory"),
+              "$url/addBulk?invs=${jsonEncode(inventoryWise().readByUser())}"),
           headers: {"authorization": authapi.authorization});
+
       switch (response.statusCode) {
         case 200:
           log("sukses");
@@ -22,10 +23,7 @@ class inventoryApiWise {
           // ambil token baru
           await authapi().auth();
           // tambahkan ulang
-          await create(
-              id_inventory: id_inventory,
-              id_user: id_user,
-              nama_inventory: nama_inventory);
+          await create();
           break;
         case 403:
           // auth baru
@@ -33,17 +31,11 @@ class inventoryApiWise {
           if (response.body == "token invalid") {
             await authapi().auth();
             // tambah ulang
-            await create(
-                id_inventory: id_inventory,
-                id_user: id_user,
-                nama_inventory: nama_inventory);
+            await create();
           } else if (response.body == "token not found") {
             await authapi().auth();
             // tambah ulang
-            await create(
-                id_inventory: id_inventory,
-                id_user: id_user,
-                nama_inventory: nama_inventory);
+            await create();
           }
           break;
         default:

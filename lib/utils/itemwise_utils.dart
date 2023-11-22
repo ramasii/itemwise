@@ -83,7 +83,8 @@ class ItemWise {
     }
   }
 
-  List readByUser(String id_user) {
+  List readByUser() {
+    String id_user = userWise.userData['id_user'];
     var filtered = items.where((element) => element["id_user"] == id_user);
     return filtered.toList();
   }
@@ -149,6 +150,7 @@ class ItemWise {
   }
 
   clear() async {
+    log("DONE CLEAR ITEMS");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     items.clear();
@@ -156,9 +158,11 @@ class ItemWise {
     var encoded = jsonEncode(items);
     // simpan items di device
     await prefs.setString("items", encoded);
+    log("DONE CLEAR ITEMS");
   }
 
   setAll(List itms) async {
+    log("DONE SETALL ITEMS");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     items = itms;
@@ -166,5 +170,6 @@ class ItemWise {
     var encoded = jsonEncode(items);
     // simpan items di device
     await prefs.setString("items", encoded);
+    log("DONE SETALL ITEMS");
   }
 }

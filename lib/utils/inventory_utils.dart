@@ -43,7 +43,8 @@ class inventoryWise {
     }
   }
 
-  List readByUser(String id_user) {
+  List readByUser() {
+    String id_user = userWise.userData['id_user'];
     List inv =
         inventories.where((element) => element['id_user'] == id_user).toList();
     return inv;

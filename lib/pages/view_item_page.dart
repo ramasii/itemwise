@@ -215,8 +215,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   // pilihan inventaris
                   DropdownButton(
                       items: List.generate(
-                          inventoryWise().readByUser(id_user).length, (index) {
-                        Map inv = inventoryWise().readByUser(id_user)[index];
+                          inventoryWise().readByUser().length, (index) {
+                        Map inv = inventoryWise().readByUser()[index];
                         return DropdownMenuItem(
                           value: inv["id_inventory"],
                           child: Container(
