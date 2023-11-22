@@ -300,12 +300,14 @@ class _MyHomePageState extends State<MyHomePage> {
       // load inventory
       await inventoryApiWise().read();
       // load barang
+      // await ItemWise().clear();
       await itemApiWise().read();
 
       // tutup loading
       setState(() {
         // ignore: use_build_context_synchronously
         Navigator.pop(context);
+        log(ItemWise().readByUser(id_user).toString());
       });
     }
 

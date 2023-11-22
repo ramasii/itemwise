@@ -55,7 +55,7 @@ class inventoryApiWise {
   }
 
   read() async {
-    log("START: IMPORT CONNECT TO SERVER");
+    log("START: IMPORT INVENTORY CONNECT TO SERVER");
 
     try {
       var response = await http.get(Uri.parse("$url/byUser"),

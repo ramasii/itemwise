@@ -12,10 +12,10 @@ class itemApiWise {
     Map item = ItemWise()
         .readByUser(id_user)
         .firstWhere((element) => element["id_barang"] == id_barang);
-
+    
     // id_barang uda ada
     // id_user uda ada
-    String id_inventory = item['id_inventory'];
+    String? id_inventory = item['id_inventory'];
     String kode_barang = item['kode_barang'];
     String nama_barang = item['nama_barang'];
     String catatan = item['catatan'];
@@ -24,13 +24,14 @@ class itemApiWise {
     int harga_jual = item['harga_jual'];
     String photo_barang = item['photo_barang'];
     String added = item['added'];
-    String edited = item['id_inventory'];
+    String edited = item['edited'];
 
     try {
-      var response = await http.post(Uri.parse(
-          "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang=$photo_barang&added=$added&edited=$edited"),
-          headers: {"authorization":authapi.authorization});
-      
+      var response = await http.post(
+          Uri.parse(
+              "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang=$photo_barang&added=$added&edited=$edited"),
+          headers: {"authorization": authapi.authorization});
+
       switch (response.statusCode) {
         case 200:
           log("sukses");
@@ -64,7 +65,7 @@ class itemApiWise {
   }
 
   read() async {
-    log("START: IMPORT CONNECT TO SERVER");
+    log("START: IMPORT ITEM CONNECT TO SERVER");
 
     try {
       var response = await http.get(Uri.parse("$url/byUser"),
