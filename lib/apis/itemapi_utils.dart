@@ -9,14 +9,17 @@ class itemApiWise {
   create() async {
     log("backup barang");
 
-    log(jsonEncode(ItemWise().readByUser()));
 
     try {
-      var response = await http.post(
-          Uri.parse(
-              "$url/addBulk?items=${jsonEncode(ItemWise.items)}"),
-          headers: {"authorization": authapi.authorization});
-
+      var enkodeItems =
+          Uri.encodeQueryComponent(jsonEncode(ItemWise().readByUser()));
+      var response =
+          await http.post(Uri.parse("$url/addBulk?items=$enkodeItems"),
+              // Uri.parse("$url/addBulk"),
+              headers: {
+            "Content-Type": "application/json",
+            "authorization": authapi.authorization,
+          });
       switch (response.statusCode) {
         case 200:
           log("sukses");
@@ -45,7 +48,7 @@ class itemApiWise {
           log(response.statusCode.toString());
       }
     } catch (e) {
-      print(e);
+      print("bakup brg: $e");
     }
   }
 

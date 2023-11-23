@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (isIdSaved == false) {
       var a = await DeviceInfoPlugin().deviceInfo;
       var b = a.data;
-      var c = '${b["deviceId"]}';
+      var c = '${b["deviceId"] ?? b["id"]}';
       await deviceData().edit(c);
       if (userWise.isLoggedIn == false) {
         id_user = c;
@@ -88,9 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                             TextSpan(
-                              text: inventoryWise()
-                                  .readByUser()
-                                  .firstWhere((element) =>
+                              text: inventoryWise().readByUser().firstWhere(
+                                  (element) =>
                                       element["id_inventory"] ==
                                       invState)["nama_inventory"],
                               style: const TextStyle(fontSize: 13),
@@ -234,8 +233,10 @@ class _MyHomePageState extends State<MyHomePage> {
   //-----------------------------------------------------------------------------//
   // cek koneksi internet
   Future<bool> isConnected() async {
-    var internet = await InternetConnectionCheckerPlus().hasConnection;
-    if (internet == false) {
+    var a = await InternetConnectionCheckerPlus.createInstance(
+        addresses: [AddressCheckOptions(Uri.parse('http://localhost:8003'))]);
+    var internet = await a.connectionStatus;
+    if (internet == InternetConnectionStatus.connected) {
       print('Tidak terhubung ke internet');
       return false;
     } else {
@@ -271,6 +272,16 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           Navigator.pop(context);
         });
+      } else {
+        // tutup loading
+        setState(() {
+          Navigator.pop(context);
+        });
+        showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+                  content: Text(AppLocalizations.of(context)!.noInternet),
+                ));
       }
     }
 
@@ -402,8 +413,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(
                   child: ListView(
                     controller: invScrollController,
-                    children: List.generate(
-                        inventoryWise().readByUser().length, (index) {
+                    children: List.generate(inventoryWise().readByUser().length,
+                        (index) {
                       return _inventoryTile(index, context);
                     }),
                   ),
@@ -498,8 +509,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Row _inventoryTile(int index, BuildContext context) {
-    String id_inventory =
-        inventoryWise().readByUser()[index]["id_inventory"];
+    String id_inventory = inventoryWise().readByUser()[index]["id_inventory"];
     int jml_brg = ItemWise().readByInventory(id_inventory, id_user).length;
     return Row(
       children: [
@@ -753,9 +763,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<dynamic> deleteInvDialog(BuildContext context, String id) {
-    var idx = inventoryWise()
-        .readByUser()
-        .indexWhere((e) => e["id_inventory"] == id);
+    var idx =
+        inventoryWise().readByUser().indexWhere((e) => e["id_inventory"] == id);
     return showDialog(
       context: context,
       builder: (BuildContext context) {

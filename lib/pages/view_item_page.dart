@@ -1,3 +1,4 @@
+import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
@@ -214,8 +215,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 children: [
                   // pilihan inventaris
                   DropdownButton(
-                      items: List.generate(
-                          inventoryWise().readByUser().length, (index) {
+                      items: List.generate(inventoryWise().readByUser().length,
+                          (index) {
                         Map inv = inventoryWise().readByUser()[index];
                         return DropdownMenuItem(
                           value: inv["id_inventory"],
@@ -400,7 +401,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(
-        source: ImageSource.gallery, maxHeight: 700);
+        source: ImageSource.gallery,
+        imageQuality: 25,
+        maxHeight: 500.0,
+        maxWidth: 500.0);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
@@ -554,12 +558,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
               int stok_barang = int.parse(stok == "" ? "0" : stok);
               int harga_beli = int.parse(hbli == "" ? "0" : hbli);
               int harga_jual = int.parse(hjal == "" ? "0" : hjal);
-              String id_user = userWise.userData["id_user"] != ""
+              String id_user = userWise.isLoggedIn
                   ? userWise.userData["id_user"]
                   : deviceData.id;
               String id_barang =
                   "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
               String? id_inventory = invDropdownValue;
+
+              log("id_user: $id_user");
 
               setState(() {
                 ItemWise().create(id_barang, id_user, nama_barang, stok_barang,

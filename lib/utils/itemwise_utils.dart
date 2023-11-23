@@ -84,7 +84,7 @@ class ItemWise {
   }
 
   List readByUser() {
-    String id_user = userWise.userData['id_user'];
+    String id_user = userWise.isLoggedIn?userWise.userData['id_user']:deviceData.id;
     var filtered = items.where((element) => element["id_user"] == id_user);
     return filtered.toList();
   }
