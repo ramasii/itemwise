@@ -354,6 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 "inv${DateTime.now().millisecondsSinceEpoch.toString()}";
                             setState(() {
                               invEditMode = false;
+                              NamaInvController.clear();
                             });
                             invNameDialog(context, id_inventory, "add");
                           },
@@ -446,7 +447,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<dynamic> invNameDialog(
       BuildContext context, String id_inventory, String mode) {
-    NamaInvController.clear();
     return showDialog(
         context: context,
         useRootNavigator: false,
@@ -495,6 +495,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         default:
                       }
                     });
+
                     NamaInvController.clear();
                     Navigator.pop(context);
                   }
@@ -528,6 +529,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 log("edit anu");
                 var id = id_inventory;
                 setState(() {
+                  // bersihkan isi textcontroller
+                  NamaInvController.clear();
                   // ubah isi textcontroller
                   NamaInvController.text = inventoryWise()
                       .readByUser()
@@ -612,7 +615,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Row(
             children: [
               Hero(
-                tag: "image$index",
+                tag: "image$id",
                 child: Container(
                   width: 70,
                   height: 70,
