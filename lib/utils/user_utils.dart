@@ -27,7 +27,8 @@ class userWise {
       String? username_user,
       String? email_user,
       String? photo_user,
-      String? password_user}) async {
+      String? password_user,
+      String? role}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // ubah data jika tidak null
@@ -36,6 +37,7 @@ class userWise {
     userData["email_user"] = email_user ?? userData["email_user"];
     userData["photo_user"] = photo_user ?? userData["photo_user"];
     userData["password_user"] = password_user ?? userData["password_user"];
+    userData["role"] = role ?? userData["role"];
 
     // encode userData & ubah isLoggedIn jadi true
     var encoded = jsonEncode(userData);
