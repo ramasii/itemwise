@@ -91,4 +91,26 @@ class inventoryApiWise {
       print(e);
     }
   }
+
+  readAll() async {
+    log("START get all inv data");
+    try {
+      var response = await http.get(Uri.parse("$url/"),headers: {
+        "authorization":authapi.authorization
+      });
+      switch (response.statusCode) {
+        case 200:
+          adminAccess.invList = jsonDecode(response.body);
+          break;
+        case 401:
+          await authapi().auth();
+          await readAll();
+          break;
+        default:
+          log("inventoryAPI: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("inventoryAPI: $e");
+    }
+  }
 }

@@ -9,7 +9,6 @@ class itemApiWise {
   create() async {
     log("backup barang");
 
-
     try {
       var enkodeItems =
           Uri.encodeQueryComponent(jsonEncode(ItemWise().readByUser()));
@@ -94,6 +93,27 @@ class itemApiWise {
       }
     } catch (e) {
       print("$e read()");
+    }
+  }
+
+  readAll() async {
+    log("START get all items data");
+    try {
+      var response = await http.get(Uri.parse("$url/"),
+          headers: {"authorization": authapi.authorization});
+      switch (response.statusCode) {
+        case 200:
+          adminAccess.invList = jsonDecode(response.body);
+          break;
+        case 401:
+          await authapi().auth();
+          await readAll();
+          break;
+        default:
+          log("itemAPI: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("itemAPI: $e");
     }
   }
 }

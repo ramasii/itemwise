@@ -127,6 +127,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       break;
                     case "adminPanel":
                       log("goto adminPanel");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AdminPanel()));
                       break;
                     default:
                   }
@@ -236,9 +240,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //-----------------------------------------------------------------------------//
   // cek koneksi internet
-  Future<bool> isConnected() async {
+  static Future<bool> isConnected() async {
     var a = await InternetConnectionCheckerPlus.createInstance(
-        addresses: [AddressCheckOptions(Uri.parse('http://localhost:8003'))]);
+        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
     var internet = await a.connectionStatus;
     if (internet == InternetConnectionStatus.connected) {
       print('Tidak terhubung ke internet');

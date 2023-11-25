@@ -58,8 +58,60 @@ class userApiWise {
     }
   }
 
-  void update() async {
-    //...
+  readAll() async {
+    log("START get all users data");
+    try {
+      var response = await http.get(Uri.parse("$url/"),
+          headers: {"authorization": authapi.authorization});
+      switch (response.statusCode) {
+        case 200:
+          adminAccess.userList = jsonDecode(response.body);
+          break;
+        case 401:
+          await authapi().auth();
+          await readAll();
+          break;
+        default:
+          log("userApiWise: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("userApiWise: $e");
+    }
+  }
+
+  update(
+      {String id_user = "",
+      String username_user = "",
+      String email_user = "",
+      String password_user = "",
+      String photo_user = "",
+      String role = ""}) async {
+    log("update userapi");
+    try {
+      var response = await http.put(
+          Uri.parse(
+              "$url/update?id_user=$id_user&username_user=$username_user&email_user=$email_user&password_user=$password_user&photo_user=$photo_user&role=$role"),
+          headers: {"authorization": authapi.authorization});
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth();
+          await update(
+              id_user: id_user,
+              username_user: username_user,
+              email_user: email_user,
+              password_user: password_user,
+              photo_user: photo_user,
+              role: role);
+          break;
+        default:
+          log("userApiWise: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   void delete() async {

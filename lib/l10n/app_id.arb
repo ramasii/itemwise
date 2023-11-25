@@ -43,5 +43,6 @@
     "noInternet":"Tidak ada internet",
     "bakcup":"Cadangkan",
     "loadData":"Muat data",
-    "adminPanel":"Jendela Admin"
+    "adminPanel":"Jendela Admin",
+    "update":"Update"
 }
