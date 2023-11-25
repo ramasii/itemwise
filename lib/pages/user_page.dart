@@ -20,7 +20,8 @@ class _userPageState extends State<userPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  final connection = InternetConnectionCheckerPlus();
+  final connection = InternetConnectionCheckerPlus.createInstance(
+      addresses: [AddressCheckOptions(Uri.parse("http://localhost:8003"))]);
 
   bool emailValid = false;
   bool passwordValid = false;
@@ -92,8 +93,8 @@ class _userPageState extends State<userPage> {
 
   // cek koneksi internet
   Future<bool> isConnected() async {
-    var internet = await connection.hasConnection;
-    if (internet == false) {
+    var internet = await connection.connectionStatus;
+    if (internet == ConnectionState.done) {
       print('Tidak terhubung ke internet');
       return false;
     } else {
@@ -201,6 +202,7 @@ class _userPageState extends State<userPage> {
                   print(e);
                 }
               } else {
+                Navigator.pop(context);
                 showDialog(
                     context: context,
                     builder: (_) {

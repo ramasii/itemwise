@@ -125,52 +125,43 @@ class _MyHomePageState extends State<MyHomePage> {
                     case "impor":
                       await loadAsset();
                       break;
+                    case "adminPanel":
+                      log("goto adminPanel");
+                      break;
                     default:
                   }
                 }, itemBuilder: (BuildContext context) {
                   return [
                     PopupMenuItem(
                         value: "profil",
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(userWise.isLoggedIn
+                        child: _menuItem(
+                            context,
+                            userWise.isLoggedIn
                                 ? Icons.account_box_rounded
-                                : Icons.login_rounded),
-                            Container(
-                              width: 10,
-                            ),
-                            Text(userWise.isLoggedIn
+                                : Icons.login_rounded,
+                            userWise.isLoggedIn
                                 ? AppLocalizations.of(context)!.profile
-                                : AppLocalizations.of(context)!.login)
-                          ],
-                        )),
+                                : AppLocalizations.of(context)!.login)),
                     if (userWise.isLoggedIn)
                       PopupMenuItem(
                           value: "ekspor",
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.backup_rounded),
-                              Container(
-                                width: 10,
-                              ),
-                              Text(AppLocalizations.of(context)!.bakcup)
-                            ],
-                          )),
+                          child: _menuItem(context, Icons.backup_rounded,
+                              AppLocalizations.of(context)!.bakcup)),
                     if (userWise.isLoggedIn)
                       PopupMenuItem(
                           value: "impor",
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.download_rounded),
-                              Container(
-                                width: 10,
-                              ),
-                              Text(AppLocalizations.of(context)!.loadData)
-                            ],
-                          ))
+                          child: _menuItem(context, Icons.download_rounded,
+                              AppLocalizations.of(context)!.loadData)),
+                    // akses khusus admean
+                    if (userWise.userData['role'] == "admin" &&
+                        userWise.isLoggedIn)
+                      PopupMenuItem(
+                        value: "adminPanel",
+                        child: _menuItem(
+                            context,
+                            Icons.admin_panel_settings_rounded,
+                            AppLocalizations.of(context)!.adminPanel),
+                      )
                   ];
                 })
               ]
@@ -227,6 +218,19 @@ class _MyHomePageState extends State<MyHomePage> {
         child: addButton(context),
         visible: selectedItems.isEmpty,
       ),
+    );
+  }
+
+  Row _menuItem(BuildContext context, IconData icon, String menuTitle) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon),
+        Container(
+          width: 10,
+        ),
+        Text(menuTitle)
+      ],
     );
   }
 

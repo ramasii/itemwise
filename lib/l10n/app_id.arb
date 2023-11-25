@@ -42,5 +42,6 @@
     "wrongPassword":"Password salah",
     "noInternet":"Tidak ada internet",
     "bakcup":"Cadangkan",
-    "loadData":"Muat data"
+    "loadData":"Muat data",
+    "adminPanel":"Jendela Admin"
 }

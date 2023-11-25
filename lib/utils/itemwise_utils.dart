@@ -95,11 +95,9 @@ class ItemWise {
       var filtered = items.where((element) =>
           element["id_inventory"] == id_inventory &&
           element["id_user"] == id_user);
-      log(filtered.isEmpty ? "readByInv: kosong" : "readByInv: ada");
       return filtered.toList();
     } else {
       var filtered = items.where((element) => element["id_user"] == id_user);
-      log(filtered.isEmpty ? "readByInv: kosong" : "readByInv: ada");
       return filtered.toList();
     }
   }
