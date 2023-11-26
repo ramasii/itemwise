@@ -15,10 +15,13 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.17.0
-
-
-
   cupertino_icons: ^1.0.2
+  shared_preferences: ^2.2.0
+  image_picker: any
+  image_size_getter: any
+  device_info_plus: any
+  http: any
+  internet_connection_checker_plus: any
 
 dev_dependencies:
   flutter_test:

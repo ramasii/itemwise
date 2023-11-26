@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:itemwise/allpackages.dart';
+import 'package:itemwise/pages/user_page.dart';
 import 'pages.dart';
 
 class SplashPage extends StatefulWidget {
@@ -6,13 +8,22 @@ class SplashPage extends StatefulWidget {
   _SplashPageState createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _radiusAnimation;
+  bool firstTime = true;
 
   @override
   void initState() {
     super.initState();
+    inventoryWise().read();
+    userWise().read();
+    ItemWise().read();
+    authapi().loadAuth();
+    checkDeviceId();
+
+    // anim
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -24,7 +35,8 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     );
 
     final Animatable<double> growAnimation = Tween<double>(begin: 0, end: 100);
-    final Animatable<double> shrinkAnimation = Tween<double>(begin: 100, end: 75);
+    final Animatable<double> shrinkAnimation =
+        Tween<double>(begin: 100, end: 75);
 
     _radiusAnimation = TweenSequence<double>([
       TweenSequenceItem(tween: growAnimation, weight: 1),
@@ -38,7 +50,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const MyHomePage(title: 'Item Wise'),
+              builder: (context) => deviceData.id != ""
+                  ? const MyHomePage(
+                      title: "Item Wise",
+                    )
+                  : const userPage() /* MyHomePage(title: 'Item Wise') */,
             ),
           );
         });
@@ -46,6 +62,24 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     });
 
     _animationController.forward();
+  }
+
+  void checkDeviceId() async {
+    var pernahBuka = await deviceData().isKeyAvailable("deviceId");
+    // A.K.A pertama kali buka,
+    // deviceId ini digunakan untuk pengganti idUser di atribut inv dan brg,
+    // ketika login nanti muncul dialog: (judul: "Pindahkan aset saat ini ke akun Anda?", msg: "Jika iya maka aset hanya bisa diakses ketika menggunakan akun ini, jika tidak maka aset hanya bisa diakses ketika tidak terhubung dengan akun apapun, harap pikirkan dengan bijak")
+
+    setState(() {
+      // ini kalo pertama kali
+      if (pernahBuka == false) {
+        firstTime = true;
+        log("pertama kali");
+      } else {
+        firstTime = false;
+        log("pernah buka");
+      }
+    });
   }
 
   @override
