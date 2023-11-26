@@ -307,6 +307,9 @@ class _MyHomePageState extends State<MyHomePage> {
             child: CircularProgressIndicator(),
           );
         });
+    log("${userWise.userData['email_user']}, ${userWise.userData['password_user']}");
+    await authapi().auth(
+        userWise.userData['email_user'], userWise.userData['password_user']);
 
     var terkonek = await isConnected();
 

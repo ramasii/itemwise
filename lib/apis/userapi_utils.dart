@@ -25,6 +25,8 @@ class userApiWise {
             password_user: password_user,
             id_user: id_user);
         userWise.isLoggedIn = true;
+        // langsung auth
+        await authapi().auth(email_user, password_user!);
       } else {
         log(response.statusCode.toString());
       }
@@ -68,7 +70,7 @@ class userApiWise {
           adminAccess.userList = jsonDecode(response.body);
           break;
         case 401:
-          await authapi().auth();
+          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
           await readAll();
           break;
         default:
@@ -97,7 +99,7 @@ class userApiWise {
           log(response.body);
           break;
         case 401:
-          await authapi().auth();
+          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
           await update(
               id_user: id_user,
               username_user: username_user,

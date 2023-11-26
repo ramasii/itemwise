@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 class authapi {
   static String authorization = "";
 
-  auth() async {
+  auth(String email_user, String password_user) async {
+    log("start auth: ${userWise.userData}");
     try {
       var response = await http.get(Uri.parse(
           "${anu.emm}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}"));
@@ -42,7 +43,7 @@ class authapi {
       log("auth ga ketemu");
       try {
         if (userWise.isLoggedIn) {
-          await auth();
+          await auth(userWise.userData['email_user'], userWise.userData['password_user']);
           log("coba auth");
         }
       } catch (e) {

@@ -26,7 +26,7 @@ class itemApiWise {
         case 401:
           log("token expired");
           // ambil token baru
-          await authapi().auth();
+          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
           // tambahkan ulang
           await create();
           break;
@@ -34,11 +34,11 @@ class itemApiWise {
           // auth baru
           log("auth baru");
           if (response.body == "token invalid") {
-            await authapi().auth();
+            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
             // tambah ulang
             await create();
           } else if (response.body == "token not found") {
-            await authapi().auth();
+            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
             // tambah ulang
             await create();
           }
@@ -71,7 +71,7 @@ class itemApiWise {
         case 401:
           log("token expired");
           // ambil token baru
-          await authapi().auth();
+          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
           // impor ulang
           read();
           break;
@@ -79,11 +79,11 @@ class itemApiWise {
           // auth baru
           log("auth baru");
           if (response.body == "token invalid") {
-            await authapi().auth();
+            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
             // impor ulang
             read();
           } else if (response.body == "token not found") {
-            await authapi().auth();
+            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
             // impor ulang
             read();
           }
@@ -103,10 +103,10 @@ class itemApiWise {
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
-          adminAccess.invList = jsonDecode(response.body);
+          adminAccess.itemList = jsonDecode(response.body);
           break;
         case 401:
-          await authapi().auth();
+          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
           await readAll();
           break;
         default:

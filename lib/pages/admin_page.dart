@@ -10,11 +10,16 @@ class AdminPanel extends StatefulWidget {
 }
 
 class _AdminPanelState extends State<AdminPanel> {
-  String tableState = "account";
+  String tableState = "user";
+  String userState = "";
+  // user
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
   TextEditingController usernameUser = TextEditingController();
   TextEditingController passwordUser = TextEditingController();
+  // inv
+  TextEditingController idInv = TextEditingController();
+  TextEditingController namaInv = TextEditingController();
   String roleState = "";
   List role = ["user", "admin"];
   bool loading = true;
@@ -36,7 +41,7 @@ class _AdminPanelState extends State<AdminPanel> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _stateButton(Icons.account_circle, "account"),
+                _stateButton(Icons.account_circle, "user"),
                 _stateButton(Icons.inventory_2_rounded, "inventory"),
                 _stateButton(Icons.apps_rounded, "item"),
               ],
@@ -49,7 +54,7 @@ class _AdminPanelState extends State<AdminPanel> {
                   ? Container(
                       height: 100,
                       child: Center(child: CircularProgressIndicator()))
-                  : _controllUser(context),
+                  : _tableControlls(context),
             )
           ],
         ),
@@ -57,7 +62,115 @@ class _AdminPanelState extends State<AdminPanel> {
     );
   }
 
-  Column _controllUser(BuildContext context) {
+  Widget _tableControlls(BuildContext context) {
+    switch (tableState) {
+      case "user":
+        return _controllUser(context);
+      case "inventory":
+        return _controllInv(context);
+      // case "items":
+      //   break;
+      default:
+        return _controllUser(context);
+    }
+  }
+
+  Widget _controllInv(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(adminAccess.invList.length, (index) {
+        Map inv = adminAccess.invList[index];
+        Map user = adminAccess.userList.firstWhere(
+          (element) => element['id_user'] == inv['id_user'],
+        );
+        return Padding(
+          padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+          child: Column(
+            children: [
+              ListTile(
+                title: Text(
+                  inv['nama_inventory'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  user['email_user'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () {
+                  setState(() {
+                    idInv.text = inv['id_inventory'];
+                    idUser.text = inv['id_user'];
+                    namaInv.text = inv['nama_inventory'];
+                    userState = inv['id_user'];
+                  });
+                  _viewInv(context, inv);
+                },
+              ),
+              Divider(
+                indent: 50,
+                endIndent: 50,
+              )
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Future<dynamic> _viewInv(BuildContext context, Map inv) {
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(children: [
+                _fieldInfo(inv, "id_inventory", ctrler: idInv, enable: false),
+                Container(
+                  height: 20,
+                ),
+                _fieldInfo(inv, "nama_inventory", ctrler: namaInv),
+                _userDropDown(),
+                _updateButton(context, inv: inv)
+              ]),
+            ),
+          );
+        });
+  }
+
+  StatefulBuilder _userDropDown() {
+    return StatefulBuilder(builder: (((context, setState) {
+      return DropdownButton(
+          value: userState,
+          items: List.generate(adminAccess.userList.length, (index) {
+            Map user = adminAccess.userList[index];
+            return DropdownMenuItem(
+              value: user['id_user'],
+              child: Padding(
+                padding: EdgeInsets.all(0),
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width-155),
+                  child: Text(
+                    user['email_user'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            );
+          }),
+          onChanged: (value) {
+            log("userState berubah");
+            setState(() {
+              log("$value");
+              userState = (value) as String;
+            });
+          });
+    })));
+  }
+
+  Widget _controllUser(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(adminAccess.userList.length, (index) {
@@ -175,40 +288,55 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  TextButton(
-                      onPressed: () async {
-                        log("update");
-                        Navigator.pop(context);
-                        //loading
-                        showDialog(
-                            context: context,
-                            builder: (_) => Center(
-                                  child: CircularProgressIndicator(),
-                                ));
-                        await userApiWise().update(
-                          id_user: user['id_user'],
-                          username_user: usernameUser.text,
-                          email_user: emailUser.text,
-                          password_user: passwordUser.text,
-                          photo_user: user['photo_user'],
-                          role: roleState,
-                        );
-                        // selaraskan data dengan database
-                        await selaraskanData();
-                        //tutup loading
-                        setState(() {
-                          Navigator.pop(context);
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(AppLocalizations.of(context)!.update),
-                      ))
+                  _updateButton(context, user: user)
                 ],
               ),
             ),
           );
         });
+  }
+
+  TextButton _updateButton(BuildContext context,
+      {Map? user, Map? inv, Map? item}) {
+    return TextButton(
+        onPressed: () async {
+          log("update");
+          Navigator.pop(context);
+          //loading
+          showDialog(
+              context: context,
+              builder: (_) => Center(
+                    child: CircularProgressIndicator(),
+                  ));
+          // ini update user
+          if (user != null) {
+            await userApiWise().update(
+              id_user: user['id_user'],
+              username_user: usernameUser.text,
+              email_user: emailUser.text,
+              password_user: passwordUser.text,
+              photo_user: user['photo_user'],
+              role: roleState,
+            );
+          }
+          // ini update inv
+          else if (inv != null) {
+            await inventoryApiWise().update(
+                id_inventory: idInv.text,
+                id_user: userState,
+                nama_inventory: namaInv.text);
+          }
+          // selaraskan data dengan database
+          await selaraskanData();
+          //tutup loading
+          setState(() {
+            Navigator.pop(context);
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(AppLocalizations.of(context)!.update),
+        ));
   }
 
   StatefulBuilder _roleDropDown() {
@@ -269,9 +397,9 @@ class _AdminPanelState extends State<AdminPanel> {
             onPressed: () {
               setState(() {
                 switch (state) {
-                  case "account":
-                    log("set state to account controll");
-                    tableState = "account";
+                  case "user":
+                    log("set state to user controll");
+                    tableState = "user";
                     break;
                   case "inventory":
                     log("set state to inventory controll");

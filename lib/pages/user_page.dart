@@ -153,6 +153,8 @@ class _userPageState extends State<userPage> {
                         userWise.isLoggedIn = true;
                       });
 
+                      await authapi().auth(respon['result']['email_user'],
+                          respon['result']['password_user']);
                       // tutup loading
                       Navigator.pop(context);
 
