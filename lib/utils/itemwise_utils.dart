@@ -102,7 +102,7 @@ class ItemWise {
     }
   }
 
-  void update(String id_barang,
+  update(String id_barang,
       {String? id_user,
       String? id_inventory,
       String? nama_barang,

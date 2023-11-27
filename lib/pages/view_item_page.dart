@@ -223,7 +223,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           child: Container(
                               padding: const EdgeInsets.all(10),
                               width: MediaQuery.of(context).size.width / 2,
-                              child: Text(inv["nama_inventory"])),
+                              child: Text(inv["nama_inventory"],maxLines: 1, overflow: TextOverflow.ellipsis,)),
                         );
                       }),
                       elevation: 6,

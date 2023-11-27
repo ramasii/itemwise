@@ -12,6 +12,7 @@ class AdminPanel extends StatefulWidget {
 class _AdminPanelState extends State<AdminPanel> {
   String tableState = "user";
   String userState = "";
+  String? invState;
   // user
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
@@ -20,6 +21,16 @@ class _AdminPanelState extends State<AdminPanel> {
   // inv
   TextEditingController idInv = TextEditingController();
   TextEditingController namaInv = TextEditingController();
+  // item
+  TextEditingController idItem = TextEditingController();
+  TextEditingController namaItem = TextEditingController();
+  TextEditingController kodeItem = TextEditingController();
+  TextEditingController catatanItem = TextEditingController();
+  TextEditingController stokItem = TextEditingController();
+  TextEditingController hBliItem = TextEditingController();
+  TextEditingController hJalItem = TextEditingController();
+  String photoItem = "";
+
   String roleState = "";
   List role = ["user", "admin"];
   bool loading = true;
@@ -68,11 +79,273 @@ class _AdminPanelState extends State<AdminPanel> {
         return _controllUser(context);
       case "inventory":
         return _controllInv(context);
-      // case "items":
-      //   break;
+      case "item":
+        return _coontrollItems(context);
       default:
         return _controllUser(context);
     }
+  }
+
+  Widget _coontrollItems(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(adminAccess.itemList.length, (index) {
+        Map item = adminAccess.itemList[index];
+        Map inv = adminAccess.invList.firstWhere(
+          (element) => element['id_user'] == item['id_user'],
+        );
+        Map user = adminAccess.userList.firstWhere(
+          (element) => element['id_user'] == item['id_user'],
+        );
+        return Padding(
+          padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
+          child: Column(
+            children: [
+              ListTile(
+                leading:
+                    item['photo_barang'] == ""
+                        ? Icon(Icons.photo_album_rounded)
+                        : Container(
+                            height: 70,
+                            width: 70,
+                            child: Image.memory(Uint8List.fromList(
+                                base64.decode(item['photo_barang']))),
+                          ),
+                title: Text(
+                  item['nama_barang'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  user['email_user'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () {
+                  setState(() {
+                    idItem.text = item['id_barang'];
+                    namaItem.text = item['nama_barang'];
+                    kodeItem.text = item['kode_barang'];
+                    catatanItem.text = item['catatan'];
+                    stokItem.text = item['stok_barang'].toString();
+                    hBliItem.text = item['harga_beli'].toString();
+                    hJalItem.text = item['harga_jual'].toString();
+                    userState = item['id_user'];
+                    invState = item['id_inventory'];
+                  });
+                  _viewItem(context, item);
+                },
+              ),
+              Divider(
+                indent: 50,
+                endIndent: 50,
+              )
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Future<dynamic> _viewItem(BuildContext context, Map item) {
+    log("142: $item");
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  item['photo_barang'] != ""
+                      // render foto barnag
+                      ? Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: Image.memory(Uint8List.fromList(
+                                base64.decode(item['photo_barang']))),
+                          ),
+                        )
+                      // tampilkan tombol tambah foto
+                      : Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {
+                                log("add user photo");
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return AlertDialog(
+                                        content: Text("TAMBAH FOTO BARANG"),
+                                      );
+                                    });
+                              },
+                              child: Container(
+                                decoration:
+                                    BoxDecoration(color: Colors.grey[300]),
+                                child: Icon(
+                                  Icons.add_a_photo_rounded,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "id_barang", ctrler: idItem, enable: false),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "nama_barang", ctrler: namaItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "kode_barang", ctrler: kodeItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "catatan", ctrler: catatanItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "stok_barang",
+                      ctrler: stokItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "harga_beli",
+                      ctrler: hBliItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo(item, "harga_jual",
+                      ctrler: hJalItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _invUsrDropDown(),
+                  Container(
+                    height: 20,
+                  ),
+                  _updateButton(context, item: item)
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Widget _invDropDown() {
+    return StatefulBuilder(builder: (((context, setState) {
+      List invByUserState = adminAccess.invList
+          .where((element) => element['id_user'] == userState)
+          .toList();
+      return DropdownButton(
+          value: invState,
+          hint: Text(AppLocalizations.of(context)!.selectInv),
+          items: List.generate(invByUserState.length, (index) {
+            Map inv = invByUserState[index];
+            return DropdownMenuItem(
+              value: inv['id_inventory'],
+              child: Padding(
+                padding: EdgeInsets.all(0),
+                child: Container(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 155),
+                  child: Text(
+                    inv['nama_inventory'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            );
+          }),
+          onChanged: (value) {
+            log("invState berubah");
+            setState(() {
+              log("$value");
+              invState = (value) as String;
+            });
+          });
+    })));
+  }
+
+  Widget _invUsrDropDown() {
+    return StatefulBuilder(builder: (((context, setState) {
+      List invByUserState = adminAccess.invList
+          .where((element) => element['id_user'] == userState)
+          .toList();
+      return Column(
+        children: [
+          DropdownButton(
+              value: invState,
+              hint: Text(AppLocalizations.of(context)!.selectInv),
+              items: List.generate(invByUserState.length, (index) {
+                Map inv = invByUserState[index];
+                return DropdownMenuItem(
+                  value: inv['id_inventory'],
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Container(
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width - 155),
+                      child: Text(
+                        inv['nama_inventory'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              onChanged: (value) {
+                log("invState berubah");
+                setState(() {
+                  invState = (value) as String;
+                  log("$value");
+                });
+              }),
+          Container(
+            height: 20,
+          ),
+          DropdownButton(
+              value: userState,
+              hint: Text(AppLocalizations.of(context)!.user),
+              items: List.generate(adminAccess.userList.length, (index) {
+                Map user = adminAccess.userList[index];
+                return DropdownMenuItem(
+                  value: user['id_user'],
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Container(
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width - 155),
+                      child: Text(
+                        user['email_user'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              onChanged: (value) {
+                log("userState berubah");
+                setState(() {
+                  invState = null;
+                  userState = (value) as String;
+                  log("$value");
+                });
+              })
+        ],
+      );
+    })));
   }
 
   Widget _controllInv(BuildContext context) {
@@ -131,7 +404,13 @@ class _AdminPanelState extends State<AdminPanel> {
                   height: 20,
                 ),
                 _fieldInfo(inv, "nama_inventory", ctrler: namaInv),
+                Container(
+                  height: 20,
+                ),
                 _userDropDown(),
+                Container(
+                  height: 20,
+                ),
                 _updateButton(context, inv: inv)
               ]),
             ),
@@ -143,6 +422,7 @@ class _AdminPanelState extends State<AdminPanel> {
     return StatefulBuilder(builder: (((context, setState) {
       return DropdownButton(
           value: userState,
+          hint: Text(AppLocalizations.of(context)!.user),
           items: List.generate(adminAccess.userList.length, (index) {
             Map user = adminAccess.userList[index];
             return DropdownMenuItem(
@@ -150,7 +430,8 @@ class _AdminPanelState extends State<AdminPanel> {
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width-155),
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 155),
                   child: Text(
                     user['email_user'],
                     maxLines: 1,
@@ -326,6 +607,25 @@ class _AdminPanelState extends State<AdminPanel> {
                 id_user: userState,
                 nama_inventory: namaInv.text);
           }
+          // update item
+          else if (item != null) {
+            String edited = DateTime.now().millisecondsSinceEpoch.toString();
+            await itemApiWise().update(item['id_barang'],
+                id_user: userState,
+                id_inventory: invState,
+                kode_barang: kodeItem.text.trim(),
+                nama_barang: namaItem.text.trim(),
+                catatan: catatanItem.text.trim(),
+                stok_barang: int.parse(
+                    stokItem.text.trim().isEmpty ? "0" : stokItem.text.trim()),
+                harga_beli: int.parse(
+                    hBliItem.text.trim().isEmpty ? "0" : hBliItem.text.trim()),
+                harga_jual: int.parse(
+                    hJalItem.text.trim().isEmpty ? "0" : hJalItem.text.trim()),
+                photo_barang: photoItem == "" ? "" : photoItem,
+                edited: edited,
+                added: item['added']);
+          }
           // selaraskan data dengan database
           await selaraskanData();
           //tutup loading
@@ -365,11 +665,25 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   TextFormField _fieldInfo(Map<dynamic, dynamic> row, String field,
-      {bool enable = true, TextEditingController? ctrler}) {
+      {bool enable = true,
+      TextEditingController? ctrler,
+      TextInputType? inputType}) {
     return TextFormField(
       enabled: enable,
       controller: ctrler,
       maxLines: enable ? 1 : null,
+      onChanged: (value) {
+        if (inputType == TextInputType.number) {
+          final cleanedValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+          if (cleanedValue != value) {
+            ctrler!.text = cleanedValue;
+            ctrler.selection = TextSelection.fromPosition(
+              TextPosition(offset: cleanedValue.length),
+            );
+          }
+        }
+      },
+      keyboardType: inputType,
       decoration: InputDecoration(
           labelText: "${field}${enable ? '' : '🔒'}",
           labelStyle: TextStyle(color: enable ? Colors.blue : Colors.red),

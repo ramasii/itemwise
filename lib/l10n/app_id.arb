@@ -44,5 +44,7 @@
     "bakcup":"Cadangkan",
     "loadData":"Muat data",
     "adminPanel":"Jendela Admin",
-    "update":"Update"
+    "update":"Update",
+    "user":"Pengguna",
+    "nothing":"tidak ada"
 }
