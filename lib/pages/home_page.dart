@@ -365,7 +365,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onPressed: () async {
                             log("nambah");
                             var id_inventory =
-                                "inv${DateTime.now().millisecondsSinceEpoch.toString()}";
+                                "${id_user}inv${DateTime.now().millisecondsSinceEpoch.toString()}";
                             setState(() {
                               invEditMode = false;
                               NamaInvController.clear();

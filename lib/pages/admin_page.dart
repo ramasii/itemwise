@@ -11,7 +11,7 @@ class AdminPanel extends StatefulWidget {
 
 class _AdminPanelState extends State<AdminPanel> {
   String tableState = "user";
-  String userState = "";
+  String? userState;
   String? invState;
   // user
   TextEditingController idUser = TextEditingController();
@@ -87,6 +87,7 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Widget _coontrollItems(BuildContext context) {
+    log(jsonEncode(adminAccess.itemList));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(adminAccess.itemList.length, (index) {
@@ -102,15 +103,14 @@ class _AdminPanelState extends State<AdminPanel> {
           child: Column(
             children: [
               ListTile(
-                leading:
-                    item['photo_barang'] == ""
-                        ? Icon(Icons.photo_album_rounded)
-                        : Container(
-                            height: 70,
-                            width: 70,
-                            child: Image.memory(Uint8List.fromList(
-                                base64.decode(item['photo_barang']))),
-                          ),
+                leading: item['photo_barang'] == ""
+                    ? Icon(Icons.photo_album_rounded)
+                    : Container(
+                        height: 70,
+                        width: 70,
+                        child: Image.memory(Uint8List.fromList(
+                            base64.decode(item['photo_barang']))),
+                      ),
                 title: Text(
                   item['nama_barang'],
                   maxLines: 1,
@@ -281,40 +281,11 @@ class _AdminPanelState extends State<AdminPanel> {
       List invByUserState = adminAccess.invList
           .where((element) => element['id_user'] == userState)
           .toList();
+
       return Column(
         children: [
           DropdownButton(
-              value: invState,
-              hint: Text(AppLocalizations.of(context)!.selectInv),
-              items: List.generate(invByUserState.length, (index) {
-                Map inv = invByUserState[index];
-                return DropdownMenuItem(
-                  value: inv['id_inventory'],
-                  child: Padding(
-                    padding: EdgeInsets.all(0),
-                    child: Container(
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width - 155),
-                      child: Text(
-                        inv['nama_inventory'],
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-              onChanged: (value) {
-                log("invState berubah");
-                setState(() {
-                  invState = (value) as String;
-                  log("$value");
-                });
-              }),
-          Container(
-            height: 20,
-          ),
-          DropdownButton(
+              isExpanded: true,
               value: userState,
               hint: Text(AppLocalizations.of(context)!.user),
               items: List.generate(adminAccess.userList.length, (index) {
@@ -342,7 +313,39 @@ class _AdminPanelState extends State<AdminPanel> {
                   userState = (value) as String;
                   log("$value");
                 });
-              })
+              }),
+          Container(
+            height: 20,
+          ),
+          DropdownButton(
+              isExpanded: true,
+              value: invByUserState.indexOf(invState) == -1 ? null : invState,
+              hint: Text(AppLocalizations.of(context)!.selectInv),
+              items: List.generate(invByUserState.length, (index) {
+                Map inv = invByUserState[index];
+                return DropdownMenuItem(
+                  value: inv['id_inventory'],
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Container(
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width - 155),
+                      child: Text(
+                        inv['nama_inventory'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              onChanged: (value) {
+                log("invState berubah");
+                setState(() {
+                  invState = (value) as String;
+                  log("$value");
+                });
+              }),
         ],
       );
     })));
@@ -353,7 +356,7 @@ class _AdminPanelState extends State<AdminPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(adminAccess.invList.length, (index) {
         Map inv = adminAccess.invList[index];
-        Map user = adminAccess.userList.firstWhere(
+        var user = inv['id_user'] == null ? {"email_user":""} : adminAccess.userList.firstWhere(
           (element) => element['id_user'] == inv['id_user'],
         );
         return Padding(
@@ -374,7 +377,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 onTap: () {
                   setState(() {
                     idInv.text = inv['id_inventory'];
-                    idUser.text = inv['id_user'];
+                    // idUser.text = inv['id_user'];
                     namaInv.text = inv['nama_inventory'];
                     userState = inv['id_user'];
                   });
@@ -421,6 +424,7 @@ class _AdminPanelState extends State<AdminPanel> {
   StatefulBuilder _userDropDown() {
     return StatefulBuilder(builder: (((context, setState) {
       return DropdownButton(
+          isExpanded: true,
           value: userState,
           hint: Text(AppLocalizations.of(context)!.user),
           items: List.generate(adminAccess.userList.length, (index) {
@@ -569,12 +573,94 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _updateButton(context, user: user)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _updateButton(context, user: user),
+                      _deleteButton(context, "user", user['id_user'])
+                    ],
+                  )
                 ],
               ),
             ),
           );
         });
+  }
+
+  TextButton _deleteButton(BuildContext context, String tipe, String id) {
+    return TextButton(
+        onPressed: () async {
+          var hapus = await konfirmasiHapus();
+
+          if (hapus) {
+            setState(() {
+              loading = true;
+            });
+            switch (tipe) {
+              case "user":
+                // jika id_user yang mau dihapus beda dengan yang dipake
+                if (id != userWise.userData['id_user']) {
+                  await userApiWise().delete(id);
+                }
+                // jika sama
+                else {
+                  showDialog(
+                      context: context,
+                      builder: (_) {
+                        return AlertDialog(
+                          content:
+                              Text(AppLocalizations.of(context)!.thisIsYourAcc),
+                        );
+                      });
+                }
+                break;
+              case "inv":
+                break;
+              case "item":
+                break;
+              default:
+            }
+            await selaraskanData();
+            setState(() {
+              loading = false;
+            });
+          }
+          Navigator.pop(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            AppLocalizations.of(context)!.delete,
+            style: TextStyle(color: Colors.red),
+          ),
+        ));
+  }
+
+  Future<bool> konfirmasiHapus() async {
+    bool? result = await showDialog<bool>(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: Text("${AppLocalizations.of(context)!.attention}"),
+            content: Text(AppLocalizations.of(context)!.delDataCantRecover),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                  )),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: Text(AppLocalizations.of(context)!.delete,
+                      style: TextStyle(color: Colors.red))),
+            ],
+          );
+        });
+    return result ?? false;
   }
 
   TextButton _updateButton(BuildContext context,
@@ -642,7 +728,7 @@ class _AdminPanelState extends State<AdminPanel> {
   StatefulBuilder _roleDropDown() {
     return StatefulBuilder(builder: ((context, setState) {
       return DropdownButton(
-        borderRadius: BorderRadius.circular(10),
+        isExpanded: true,
         onChanged: (value) {
           log("role berubah");
           setState(() {

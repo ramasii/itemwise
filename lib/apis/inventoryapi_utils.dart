@@ -115,7 +115,7 @@ class inventoryApiWise {
 
   update(
       {String id_inventory = "",
-      String id_user = "",
+      String? id_user,
       String nama_inventory = ""}) async {
     log("START update inv");
     log("$id_inventory,$id_user,$nama_inventory");
