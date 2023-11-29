@@ -80,24 +80,38 @@ class _AdminPanelState extends State<AdminPanel> {
       case "inventory":
         return _controllInv(context);
       case "item":
-        return _coontrollItems(context);
+        return _controllItems(context);
       default:
         return _controllUser(context);
     }
   }
 
-  Widget _coontrollItems(BuildContext context) {
+  Widget _controllItems(BuildContext context) {
     log(jsonEncode(adminAccess.itemList));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(adminAccess.itemList.length, (index) {
+      children: adminAccess.itemList.isNotEmpty 
+      ? List.generate(adminAccess.itemList.length, (index) {
         Map item = adminAccess.itemList[index];
-        Map inv = adminAccess.invList.firstWhere(
-          (element) => element['id_user'] == item['id_user'],
-        );
-        Map user = adminAccess.userList.firstWhere(
-          (element) => element['id_user'] == item['id_user'],
-        );
+
+        print(adminAccess.userList);
+
+        Map? user = null;
+        // jika userlist tidak kosong
+        log("admin 100: ${adminAccess.userList}");
+        try {
+          if (adminAccess.userList.isNotEmpty) {
+            var a = adminAccess.userList.firstWhere(
+              (element) => element['id_user'] == item['id_user'],
+            );
+            // jika variabel userList mengandung idnya
+            if (a != -1) {
+              user = a;
+            }
+          }
+        } catch (e) {
+          print(e);
+        }
         return Padding(
           padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
           child: Column(
@@ -116,11 +130,13 @@ class _AdminPanelState extends State<AdminPanel> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: Text(
-                  user['email_user'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                subtitle: user != null
+                    ? Text(
+                        user['email_user'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : null,
                 onTap: () {
                   setState(() {
                     idItem.text = item['id_barang'];
@@ -143,7 +159,18 @@ class _AdminPanelState extends State<AdminPanel> {
             ],
           ),
         );
-      }),
+      })
+      : [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
+                ),
+              )
+            ],
     );
   }
 
@@ -232,48 +259,18 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _updateButton(context, item: item)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _updateButton(context, item: item),
+                      _deleteButton(context, "item", item['id_barang'])
+                    ],
+                  )
                 ],
               ),
             ),
           );
         });
-  }
-
-  Widget _invDropDown() {
-    return StatefulBuilder(builder: (((context, setState) {
-      List invByUserState = adminAccess.invList
-          .where((element) => element['id_user'] == userState)
-          .toList();
-      return DropdownButton(
-          value: invState,
-          hint: Text(AppLocalizations.of(context)!.selectInv),
-          items: List.generate(invByUserState.length, (index) {
-            Map inv = invByUserState[index];
-            return DropdownMenuItem(
-              value: inv['id_inventory'],
-              child: Padding(
-                padding: EdgeInsets.all(0),
-                child: Container(
-                  constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width - 155),
-                  child: Text(
-                    inv['nama_inventory'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            );
-          }),
-          onChanged: (value) {
-            log("invState berubah");
-            setState(() {
-              log("$value");
-              invState = (value) as String;
-            });
-          });
-    })));
   }
 
   Widget _invUsrDropDown() {
@@ -319,7 +316,7 @@ class _AdminPanelState extends State<AdminPanel> {
           ),
           DropdownButton(
               isExpanded: true,
-              value: invByUserState.indexOf(invState) == -1 ? null : invState,
+              value: invByUserState.isEmpty ? null : invState,
               hint: Text(AppLocalizations.of(context)!.selectInv),
               items: List.generate(invByUserState.length, (index) {
                 Map inv = invByUserState[index];
@@ -342,7 +339,7 @@ class _AdminPanelState extends State<AdminPanel> {
               onChanged: (value) {
                 log("invState berubah");
                 setState(() {
-                  invState = (value) as String;
+                  invState = (value!) as String;
                   log("$value");
                 });
               }),
@@ -354,11 +351,15 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _controllInv(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(adminAccess.invList.length, (index) {
+      children: adminAccess.invList.isNotEmpty 
+      ? List.generate(adminAccess.invList.length, (index) {
         Map inv = adminAccess.invList[index];
-        var user = inv['id_user'] == null ? {"email_user":""} : adminAccess.userList.firstWhere(
-          (element) => element['id_user'] == inv['id_user'],
-        );
+        Map? user = null;
+        if (inv['id_user'] != null) {
+          user = adminAccess.userList.firstWhere(
+            (element) => element['id_user'] == inv['id_user'],
+          );
+        }
         return Padding(
           padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
           child: Column(
@@ -369,11 +370,13 @@ class _AdminPanelState extends State<AdminPanel> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: Text(
-                  user['email_user'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                subtitle: user != null
+                    ? Text(
+                        user['email_user'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : null,
                 onTap: () {
                   setState(() {
                     idInv.text = inv['id_inventory'];
@@ -391,7 +394,18 @@ class _AdminPanelState extends State<AdminPanel> {
             ],
           ),
         );
-      }),
+      })
+      : [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
+                ),
+              )
+            ],
     );
   }
 
@@ -414,7 +428,13 @@ class _AdminPanelState extends State<AdminPanel> {
                 Container(
                   height: 20,
                 ),
-                _updateButton(context, inv: inv)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _updateButton(context, inv: inv),
+                    _deleteButton(context, "inv", inv['id_inventory'])
+                  ],
+                )
               ]),
             ),
           );
@@ -458,50 +478,62 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _controllUser(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(adminAccess.userList.length, (index) {
-        Map user = adminAccess.userList[index];
-        return Padding(
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Column(
-            children: [
-              ListTile(
-                leading:
-                    user['photo_user'] == "null" || user['photo_user'] == null
-                        ? Icon(Icons.person_2_rounded)
-                        : Container(
-                            height: 70,
-                            width: 70,
-                            child: Image.memory(Uint8List.fromList(
-                                base64.decode(user['photo_user']))),
-                          ),
-                title: Text(
-                  user['email_user'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      children: adminAccess.userList.isNotEmpty
+          ? List.generate(adminAccess.userList.length, (index) {
+              Map user = adminAccess.userList[index];
+              return Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: user['photo_user'] == "null" ||
+                              user['photo_user'] == null
+                          ? Icon(Icons.person_2_rounded)
+                          : Container(
+                              height: 70,
+                              width: 70,
+                              child: Image.memory(Uint8List.fromList(
+                                  base64.decode(user['photo_user']))),
+                            ),
+                      title: Text(
+                        user['email_user'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        "${AppLocalizations.of(context)!.password}: ${user['password_user']}",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () {
+                        setState(() {
+                          roleState = user['role'];
+                          idUser.text = user['id_user'];
+                          emailUser.text = user['email_user'];
+                          usernameUser.text = user['username_user'];
+                          passwordUser.text = user['password_user'];
+                        });
+                        _viewUser(context, user);
+                      },
+                    ),
+                    Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
                 ),
-                subtitle: Text(
-                  "${AppLocalizations.of(context)!.password}: ${user['password_user']}",
-                  overflow: TextOverflow.ellipsis,
+              );
+            })
+          : [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
                 ),
-                onTap: () {
-                  setState(() {
-                    roleState = user['role'];
-                    idUser.text = user['id_user'];
-                    emailUser.text = user['email_user'];
-                    usernameUser.text = user['username_user'];
-                    passwordUser.text = user['password_user'];
-                  });
-                  _viewUser(context, user);
-                },
-              ),
-              Divider(
-                indent: 50,
-                endIndent: 50,
               )
             ],
-          ),
-        );
-      }),
     );
   }
 
@@ -615,8 +647,10 @@ class _AdminPanelState extends State<AdminPanel> {
                 }
                 break;
               case "inv":
+                await inventoryApiWise().delete(id);
                 break;
               case "item":
+                await itemApiWise().delete(id);
                 break;
               default:
             }

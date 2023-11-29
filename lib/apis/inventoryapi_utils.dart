@@ -106,7 +106,7 @@ class inventoryApiWise {
           await readAll();
           break;
         default:
-          log("inventoryAPI: ${response.statusCode}");
+          log("inventoryAPI: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
       print("inventoryAPI: $e");
@@ -140,6 +140,29 @@ class inventoryApiWise {
       }
     } catch (e) {
       print("inv update api: $e");
+    }
+  }
+
+  delete(String id_inventory) async {
+    log("delete inventoryapi");
+    try {
+      var response = await http.delete(Uri.parse("${url}/delete?id_inventory=$id_inventory"),
+        headers: {"authorization": authapi.authorization});
+        
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          await delete(id_inventory);
+          break;
+        default:
+          log("inventoryapi: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e); 
     }
   }
 }

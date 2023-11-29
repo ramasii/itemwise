@@ -30,6 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     log('in homePage');
     checkDeviceId();
+    authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
     invState = widget.id_inv ?? "all";
     log("WOIIII${widget.id_inv}$invState");
   }
