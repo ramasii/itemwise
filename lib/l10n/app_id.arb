@@ -49,5 +49,6 @@
     "nothing":"Tidak ada",
     "attention":"Perhatian",
     "delDataCantRecover":"Data yang dihapus tidak bisa dikembalikan",
-    "thisIsYourAcc":"Anda menggunakan akun ini"
+    "thisIsYourAcc":"Anda menggunakan akun ini",
+    "add":"tambah"
 }

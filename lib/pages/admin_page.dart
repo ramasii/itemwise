@@ -18,6 +18,7 @@ class _AdminPanelState extends State<AdminPanel> {
   TextEditingController emailUser = TextEditingController();
   TextEditingController usernameUser = TextEditingController();
   TextEditingController passwordUser = TextEditingController();
+  String photo_user = "null";
   // inv
   TextEditingController idInv = TextEditingController();
   TextEditingController namaInv = TextEditingController();
@@ -70,6 +71,7 @@ class _AdminPanelState extends State<AdminPanel> {
           ],
         ),
       ),
+      floatingActionButton: _addButton(context),
     );
   }
 
@@ -90,77 +92,77 @@ class _AdminPanelState extends State<AdminPanel> {
     log(jsonEncode(adminAccess.itemList));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: adminAccess.itemList.isNotEmpty 
-      ? List.generate(adminAccess.itemList.length, (index) {
-        Map item = adminAccess.itemList[index];
+      children: adminAccess.itemList.isNotEmpty
+          ? List.generate(adminAccess.itemList.length, (index) {
+              Map item = adminAccess.itemList[index];
 
-        print(adminAccess.userList);
+              print(adminAccess.userList);
 
-        Map? user = null;
-        // jika userlist tidak kosong
-        log("admin 100: ${adminAccess.userList}");
-        try {
-          if (adminAccess.userList.isNotEmpty) {
-            var a = adminAccess.userList.firstWhere(
-              (element) => element['id_user'] == item['id_user'],
-            );
-            // jika variabel userList mengandung idnya
-            if (a != -1) {
-              user = a;
-            }
-          }
-        } catch (e) {
-          print(e);
-        }
-        return Padding(
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
-          child: Column(
-            children: [
-              ListTile(
-                leading: item['photo_barang'] == ""
-                    ? Icon(Icons.photo_album_rounded)
-                    : Container(
-                        height: 70,
-                        width: 70,
-                        child: Image.memory(Uint8List.fromList(
-                            base64.decode(item['photo_barang']))),
-                      ),
-                title: Text(
-                  item['nama_barang'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: user != null
-                    ? Text(
-                        user['email_user'],
+              Map? user = null;
+              // jika userlist tidak kosong
+              log("admin 100: ${adminAccess.userList}");
+              try {
+                if (adminAccess.userList.isNotEmpty) {
+                  var a = adminAccess.userList.firstWhere(
+                    (element) => element['id_user'] == item['id_user'],
+                  );
+                  // jika variabel userList mengandung idnya
+                  if (a != -1) {
+                    user = a;
+                  }
+                }
+              } catch (e) {
+                print(e);
+              }
+              return Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: item['photo_barang'] == ""
+                          ? Icon(Icons.photo_album_rounded)
+                          : Container(
+                              height: 70,
+                              width: 70,
+                              child: Image.memory(Uint8List.fromList(
+                                  base64.decode(item['photo_barang']))),
+                            ),
+                      title: Text(
+                        item['nama_barang'],
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      )
-                    : null,
-                onTap: () {
-                  setState(() {
-                    idItem.text = item['id_barang'];
-                    namaItem.text = item['nama_barang'];
-                    kodeItem.text = item['kode_barang'];
-                    catatanItem.text = item['catatan'];
-                    stokItem.text = item['stok_barang'].toString();
-                    hBliItem.text = item['harga_beli'].toString();
-                    hJalItem.text = item['harga_jual'].toString();
-                    userState = item['id_user'];
-                    invState = item['id_inventory'];
-                  });
-                  _viewItem(context, item);
-                },
-              ),
-              Divider(
-                indent: 50,
-                endIndent: 50,
-              )
-            ],
-          ),
-        );
-      })
-      : [
+                      ),
+                      subtitle: user != null
+                          ? Text(
+                              user['email_user'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          idItem.text = item['id_barang'];
+                          namaItem.text = item['nama_barang'];
+                          kodeItem.text = item['kode_barang'];
+                          catatanItem.text = item['catatan'];
+                          stokItem.text = item['stok_barang'].toString();
+                          hBliItem.text = item['harga_beli'].toString();
+                          hJalItem.text = item['harga_jual'].toString();
+                          userState = item['id_user'];
+                          invState = item['id_inventory'];
+                        });
+                        _viewItem(context, item);
+                      },
+                    ),
+                    Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
+                ),
+              );
+            })
+          : [
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Container(
@@ -224,33 +226,33 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "id_barang", ctrler: idItem, enable: false),
+                  _fieldInfo("id_barang", ctrler: idItem, enable: false),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "nama_barang", ctrler: namaItem),
+                  _fieldInfo("nama_barang", ctrler: namaItem),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "kode_barang", ctrler: kodeItem),
+                  _fieldInfo("kode_barang", ctrler: kodeItem),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "catatan", ctrler: catatanItem),
+                  _fieldInfo("catatan", ctrler: catatanItem),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "stok_barang",
+                  _fieldInfo("stok_barang",
                       ctrler: stokItem, inputType: TextInputType.number),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "harga_beli",
+                  _fieldInfo("harga_beli",
                       ctrler: hBliItem, inputType: TextInputType.number),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(item, "harga_jual",
+                  _fieldInfo("harga_jual",
                       ctrler: hJalItem, inputType: TextInputType.number),
                   Container(
                     height: 20,
@@ -351,51 +353,51 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _controllInv(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: adminAccess.invList.isNotEmpty 
-      ? List.generate(adminAccess.invList.length, (index) {
-        Map inv = adminAccess.invList[index];
-        Map? user = null;
-        if (inv['id_user'] != null) {
-          user = adminAccess.userList.firstWhere(
-            (element) => element['id_user'] == inv['id_user'],
-          );
-        }
-        return Padding(
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Column(
-            children: [
-              ListTile(
-                title: Text(
-                  inv['nama_inventory'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: user != null
-                    ? Text(
-                        user['email_user'],
+      children: adminAccess.invList.isNotEmpty
+          ? List.generate(adminAccess.invList.length, (index) {
+              Map inv = adminAccess.invList[index];
+              Map? user = null;
+              if (inv['id_user'] != null) {
+                user = adminAccess.userList.firstWhere(
+                  (element) => element['id_user'] == inv['id_user'],
+                );
+              }
+              return Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        inv['nama_inventory'],
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      )
-                    : null,
-                onTap: () {
-                  setState(() {
-                    idInv.text = inv['id_inventory'];
-                    // idUser.text = inv['id_user'];
-                    namaInv.text = inv['nama_inventory'];
-                    userState = inv['id_user'];
-                  });
-                  _viewInv(context, inv);
-                },
-              ),
-              Divider(
-                indent: 50,
-                endIndent: 50,
-              )
-            ],
-          ),
-        );
-      })
-      : [
+                      ),
+                      subtitle: user != null
+                          ? Text(
+                              user['email_user'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          idInv.text = inv['id_inventory'];
+                          // idUser.text = inv['id_user'];
+                          namaInv.text = inv['nama_inventory'];
+                          userState = inv['id_user'];
+                        });
+                        _viewInv(context, inv);
+                      },
+                    ),
+                    Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
+                ),
+              );
+            })
+          : [
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Container(
@@ -416,11 +418,11 @@ class _AdminPanelState extends State<AdminPanel> {
           return AlertDialog(
             content: SingleChildScrollView(
               child: Column(children: [
-                _fieldInfo(inv, "id_inventory", ctrler: idInv, enable: false),
+                _fieldInfo("id_inventory", ctrler: idInv, enable: false),
                 Container(
                   height: 20,
                 ),
-                _fieldInfo(inv, "nama_inventory", ctrler: namaInv),
+                _fieldInfo("nama_inventory", ctrler: namaInv),
                 Container(
                   height: 20,
                 ),
@@ -538,6 +540,11 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<dynamic> _viewUser(BuildContext context, Map<dynamic, dynamic> user) {
+    if (user['photo_user'] != "null") {
+      setState(() {
+        photo_user = user['photo_user'];
+      });
+    }
     return showDialog(
         context: context,
         builder: (_) {
@@ -545,14 +552,14 @@ class _AdminPanelState extends State<AdminPanel> {
             content: SingleChildScrollView(
               child: Column(
                 children: [
-                  user['photo_user'] != "null"
+                  photo_user != "null"
                       // render foto
                       ? Container(
                           height: 100,
                           width: 100,
                           child: ClipOval(
-                            child: Image.memory(Uint8List.fromList(
-                                base64.decode(user['photo_user']))),
+                            child: Image.memory(
+                                Uint8List.fromList(base64.decode(photo_user))),
                           ),
                         )
                       // tampilkan tombol tambah foto
@@ -585,19 +592,19 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "id_user", ctrler: idUser, enable: false),
+                  _fieldInfo("id_user", ctrler: idUser, enable: false),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "email_user", ctrler: emailUser),
+                  _fieldInfo("email_user", ctrler: emailUser),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "username_user", ctrler: usernameUser),
+                  _fieldInfo("username_user", ctrler: usernameUser),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "password_user", ctrler: passwordUser),
+                  _fieldInfo("password_user", ctrler: passwordUser),
                   Container(
                     height: 20,
                   ),
@@ -697,6 +704,156 @@ class _AdminPanelState extends State<AdminPanel> {
     return result ?? false;
   }
 
+  Widget _addButton(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10), color: Colors.blue),
+      child: IconButton(
+        icon: Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          switch (tableState) {
+            case "user":
+              _addUserDialog(context);
+              break;
+            // case "inventory":
+            //   break;
+            // case "item":
+            //   break;
+            default:
+              _addUserDialog(context);
+          }
+          // tampilkan layar tambah berdasarkan tableState
+        },
+      ),
+    );
+  }
+
+  Future<dynamic> _addUserDialog(BuildContext context) {
+    // buat id_user
+    String id_user =
+        "${deviceData.id}usr${DateTime.now().millisecondsSinceEpoch}";
+    // bersihkan textController dkk untuk nambah user
+    setState(() {
+      idUser.text = id_user;
+      emailUser.clear();
+      usernameUser.clear();
+      passwordUser.clear();
+      photo_user = "null";
+    });
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  photo_user != "null"
+                      // render foto
+                      ? Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: Image.memory(
+                                Uint8List.fromList(base64.decode(photo_user))),
+                          ),
+                        )
+                      // tampilkan tombol tambah foto
+                      : Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                              child: InkWell(
+                            borderRadius: BorderRadius.circular(50),
+                            onTap: () {
+                              log("add user photo");
+                              showDialog(
+                                  context: context,
+                                  builder: (_) {
+                                    return AlertDialog(
+                                      content: Text("TAMBAH FOTO USER"),
+                                    );
+                                  });
+                            },
+                            child: Container(
+                              decoration:
+                                  BoxDecoration(color: Colors.grey[300]),
+                              child: Icon(
+                                Icons.add_a_photo_rounded,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )),
+                        ),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("id_user", ctrler: idUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("email_user", ctrler: emailUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("username_user", ctrler: usernameUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("password_user", ctrler: passwordUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _roleDropDown()
+                ],
+              ),
+            ),
+            actionsPadding: EdgeInsets.all(20),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
+  Widget postButton(BuildContext context) {
+    return TextButton(
+        onPressed: () async {
+          // laoding
+          setState(() {
+            loading = true;
+          });
+          switch (tableState) {
+            case "user":
+              // tambah user
+              await userApiWise().create(
+                  id_user: idUser.text.trim(),
+                  username_user: usernameUser.text.trim(),
+                  email_user: emailUser.text.trim(),
+                  photo_user: photo_user,
+                  password_user: passwordUser.text.trim(),
+                  isAdmin: true);
+              break;
+            // case "inventory":
+
+            //   break;
+            // case "item":
+
+            //   break;
+            default:
+          }
+          await selaraskanData();
+          // tutup loading
+          setState(() {
+            loading = false;
+          });
+          // tutup dialog
+          Navigator.pop(context);
+        },
+        child: Text(AppLocalizations.of(context)!.add));
+  }
+
   TextButton _updateButton(BuildContext context,
       {Map? user, Map? inv, Map? item}) {
     return TextButton(
@@ -759,7 +916,7 @@ class _AdminPanelState extends State<AdminPanel> {
         ));
   }
 
-  StatefulBuilder _roleDropDown() {
+  StatefulBuilder _roleDropDown({String roleState = "user"}) {
     return StatefulBuilder(builder: ((context, setState) {
       return DropdownButton(
         isExpanded: true,
@@ -784,14 +941,14 @@ class _AdminPanelState extends State<AdminPanel> {
     }));
   }
 
-  TextFormField _fieldInfo(Map<dynamic, dynamic> row, String field,
+  TextFormField _fieldInfo(String field,
       {bool enable = true,
       TextEditingController? ctrler,
       TextInputType? inputType}) {
     return TextFormField(
       enabled: enable,
       controller: ctrler,
-      maxLines: enable ? 1 : null,
+      maxLines: null,
       onChanged: (value) {
         if (inputType == TextInputType.number) {
           final cleanedValue = value.replaceAll(RegExp(r'[^0-9]'), '');

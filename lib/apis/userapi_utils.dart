@@ -9,7 +9,8 @@ class userApiWise {
       String? username_user,
       String? email_user,
       String? photo_user,
-      String? password_user}) async {
+      String? password_user,
+      bool isAdmin = false}) async {
     log("create user to API");
     try {
       final response = await http.post(Uri.parse(
@@ -19,14 +20,18 @@ class userApiWise {
 
       // tambahkan data user ke device
       if (response.statusCode == 200) {
-        userWise().edit(
-            username_user: username_user,
-            email_user: email_user,
-            password_user: password_user,
-            id_user: id_user);
-        userWise.isLoggedIn = true;
-        // langsung auth
-        await authapi().auth(email_user, password_user!);
+        if (isAdmin == false) {
+          userWise().edit(
+              username_user: username_user,
+              email_user: email_user,
+              password_user: password_user,
+              id_user: id_user);
+          userWise.isLoggedIn = true;
+          // langsung auth
+          await authapi().auth(email_user, password_user!);
+        } else {
+          log("sukses nambah user (KAMU ADMIN)");
+        }
       } else {
         log(response.statusCode.toString());
       }
@@ -121,9 +126,10 @@ class userApiWise {
   delete(String id_user) async {
     log("delete userapi");
     try {
-      var response = await http.delete(Uri.parse("${url}/delete?id_user=$id_user"),
-        headers: {"authorization": authapi.authorization});
-        
+      var response = await http.delete(
+          Uri.parse("${url}/delete?id_user=$id_user"),
+          headers: {"authorization": authapi.authorization});
+
       switch (response.statusCode) {
         case 200:
           log(response.body);
@@ -137,7 +143,7 @@ class userApiWise {
           log("userApiWise: ${response.statusCode}");
       }
     } catch (e) {
-      print(e); 
+      print(e);
     }
   }
 }
