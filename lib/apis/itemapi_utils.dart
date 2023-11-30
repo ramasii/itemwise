@@ -26,7 +26,8 @@ class itemApiWise {
         case 401:
           log("token expired");
           // ambil token baru
-          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
           // tambahkan ulang
           await create();
           break;
@@ -34,11 +35,69 @@ class itemApiWise {
           // auth baru
           log("auth baru");
           if (response.body == "token invalid") {
-            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
             // tambah ulang
             await create();
           } else if (response.body == "token not found") {
-            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
+            // tambah ulang
+            await create();
+          }
+          break;
+        default:
+          log(response.statusCode.toString());
+      }
+    } catch (e) {
+      print("bakup brg: $e");
+    }
+  }
+
+  createOne({
+    String id_barang = '',
+    String? id_user,
+    String? id_inventory,
+    String kode_barang = '',
+    String nama_barang = '',
+    String catatan = '',
+    String stok_barang = '',
+    String harga_beli = '',
+    String harga_jual = '',
+    String photo_barang = '',
+    String added = '',
+    String edited = '',
+  }) async {
+    log("itemapi create one");
+    try {
+      var response = await http.post(Uri.parse("$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang$photo_barang&added=$added&edited=$edited"),
+          headers: {
+            "Content-Type": "application/json",
+            "authorization": authapi.authorization,
+          });
+      switch (response.statusCode) {
+        case 200:
+          log("sukses");
+          break;
+        case 401:
+          log("token expired");
+          // ambil token baru
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          // tambahkan ulang
+          await create();
+          break;
+        case 403:
+          // auth baru
+          log("auth baru");
+          if (response.body == "token invalid") {
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
+            // tambah ulang
+            await create();
+          } else if (response.body == "token not found") {
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
             // tambah ulang
             await create();
           }
@@ -71,7 +130,8 @@ class itemApiWise {
         case 401:
           log("token expired");
           // ambil token baru
-          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
           // impor ulang
           read();
           break;
@@ -79,11 +139,13 @@ class itemApiWise {
           // auth baru
           log("auth baru");
           if (response.body == "token invalid") {
-            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
             // impor ulang
             read();
           } else if (response.body == "token not found") {
-            await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
             // impor ulang
             read();
           }
@@ -93,6 +155,90 @@ class itemApiWise {
       }
     } catch (e) {
       print("$e read()");
+    }
+  }
+
+  update(String id_barang,
+      {String? id_user,
+      String? id_inventory,
+      String? nama_barang,
+      int? stok_barang,
+      int? harga_beli,
+      int? harga_jual,
+      String? kode_barang,
+      String? catatan,
+      String? photo_barang,
+      String? added,
+      String? edited}) async {
+    log("START update itemapi");
+    try {
+      var response = await http.put(
+          Uri.parse(
+              "${url}/update?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&nama_barang=$nama_barang&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&kode_barang=$kode_barang&catatan=$catatan&photo_barang=$photo_barang&edited=$edited"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log("sukses");
+          break;
+        case 401:
+          log("token expired");
+          // ambil token baru
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          // udpate ulang
+          await update(id_barang,
+              id_user: id_user,
+              id_inventory: id_inventory,
+              nama_barang: nama_barang,
+              stok_barang: stok_barang,
+              harga_beli: harga_beli,
+              harga_jual: harga_jual,
+              kode_barang: kode_barang,
+              catatan: catatan,
+              photo_barang: photo_barang,
+              edited: edited);
+          break;
+        case 403:
+          // auth baru
+          log("auth baru");
+          if (response.body == "token invalid") {
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
+            // update ulang
+            await update(id_barang,
+                id_user: id_user,
+                id_inventory: id_inventory,
+                nama_barang: nama_barang,
+                stok_barang: stok_barang,
+                harga_beli: harga_beli,
+                harga_jual: harga_jual,
+                kode_barang: kode_barang,
+                catatan: catatan,
+                photo_barang: photo_barang,
+                edited: edited);
+          } else if (response.body == "token not found") {
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
+            // update ulang
+            await update(id_barang,
+                id_user: id_user,
+                id_inventory: id_inventory,
+                nama_barang: nama_barang,
+                stok_barang: stok_barang,
+                harga_beli: harga_beli,
+                harga_jual: harga_jual,
+                kode_barang: kode_barang,
+                catatan: catatan,
+                photo_barang: photo_barang,
+                edited: edited);
+          }
+          break;
+        default:
+          log(response.statusCode.toString());
+      }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -106,7 +252,8 @@ class itemApiWise {
           adminAccess.itemList = jsonDecode(response.body);
           break;
         case 401:
-          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
           await readAll();
           break;
         default:
@@ -114,6 +261,30 @@ class itemApiWise {
       }
     } catch (e) {
       print("itemAPI: $e");
+    }
+  }
+
+  delete(String id_barang) async {
+    log("delete itemapi");
+    try {
+      var response = await http.delete(
+          Uri.parse("${url}/delete?id_barang=$id_barang"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          await delete(id_barang);
+          break;
+        default:
+          log("itemapi: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e);
     }
   }
 }

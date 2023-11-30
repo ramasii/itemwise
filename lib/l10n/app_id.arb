@@ -44,5 +44,11 @@
     "bakcup":"Cadangkan",
     "loadData":"Muat data",
     "adminPanel":"Jendela Admin",
-    "update":"Update"
+    "update":"Update",
+    "user":"Pengguna",
+    "nothing":"Tidak ada",
+    "attention":"Perhatian",
+    "delDataCantRecover":"Data yang dihapus tidak bisa dikembalikan",
+    "thisIsYourAcc":"Anda menggunakan akun ini",
+    "add":"tambah"
 }

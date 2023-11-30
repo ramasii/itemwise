@@ -11,15 +11,27 @@ class AdminPanel extends StatefulWidget {
 
 class _AdminPanelState extends State<AdminPanel> {
   String tableState = "user";
-  String userState = "";
+  String? userState;
+  String? invState;
   // user
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
   TextEditingController usernameUser = TextEditingController();
   TextEditingController passwordUser = TextEditingController();
+  String photo_user = "null";
   // inv
   TextEditingController idInv = TextEditingController();
   TextEditingController namaInv = TextEditingController();
+  // item
+  TextEditingController idItem = TextEditingController();
+  TextEditingController namaItem = TextEditingController();
+  TextEditingController kodeItem = TextEditingController();
+  TextEditingController catatanItem = TextEditingController();
+  TextEditingController stokItem = TextEditingController();
+  TextEditingController hBliItem = TextEditingController();
+  TextEditingController hJalItem = TextEditingController();
+  String photoItem = "";
+
   String roleState = "";
   List role = ["user", "admin"];
   bool loading = true;
@@ -59,6 +71,7 @@ class _AdminPanelState extends State<AdminPanel> {
           ],
         ),
       ),
+      floatingActionButton: _addButton(context),
     );
   }
 
@@ -68,54 +81,332 @@ class _AdminPanelState extends State<AdminPanel> {
         return _controllUser(context);
       case "inventory":
         return _controllInv(context);
-      // case "items":
-      //   break;
+      case "item":
+        return _controllItems(context);
       default:
         return _controllUser(context);
     }
   }
 
+  Widget _controllItems(BuildContext context) {
+    log(jsonEncode(adminAccess.itemList));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: adminAccess.itemList.isNotEmpty
+          ? List.generate(adminAccess.itemList.length, (index) {
+              Map item = adminAccess.itemList[index];
+
+              print(adminAccess.userList);
+
+              Map? user = null;
+              // jika userlist tidak kosong
+              log("admin 100: ${adminAccess.userList}");
+              try {
+                if (adminAccess.userList.isNotEmpty) {
+                  var a = adminAccess.userList.firstWhere(
+                    (element) => element['id_user'] == item['id_user'],
+                  );
+                  // jika variabel userList mengandung idnya
+                  if (a != -1) {
+                    user = a;
+                  }
+                }
+              } catch (e) {
+                print(e);
+              }
+              return Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: item['photo_barang'] == ""
+                          ? Icon(Icons.photo_album_rounded)
+                          : Container(
+                              height: 70,
+                              width: 70,
+                              child: Image.memory(Uint8List.fromList(
+                                  base64.decode(item['photo_barang']))),
+                            ),
+                      title: Text(
+                        item['nama_barang'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: user != null
+                          ? Text(
+                              user['email_user'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          idItem.text = item['id_barang'];
+                          namaItem.text = item['nama_barang'];
+                          kodeItem.text = item['kode_barang'];
+                          catatanItem.text = item['catatan'];
+                          stokItem.text = item['stok_barang'].toString();
+                          hBliItem.text = item['harga_beli'].toString();
+                          hJalItem.text = item['harga_jual'].toString();
+                          userState = item['id_user'];
+                          invState = item['id_inventory'];
+                        });
+                        _viewItem(context, item);
+                      },
+                    ),
+                    Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
+                ),
+              );
+            })
+          : [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
+                ),
+              )
+            ],
+    );
+  }
+
+  Future<dynamic> _viewItem(BuildContext context, Map item) {
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  item['photo_barang'] != ""
+                      // render foto barnag
+                      ? Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: Image.memory(Uint8List.fromList(
+                                base64.decode(item['photo_barang']))),
+                          ),
+                        )
+                      // tampilkan tombol tambah foto
+                      : Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {
+                                log("add user photo");
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return AlertDialog(
+                                        content: Text("TAMBAH FOTO BARANG"),
+                                      );
+                                    });
+                              },
+                              child: Container(
+                                decoration:
+                                    BoxDecoration(color: Colors.grey[300]),
+                                child: Icon(
+                                  Icons.add_a_photo_rounded,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("id_barang", ctrler: idItem, enable: false),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("nama_barang", ctrler: namaItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("kode_barang", ctrler: kodeItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("catatan", ctrler: catatanItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("stok_barang",
+                      ctrler: stokItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("harga_beli",
+                      ctrler: hBliItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("harga_jual",
+                      ctrler: hJalItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _invUsrDropDown(),
+                  Container(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _updateButton(context, item: item),
+                      _deleteButton(context, "item", item['id_barang'])
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Widget _invUsrDropDown() {
+    return StatefulBuilder(builder: (((context, setState) {
+      List invByUserState = adminAccess.invList
+          .where((element) => element['id_user'] == userState)
+          .toList();
+
+      return Column(
+        children: [
+          DropdownButton(
+              isExpanded: true,
+              value: userState,
+              hint: Text(AppLocalizations.of(context)!.user),
+              items: List.generate(adminAccess.userList.length, (index) {
+                Map user = adminAccess.userList[index];
+                return DropdownMenuItem(
+                  value: user['id_user'],
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Container(
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width - 155),
+                      child: Text(
+                        user['email_user'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              onChanged: (value) {
+                log("userState berubah");
+                setState(() {
+                  invState = null;
+                  userState = (value) as String;
+                  log("$value");
+                });
+              }),
+          Container(
+            height: 20,
+          ),
+          DropdownButton(
+              isExpanded: true,
+              value: invByUserState.isEmpty ? null : invState,
+              hint: Text(AppLocalizations.of(context)!.selectInv),
+              items: List.generate(invByUserState.length, (index) {
+                Map inv = invByUserState[index];
+                return DropdownMenuItem(
+                  value: inv['id_inventory'],
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Container(
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width - 155),
+                      child: Text(
+                        inv['nama_inventory'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              onChanged: (value) {
+                log("invState berubah");
+                setState(() {
+                  invState = (value!) as String;
+                  log("$value");
+                });
+              }),
+        ],
+      );
+    })));
+  }
+
   Widget _controllInv(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(adminAccess.invList.length, (index) {
-        Map inv = adminAccess.invList[index];
-        Map user = adminAccess.userList.firstWhere(
-          (element) => element['id_user'] == inv['id_user'],
-        );
-        return Padding(
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Column(
-            children: [
-              ListTile(
-                title: Text(
-                  inv['nama_inventory'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      children: adminAccess.invList.isNotEmpty
+          ? List.generate(adminAccess.invList.length, (index) {
+              Map inv = adminAccess.invList[index];
+              Map? user = null;
+              if (inv['id_user'] != null) {
+                user = adminAccess.userList.firstWhere(
+                  (element) => element['id_user'] == inv['id_user'],
+                );
+              }
+              return Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        inv['nama_inventory'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: user != null
+                          ? Text(
+                              user['email_user'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          idInv.text = inv['id_inventory'];
+                          // idUser.text = inv['id_user'];
+                          namaInv.text = inv['nama_inventory'];
+                          userState = inv['id_user'];
+                        });
+                        _viewInv(context, inv);
+                      },
+                    ),
+                    Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
                 ),
-                subtitle: Text(
-                  user['email_user'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              );
+            })
+          : [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
                 ),
-                onTap: () {
-                  setState(() {
-                    idInv.text = inv['id_inventory'];
-                    idUser.text = inv['id_user'];
-                    namaInv.text = inv['nama_inventory'];
-                    userState = inv['id_user'];
-                  });
-                  _viewInv(context, inv);
-                },
-              ),
-              Divider(
-                indent: 50,
-                endIndent: 50,
               )
             ],
-          ),
-        );
-      }),
     );
   }
 
@@ -126,13 +417,25 @@ class _AdminPanelState extends State<AdminPanel> {
           return AlertDialog(
             content: SingleChildScrollView(
               child: Column(children: [
-                _fieldInfo(inv, "id_inventory", ctrler: idInv, enable: false),
+                _fieldInfo("id_inventory", ctrler: idInv, enable: false),
                 Container(
                   height: 20,
                 ),
-                _fieldInfo(inv, "nama_inventory", ctrler: namaInv),
+                _fieldInfo("nama_inventory", ctrler: namaInv),
+                Container(
+                  height: 20,
+                ),
                 _userDropDown(),
-                _updateButton(context, inv: inv)
+                Container(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _updateButton(context, inv: inv),
+                    _deleteButton(context, "inv", inv['id_inventory'])
+                  ],
+                )
               ]),
             ),
           );
@@ -142,7 +445,9 @@ class _AdminPanelState extends State<AdminPanel> {
   StatefulBuilder _userDropDown() {
     return StatefulBuilder(builder: (((context, setState) {
       return DropdownButton(
+          isExpanded: true,
           value: userState,
+          hint: Text(AppLocalizations.of(context)!.user),
           items: List.generate(adminAccess.userList.length, (index) {
             Map user = adminAccess.userList[index];
             return DropdownMenuItem(
@@ -150,7 +455,8 @@ class _AdminPanelState extends State<AdminPanel> {
               child: Padding(
                 padding: EdgeInsets.all(0),
                 child: Container(
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width-155),
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 155),
                   child: Text(
                     user['email_user'],
                     maxLines: 1,
@@ -173,54 +479,71 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _controllUser(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(adminAccess.userList.length, (index) {
-        Map user = adminAccess.userList[index];
-        return Padding(
-          padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Column(
-            children: [
-              ListTile(
-                leading:
-                    user['photo_user'] == "null" || user['photo_user'] == null
-                        ? Icon(Icons.person_2_rounded)
-                        : Container(
-                            height: 70,
-                            width: 70,
-                            child: Image.memory(Uint8List.fromList(
-                                base64.decode(user['photo_user']))),
-                          ),
-                title: Text(
-                  user['email_user'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      children: adminAccess.userList.isNotEmpty
+          ? List.generate(adminAccess.userList.length, (index) {
+              Map user = adminAccess.userList[index];
+              return Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: user['photo_user'] == "null" ||
+                              user['photo_user'] == null
+                          ? Icon(Icons.person_2_rounded)
+                          : Container(
+                              height: 70,
+                              width: 70,
+                              child: Image.memory(Uint8List.fromList(
+                                  base64.decode(user['photo_user']))),
+                            ),
+                      title: Text(
+                        user['email_user'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        "${AppLocalizations.of(context)!.password}: ${user['password_user']}",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () {
+                        setState(() {
+                          roleState = user['role'];
+                          idUser.text = user['id_user'];
+                          emailUser.text = user['email_user'];
+                          usernameUser.text = user['username_user'];
+                          passwordUser.text = user['password_user'];
+                        });
+                        _viewUser(context, user);
+                      },
+                    ),
+                    Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
                 ),
-                subtitle: Text(
-                  "${AppLocalizations.of(context)!.password}: ${user['password_user']}",
-                  overflow: TextOverflow.ellipsis,
+              );
+            })
+          : [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
                 ),
-                onTap: () {
-                  setState(() {
-                    roleState = user['role'];
-                    idUser.text = user['id_user'];
-                    emailUser.text = user['email_user'];
-                    usernameUser.text = user['username_user'];
-                    passwordUser.text = user['password_user'];
-                  });
-                  _viewUser(context, user);
-                },
-              ),
-              Divider(
-                indent: 50,
-                endIndent: 50,
               )
             ],
-          ),
-        );
-      }),
     );
   }
 
   Future<dynamic> _viewUser(BuildContext context, Map<dynamic, dynamic> user) {
+    if (user['photo_user'] != "null") {
+      setState(() {
+        photo_user = user['photo_user'];
+      });
+    }
     return showDialog(
         context: context,
         builder: (_) {
@@ -228,14 +551,14 @@ class _AdminPanelState extends State<AdminPanel> {
             content: SingleChildScrollView(
               child: Column(
                 children: [
-                  user['photo_user'] != "null"
+                  photo_user != "null"
                       // render foto
                       ? Container(
                           height: 100,
                           width: 100,
                           child: ClipOval(
-                            child: Image.memory(Uint8List.fromList(
-                                base64.decode(user['photo_user']))),
+                            child: Image.memory(
+                                Uint8List.fromList(base64.decode(photo_user))),
                           ),
                         )
                       // tampilkan tombol tambah foto
@@ -268,19 +591,19 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "id_user", ctrler: idUser, enable: false),
+                  _fieldInfo("id_user", ctrler: idUser, enable: false),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "email_user", ctrler: emailUser),
+                  _fieldInfo("email_user", ctrler: emailUser),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "username_user", ctrler: usernameUser),
+                  _fieldInfo("username_user", ctrler: usernameUser),
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo(user, "password_user", ctrler: passwordUser),
+                  _fieldInfo("password_user", ctrler: passwordUser),
                   Container(
                     height: 20,
                   ),
@@ -288,12 +611,409 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _updateButton(context, user: user)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _updateButton(context, user: user),
+                      _deleteButton(context, "user", user['id_user'])
+                    ],
+                  )
                 ],
               ),
             ),
           );
         });
+  }
+
+  TextButton _deleteButton(BuildContext context, String tipe, String id) {
+    return TextButton(
+        onPressed: () async {
+          var hapus = await konfirmasiHapus();
+
+          if (hapus) {
+            setState(() {
+              loading = true;
+            });
+            switch (tipe) {
+              case "user":
+                // jika id_user yang mau dihapus beda dengan yang dipake
+                if (id != userWise.userData['id_user']) {
+                  await userApiWise().delete(id);
+                }
+                // jika sama
+                else {
+                  showDialog(
+                      context: context,
+                      builder: (_) {
+                        return AlertDialog(
+                          content:
+                              Text(AppLocalizations.of(context)!.thisIsYourAcc),
+                        );
+                      });
+                }
+                break;
+              case "inv":
+                await inventoryApiWise().delete(id);
+                break;
+              case "item":
+                await itemApiWise().delete(id);
+                break;
+              default:
+            }
+            await selaraskanData();
+            setState(() {
+              loading = false;
+            });
+          }
+          Navigator.pop(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            AppLocalizations.of(context)!.delete,
+            style: TextStyle(color: Colors.red),
+          ),
+        ));
+  }
+
+  Future<bool> konfirmasiHapus() async {
+    bool? result = await showDialog<bool>(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: Text("${AppLocalizations.of(context)!.attention}"),
+            content: Text(AppLocalizations.of(context)!.delDataCantRecover),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                  )),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: Text(AppLocalizations.of(context)!.delete,
+                      style: TextStyle(color: Colors.red))),
+            ],
+          );
+        });
+    return result ?? false;
+  }
+
+  Widget _addButton(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10), color: Colors.blue),
+      child: IconButton(
+        icon: Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          switch (tableState) {
+            case "user":
+              _addUserDialog(context);
+              break;
+            case "inventory":
+              _addInvDialog(context);
+              break;
+            case "item":
+              _addItemDialog(context);
+              break;
+            default:
+              _addUserDialog(context);
+          }
+          // tampilkan layar tambah berdasarkan tableState
+        },
+      ),
+    );
+  }
+
+  Future<dynamic> _addUserDialog(BuildContext context) {
+    // buat id_user
+    String id_user =
+        "${deviceData.id}usr${DateTime.now().millisecondsSinceEpoch}";
+    // bersihkan textController dkk untuk nambah user
+    setState(() {
+      idUser.text = id_user;
+      emailUser.clear();
+      usernameUser.clear();
+      passwordUser.clear();
+      photo_user = "null";
+    });
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  photo_user != "null"
+                      // render foto
+                      ? Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: Image.memory(
+                                Uint8List.fromList(base64.decode(photo_user))),
+                          ),
+                        )
+                      // tampilkan tombol tambah foto
+                      : Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                              child: InkWell(
+                            borderRadius: BorderRadius.circular(50),
+                            onTap: () {
+                              log("add user photo");
+                              showDialog(
+                                  context: context,
+                                  builder: (_) {
+                                    return AlertDialog(
+                                      content: Text("TAMBAH FOTO USER"),
+                                    );
+                                  });
+                            },
+                            child: Container(
+                              decoration:
+                                  BoxDecoration(color: Colors.grey[300]),
+                              child: Icon(
+                                Icons.add_a_photo_rounded,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )),
+                        ),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("id_user", ctrler: idUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("email_user", ctrler: emailUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("username_user", ctrler: usernameUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("password_user", ctrler: passwordUser),
+                  Container(
+                    height: 20,
+                  ),
+                  _roleDropDown()
+                ],
+              ),
+            ),
+            actionsPadding: EdgeInsets.all(20),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
+  Future<dynamic> _addInvDialog(BuildContext context) {
+    // buat id_inventory
+    String id_inventory =
+        "${deviceData.id}inv${DateTime.now().millisecondsSinceEpoch}";
+    // bersihkan textController untuk add inv
+    setState(() {
+      idInv.text = id_inventory;
+      namaInv.clear();
+      userState = null;
+    });
+
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _fieldInfo("id_inventory", ctrler: idInv),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("nama_inventory", ctrler: namaInv),
+                  Container(
+                    height: 20,
+                  ),
+                  _userDropDown(),
+                ],
+              ),
+            ),
+            actionsPadding: EdgeInsets.all(20),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
+  Future<dynamic> _addItemDialog(BuildContext context) {
+    // buat id_barang
+    String id_barang =
+        "${userWise.userData['id_user']}brg${DateTime.now().millisecondsSinceEpoch}";
+    // clear textfieldcontroller untuk membuat item
+    setState(() {
+      idItem.text = id_barang;
+      namaItem.clear();
+      kodeItem.clear();
+      catatanItem.clear();
+      stokItem.clear();
+      hBliItem.clear();
+      hJalItem.clear();
+      photoItem = "";
+      invState = null;
+      userState = null;
+    });
+
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  photoItem != ""
+                      // render foto barnag
+                      ? Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: Image.memory(
+                                Uint8List.fromList(base64.decode(photoItem))),
+                          ),
+                        )
+                      // tampilkan tombol tambah foto
+                      : Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {
+                                log("add user photo");
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return AlertDialog(
+                                        content: Text("TAMBAH FOTO BARANG"),
+                                      );
+                                    });
+                              },
+                              child: Container(
+                                decoration:
+                                    BoxDecoration(color: Colors.grey[300]),
+                                child: Icon(
+                                  Icons.add_a_photo_rounded,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("id_barang", ctrler: idItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("nama_barang", ctrler: namaItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("kode_barang", ctrler: kodeItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("catatan", ctrler: catatanItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("stok_barang",
+                      ctrler: stokItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("harga_beli",
+                      ctrler: hBliItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("harga_jual",
+                      ctrler: hJalItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _invUsrDropDown(),
+                ],
+              ),
+            ),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
+  Widget postButton(BuildContext context) {
+    return TextButton(
+        onPressed: () async {
+          // laoding
+          setState(() {
+            loading = true;
+          });
+          switch (tableState) {
+            case "user":
+              // tambah user
+              await userApiWise().create(
+                  id_user: idUser.text.trim(),
+                  username_user: usernameUser.text.trim(),
+                  email_user: emailUser.text.trim(),
+                  photo_user: photo_user,
+                  password_user: passwordUser.text.trim(),
+                  isAdmin: true);
+              break;
+            case "inventory":
+              // tambah inv
+              await inventoryApiWise()
+                  .createOne(idInv.text.trim(), namaInv.text.trim(), userState);
+              break;
+            // tambah item
+            case "item":
+              String added = DateTime.now().millisecondsSinceEpoch.toString();
+              await itemApiWise().createOne(
+                  id_barang: idItem.text.trim(),
+                  id_user: userState,
+                  id_inventory: invState,
+                  kode_barang: kodeItem.text.trim(),
+                  nama_barang: namaItem.text.trim(),
+                  catatan: catatanItem.text.trim(),
+                  stok_barang:
+                      stokItem.text.trim() == "" ? "0" : stokItem.text.trim(),
+                  harga_beli:
+                      hBliItem.text.trim() == "" ? "0" : hBliItem.text.trim(),
+                  harga_jual:
+                      hJalItem.text.trim() == "" ? "0" : hJalItem.text.trim(),
+                  photo_barang: photoItem,
+                  added: added,
+                  edited: added);
+              break;
+            default:
+          }
+          await selaraskanData();
+          // tutup loading
+          setState(() {
+            loading = false;
+          });
+          // tutup dialog
+          Navigator.pop(context);
+        },
+        child: Text(AppLocalizations.of(context)!.add));
   }
 
   TextButton _updateButton(BuildContext context,
@@ -326,6 +1046,25 @@ class _AdminPanelState extends State<AdminPanel> {
                 id_user: userState,
                 nama_inventory: namaInv.text);
           }
+          // update item
+          else if (item != null) {
+            String edited = DateTime.now().millisecondsSinceEpoch.toString();
+            await itemApiWise().update(item['id_barang'],
+                id_user: userState,
+                id_inventory: invState,
+                kode_barang: kodeItem.text.trim(),
+                nama_barang: namaItem.text.trim(),
+                catatan: catatanItem.text.trim(),
+                stok_barang: int.parse(
+                    stokItem.text.trim().isEmpty ? "0" : stokItem.text.trim()),
+                harga_beli: int.parse(
+                    hBliItem.text.trim().isEmpty ? "0" : hBliItem.text.trim()),
+                harga_jual: int.parse(
+                    hJalItem.text.trim().isEmpty ? "0" : hJalItem.text.trim()),
+                photo_barang: photoItem == "" ? "" : photoItem,
+                edited: edited,
+                added: item['added']);
+          }
           // selaraskan data dengan database
           await selaraskanData();
           //tutup loading
@@ -339,10 +1078,10 @@ class _AdminPanelState extends State<AdminPanel> {
         ));
   }
 
-  StatefulBuilder _roleDropDown() {
+  StatefulBuilder _roleDropDown({String roleState = "user"}) {
     return StatefulBuilder(builder: ((context, setState) {
       return DropdownButton(
-        borderRadius: BorderRadius.circular(10),
+        isExpanded: true,
         onChanged: (value) {
           log("role berubah");
           setState(() {
@@ -364,12 +1103,26 @@ class _AdminPanelState extends State<AdminPanel> {
     }));
   }
 
-  TextFormField _fieldInfo(Map<dynamic, dynamic> row, String field,
-      {bool enable = true, TextEditingController? ctrler}) {
+  TextFormField _fieldInfo(String field,
+      {bool enable = true,
+      TextEditingController? ctrler,
+      TextInputType? inputType}) {
     return TextFormField(
       enabled: enable,
       controller: ctrler,
-      maxLines: enable ? 1 : null,
+      maxLines: null,
+      onChanged: (value) {
+        if (inputType == TextInputType.number) {
+          final cleanedValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+          if (cleanedValue != value) {
+            ctrler!.text = cleanedValue;
+            ctrler.selection = TextSelection.fromPosition(
+              TextPosition(offset: cleanedValue.length),
+            );
+          }
+        }
+      },
+      keyboardType: inputType,
       decoration: InputDecoration(
           labelText: "${field}${enable ? '' : '🔒'}",
           labelStyle: TextStyle(color: enable ? Colors.blue : Colors.red),

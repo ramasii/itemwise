@@ -30,6 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     log('in homePage');
     checkDeviceId();
+    authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
     invState = widget.id_inv ?? "all";
     log("WOIIII${widget.id_inv}$invState");
   }
@@ -272,6 +273,10 @@ class _MyHomePageState extends State<MyHomePage> {
     if (inventoryWise().readByUser().isNotEmpty ||
         ItemWise().readByUser().isNotEmpty) {
       if (terkonek && userWise.isLoggedIn) {
+        await authapi().auth(
+            // auth dulu ajah
+            userWise.userData['email_user'],
+            userWise.userData['password_user']);
         // bakcup inventory
         await inventoryApiWise().create();
         // backup barang
@@ -307,7 +312,6 @@ class _MyHomePageState extends State<MyHomePage> {
             child: CircularProgressIndicator(),
           );
         });
-    log("${userWise.userData['email_user']}, ${userWise.userData['password_user']}");
     await authapi().auth(
         userWise.userData['email_user'], userWise.userData['password_user']);
 
@@ -362,7 +366,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onPressed: () async {
                             log("nambah");
                             var id_inventory =
-                                "inv${DateTime.now().millisecondsSinceEpoch.toString()}";
+                                "${id_user}inv${DateTime.now().millisecondsSinceEpoch.toString()}";
                             setState(() {
                               invEditMode = false;
                               NamaInvController.clear();

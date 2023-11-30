@@ -9,7 +9,8 @@ class userApiWise {
       String? username_user,
       String? email_user,
       String? photo_user,
-      String? password_user}) async {
+      String? password_user,
+      bool isAdmin = false}) async {
     log("create user to API");
     try {
       final response = await http.post(Uri.parse(
@@ -19,14 +20,18 @@ class userApiWise {
 
       // tambahkan data user ke device
       if (response.statusCode == 200) {
-        userWise().edit(
-            username_user: username_user,
-            email_user: email_user,
-            password_user: password_user,
-            id_user: id_user);
-        userWise.isLoggedIn = true;
-        // langsung auth
-        await authapi().auth(email_user, password_user!);
+        if (isAdmin == false) {
+          userWise().edit(
+              username_user: username_user,
+              email_user: email_user,
+              password_user: password_user,
+              id_user: id_user);
+          userWise.isLoggedIn = true;
+          // langsung auth
+          await authapi().auth(email_user, password_user!);
+        } else {
+          log("sukses nambah user (KAMU ADMIN)");
+        }
       } else {
         log(response.statusCode.toString());
       }
@@ -70,7 +75,8 @@ class userApiWise {
           adminAccess.userList = jsonDecode(response.body);
           break;
         case 401:
-          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
           await readAll();
           break;
         default:
@@ -99,7 +105,8 @@ class userApiWise {
           log(response.body);
           break;
         case 401:
-          await authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
           await update(
               id_user: id_user,
               username_user: username_user,
@@ -116,7 +123,27 @@ class userApiWise {
     }
   }
 
-  void delete() async {
-    //...
+  delete(String id_user) async {
+    log("delete userapi");
+    try {
+      var response = await http.delete(
+          Uri.parse("${url}/delete?id_user=$id_user"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          await delete(id_user);
+          break;
+        default:
+          log("userApiWise: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 }

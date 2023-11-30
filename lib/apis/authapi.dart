@@ -6,9 +6,11 @@ class authapi {
 
   auth(String email_user, String password_user) async {
     log("start auth: ${userWise.userData}");
+    log("${anu.emm}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}");
     try {
       var response = await http.get(Uri.parse(
           "${anu.emm}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}"));
+
       switch (response.statusCode) {
         // sukses
         case 200:
@@ -31,6 +33,7 @@ class authapi {
     // simpan ke device
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("authorization", authorization);
+    log("done auth");
   }
 
   loadAuth() async {
@@ -43,7 +46,8 @@ class authapi {
       log("auth ga ketemu");
       try {
         if (userWise.isLoggedIn) {
-          await auth(userWise.userData['email_user'], userWise.userData['password_user']);
+          await auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
           log("coba auth");
         }
       } catch (e) {
