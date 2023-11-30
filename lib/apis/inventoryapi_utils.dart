@@ -49,6 +49,50 @@ class inventoryApiWise {
     }
   }
 
+  createOne(String id_inventory, String nama_inventory, String? id_user) async {
+    log("invAPI create one");
+    try {
+      var response = await http.post(
+          Uri.parse(
+              "$url/add?id_inventory=${id_inventory}&nama_inventory=${nama_inventory}&id_user=${id_user}"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log("sukses");
+          break;
+        case 401:
+          log("token expired");
+          // ambil token baru
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          // tambahkan ulang
+          await create();
+          break;
+        case 403:
+          // auth baru
+          log("auth baru");
+          if (response.body == "token invalid") {
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
+            // tambah ulang
+            await create();
+          } else if (response.body == "token not found") {
+            await authapi().auth(userWise.userData['email_user'],
+                userWise.userData['password_user']);
+            // tambah ulang
+            await create();
+          }
+          break;
+        default:
+          log(response.statusCode.toString());
+      }
+    } catch (e) {
+      log("$e");
+      return;
+    }
+  }
+
   read() async {
     log("START: IMPORT INVENTORY CONNECT TO SERVER");
 

@@ -719,8 +719,9 @@ class _AdminPanelState extends State<AdminPanel> {
             case "user":
               _addUserDialog(context);
               break;
-            // case "inventory":
-            //   break;
+            case "inventory":
+              _addInvDialog(context);
+              break;
             // case "item":
             //   break;
             default:
@@ -817,6 +818,42 @@ class _AdminPanelState extends State<AdminPanel> {
         });
   }
 
+  Future<dynamic> _addInvDialog(BuildContext context) {
+    // buat id_inventory
+    String id_inventory =
+        "${deviceData.id}inv${DateTime.now().millisecondsSinceEpoch}";
+    // bersihkan textController untuk add inv
+    setState(() {
+      idInv.text = id_inventory;
+      namaInv.clear();
+      userState = null;
+    });
+
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _fieldInfo("id_inventory", ctrler: idInv),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("nama_inventory", ctrler: namaInv),
+                  Container(
+                    height: 20,
+                  ),
+                  _userDropDown(),
+                ],
+              ),
+            ),
+            actionsPadding: EdgeInsets.all(20),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
   Widget postButton(BuildContext context) {
     return TextButton(
         onPressed: () async {
@@ -835,9 +872,10 @@ class _AdminPanelState extends State<AdminPanel> {
                   password_user: passwordUser.text.trim(),
                   isAdmin: true);
               break;
-            // case "inventory":
-
-            //   break;
+            case "inventory":
+              await inventoryApiWise()
+                  .createOne(idInv.text.trim(), namaInv.text.trim(), userState);
+              break;
             // case "item":
 
             //   break;
