@@ -177,7 +177,6 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<dynamic> _viewItem(BuildContext context, Map item) {
-    log("142: $item");
     return showDialog(
         context: context,
         builder: (_) {
@@ -722,8 +721,9 @@ class _AdminPanelState extends State<AdminPanel> {
             case "inventory":
               _addInvDialog(context);
               break;
-            // case "item":
-            //   break;
+            case "item":
+              _addItemDialog(context);
+              break;
             default:
               _addUserDialog(context);
           }
@@ -854,6 +854,112 @@ class _AdminPanelState extends State<AdminPanel> {
         });
   }
 
+  Future<dynamic> _addItemDialog(BuildContext context) {
+    // buat id_barang
+    String id_barang =
+        "${userWise.userData['id_user']}brg${DateTime.now().millisecondsSinceEpoch}";
+    // clear textfieldcontroller untuk membuat item
+    setState(() {
+      idItem.text = id_barang;
+      namaItem.clear();
+      kodeItem.clear();
+      catatanItem.clear();
+      stokItem.clear();
+      hBliItem.clear();
+      hJalItem.clear();
+      photoItem = "";
+      invState = null;
+      userState = null;
+    });
+
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  photoItem != ""
+                      // render foto barnag
+                      ? Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: Image.memory(
+                                Uint8List.fromList(base64.decode(photoItem))),
+                          ),
+                        )
+                      // tampilkan tombol tambah foto
+                      : Container(
+                          height: 100,
+                          width: 100,
+                          child: ClipOval(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {
+                                log("add user photo");
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return AlertDialog(
+                                        content: Text("TAMBAH FOTO BARANG"),
+                                      );
+                                    });
+                              },
+                              child: Container(
+                                decoration:
+                                    BoxDecoration(color: Colors.grey[300]),
+                                child: Icon(
+                                  Icons.add_a_photo_rounded,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("id_barang", ctrler: idItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("nama_barang", ctrler: namaItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("kode_barang", ctrler: kodeItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("catatan", ctrler: catatanItem),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("stok_barang",
+                      ctrler: stokItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("harga_beli",
+                      ctrler: hBliItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _fieldInfo("harga_jual",
+                      ctrler: hJalItem, inputType: TextInputType.number),
+                  Container(
+                    height: 20,
+                  ),
+                  _invUsrDropDown(),
+                ],
+              ),
+            ),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
   Widget postButton(BuildContext context) {
     return TextButton(
         onPressed: () async {
@@ -873,12 +979,30 @@ class _AdminPanelState extends State<AdminPanel> {
                   isAdmin: true);
               break;
             case "inventory":
+              // tambah inv
               await inventoryApiWise()
                   .createOne(idInv.text.trim(), namaInv.text.trim(), userState);
               break;
-            // case "item":
-
-            //   break;
+            // tambah item
+            case "item":
+              String added = DateTime.now().millisecondsSinceEpoch.toString();
+              await itemApiWise().createOne(
+                  id_barang: idItem.text.trim(),
+                  id_user: userState,
+                  id_inventory: invState,
+                  kode_barang: kodeItem.text.trim(),
+                  nama_barang: namaItem.text.trim(),
+                  catatan: catatanItem.text.trim(),
+                  stok_barang:
+                      stokItem.text.trim() == "" ? "0" : stokItem.text.trim(),
+                  harga_beli:
+                      hBliItem.text.trim() == "" ? "0" : hBliItem.text.trim(),
+                  harga_jual:
+                      hJalItem.text.trim() == "" ? "0" : hJalItem.text.trim(),
+                  photo_barang: photoItem,
+                  added: added,
+                  edited: added);
+              break;
             default:
           }
           await selaraskanData();
