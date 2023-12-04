@@ -37,6 +37,7 @@ class userApiWise {
       }
     } catch (e) {
       log('$e');
+      return;
     }
   }
 

@@ -60,7 +60,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
         }
       }
 
-      CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
+      // cek img
+      if (img != "") {
+        var isL =
+            fungsies().CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
+        setState(() {
+          isImgLscape = isL;
+        });
+      }
     } else if (widget.itemMap == null) {
       isEdit == false;
       invDropdownValue = widget.invState == "all" ? null : widget.invState;
@@ -223,7 +230,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           child: Container(
                               padding: const EdgeInsets.all(10),
                               width: MediaQuery.of(context).size.width / 2,
-                              child: Text(inv["nama_inventory"],maxLines: 1, overflow: TextOverflow.ellipsis,)),
+                              child: Text(
+                                inv["nama_inventory"],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
                         );
                       }),
                       elevation: 6,
@@ -396,41 +407,6 @@ class _ViewItemPageState extends State<ViewItemPage> {
     });
   }
 
-  Future<void> _pickImage() async {
-    log("START _pickImage");
-
-    final imagePicker = ImagePicker();
-    final pickedImage = await imagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 25,
-        maxHeight: 500.0,
-        maxWidth: 500.0);
-
-    if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
-      final encodedImage = base64Encode(bytes);
-
-      setState(() {
-        img = encodedImage;
-      });
-      await CheckIsImgLscape(bytes);
-    }
-
-    log("DONE _pickedImage");
-  }
-
-  Future<void> CheckIsImgLscape(Uint8List bytes) async {
-    if (img != "") {
-      final size = ImageSizeGetter.getSize(MemoryInput(bytes));
-
-      if (size.height > size.width) {
-        setState(() {
-          isImgLscape = false;
-        });
-      }
-    }
-  }
-
   Widget cardFotoBarang(BuildContext context) {
     return Center(
       child: ConstrainedBox(
@@ -446,8 +422,19 @@ class _ViewItemPageState extends State<ViewItemPage> {
               child: img == ""
                   ? Center(
                       child: InkWell(
-                        onTap: () {
-                          _pickImage();
+                        onTap: () async {
+                          // ambil gambar
+                          var imeg = await fungsies().pickImage();
+                          if (imeg != "") {
+                            // cek apakah landscape atau bukan
+                            var isLscape = await fungsies().CheckIsImgLscape(
+                                Uint8List.fromList(base64.decode(imeg)));
+                            // set nilai
+                            setState(() {
+                              img = imeg;
+                              isImgLscape = isLscape;
+                            });
+                          }
                         },
                         borderRadius: BorderRadius.circular(10),
                         child: Padding(

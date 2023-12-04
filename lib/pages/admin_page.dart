@@ -969,14 +969,23 @@ class _AdminPanelState extends State<AdminPanel> {
           });
           switch (tableState) {
             case "user":
-              // tambah user
-              await userApiWise().create(
-                  id_user: idUser.text.trim(),
-                  username_user: usernameUser.text.trim(),
-                  email_user: emailUser.text.trim(),
-                  photo_user: photo_user,
-                  password_user: passwordUser.text.trim(),
-                  isAdmin: true);
+              // cek apakah ada email yang sama, jika ada maka batalkan pembuatan akun
+              List cekEmail = adminAccess.userList
+                  .where(
+                    (element) => element['email_user'] == emailUser.text.trim(),
+                  )
+                  .toList();
+
+              if (cekEmail.isEmpty) {
+                // tambah user
+                await userApiWise().create(
+                    id_user: idUser.text.trim(),
+                    username_user: usernameUser.text.trim(),
+                    email_user: emailUser.text.trim(),
+                    photo_user: photo_user,
+                    password_user: passwordUser.text.trim(),
+                    isAdmin: true);
+              }
               break;
             case "inventory":
               // tambah inv
@@ -1025,6 +1034,7 @@ class _AdminPanelState extends State<AdminPanel> {
           //loading
           showDialog(
               context: context,
+              barrierDismissible: false,
               builder: (_) => Center(
                     child: CircularProgressIndicator(),
                   ));
