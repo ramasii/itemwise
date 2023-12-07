@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
@@ -70,7 +73,9 @@ class itemApiWise {
   }) async {
     log("itemapi create one");
     try {
-      var response = await http.post(Uri.parse("$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang$photo_barang&added=$added&edited=$edited"),
+      var response = await http.post(
+          Uri.parse(
+              "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang$photo_barang&added=$added&edited=$edited"),
           headers: {
             "Content-Type": "application/json",
             "authorization": authapi.authorization,

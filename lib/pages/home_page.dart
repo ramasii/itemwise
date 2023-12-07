@@ -30,7 +30,8 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     log('in homePage');
     checkDeviceId();
-    authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
+    authapi().auth(
+        userWise.userData['email_user'], userWise.userData['password_user']);
     invState = widget.id_inv ?? "all";
     log("WOIIII${widget.id_inv}$invState");
   }
@@ -629,33 +630,33 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.only(left: 10, right: 10),
           child: Row(
             children: [
-              Hero(
-                tag: "image$id",
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.all(Radius.circular(15))),
-                  child: barang["photo_barang"] != ""
-                      ? ClipRRect(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(15)),
+              Container(
+                width: 70,
+                height: 70,
+                decoration: const BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.all(Radius.circular(15))),
+                child: barang["photo_barang"] != ""
+                    ? ClipRRect(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(15)),
+                        child: Hero(
+                          tag: "image$id",
                           child: Image.memory(
                             Uint8List.fromList(
                                 base64.decode(barang["photo_barang"])),
                             fit: BoxFit.cover,
                             gaplessPlayback: true,
                           ),
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.image_rounded,
-                            color: Colors.white,
-                            size: 45,
-                          ),
                         ),
-                ),
+                      )
+                    : const Center(
+                        child: Icon(
+                          Icons.image_rounded,
+                          color: Colors.white,
+                          size: 45,
+                        ),
+                      ),
               ),
               Container(
                 width: 5,

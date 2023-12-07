@@ -23,14 +23,13 @@ class _ViewItemPageState extends State<ViewItemPage> {
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
 
-  final TextEditingController _itemNameController = TextEditingController();
-  final TextEditingController _itemDescriptionController =
-      TextEditingController();
-  final TextEditingController _itemStockController = TextEditingController();
-  final TextEditingController _purchasePriceController =
-      TextEditingController();
-  final TextEditingController _sellingPriceController = TextEditingController();
+  TextEditingController itemNameController = TextEditingController();
+  TextEditingController itemDescriptionController = TextEditingController();
+  TextEditingController itemStockController = TextEditingController();
+  TextEditingController purchasePriceController = TextEditingController();
+  TextEditingController sellingPriceController = TextEditingController();
   TextEditingController NamaInvController = TextEditingController();
+  TextEditingController kodeBarangController = TextEditingController();
 
   @override
   void initState() {
@@ -38,11 +37,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
     log('in viewItemPage');
     if (widget.itemMap != null) {
       isEdit = true;
-      _itemNameController.text = widget.itemMap!['nama_barang'];
-      _itemDescriptionController.text = widget.itemMap!['catatan'];
-      _itemStockController.text = widget.itemMap!['stok_barang'].toString();
-      _purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
-      _sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
+      itemNameController.text = widget.itemMap!['nama_barang'];
+      kodeBarangController.text = widget.itemMap!['kode_barang'];
+      itemDescriptionController.text = widget.itemMap!['catatan'];
+      itemStockController.text = widget.itemMap!['stok_barang'].toString();
+      purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
+      sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
       img = widget.itemMap!["photo_barang"];
       // kalo bukan null, dicek dulu apakah masih ada di inventoryWise
       // takutnya kalo inventorynya dihapus, trs viewItem yang punya id_inventory yang dihapus malah eror
@@ -115,21 +115,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /* // tampilkan id barang
-              if (widget.itemMap != null)
-                Text("barang: ${widget.itemMap!['id_barang']}"),
-              // tampilkan id user pemilik barang
-              if (widget.itemMap != null)
-                Text("pemilik: ${widget.itemMap!['id_user']}"),
-              // tampilkan user saat ini
-              if (userWise.isLoggedIn)
-                Text("user now: ${userWise.userData['id_user']}")
-              else
-                Text("tanpa akun: ${deviceData.id}"), */
-
               // nama item | item name
               TextFormField(
-                controller: _itemNameController,
+                controller: itemNameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppLocalizations.of(context)!.required;
@@ -141,9 +129,16 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     labelText: AppLocalizations.of(context)!.itemName),
               ),
 
+              // kode barang
+              TextFormField(
+                controller: kodeBarangController,
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.productCode),
+              ),
+
               // deskripsi | description
               TextFormField(
-                controller: _itemDescriptionController,
+                controller: itemDescriptionController,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.description),
                 maxLines: null,
@@ -151,12 +146,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
               // stok | stock
               TextFormField(
-                controller: _itemStockController,
+                controller: itemStockController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.itemStock),
                 onChanged: (value) {
-                  clearNotNumber(value, _itemStockController);
+                  clearNotNumber(value, itemStockController);
                 },
               ),
 
@@ -170,7 +165,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   Expanded(
                     flex: 5,
                     child: TextFormField(
-                      controller: _purchasePriceController,
+                      controller: purchasePriceController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Item name is required';
@@ -185,7 +180,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                         ),
                       ),
                       onChanged: (value) {
-                        clearNotNumber(value, _purchasePriceController);
+                        clearNotNumber(value, purchasePriceController);
                       },
                     ),
                   ),
@@ -194,7 +189,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   Expanded(
                     flex: 5,
                     child: TextFormField(
-                      controller: _sellingPriceController,
+                      controller: sellingPriceController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Item name is required';
@@ -209,7 +204,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                         ),
                       ),
                       onChanged: (value) {
-                        clearNotNumber(value, _sellingPriceController);
+                        clearNotNumber(value, sellingPriceController);
                       },
                     ),
                   ),
@@ -399,11 +394,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
   void clearTextController() {
     setState(() {
-      _itemDescriptionController.clear();
-      _itemNameController.clear();
-      _itemStockController.clear();
-      _purchasePriceController.clear();
-      _sellingPriceController.clear();
+      itemDescriptionController.clear();
+      itemNameController.clear();
+      itemStockController.clear();
+      purchasePriceController.clear();
+      sellingPriceController.clear();
     });
   }
 
@@ -466,9 +461,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.memory(
-                          Uint8List.fromList(base64.decode(img)),
-                          fit: BoxFit.cover,
+                        child: Hero(
+                          tag: widget.itemMap != null
+                              ? "image${widget.itemMap!['id_barang']}"
+                              : "image${DateTime.now().millisecondsSinceEpoch}",
+                          child: Image.memory(
+                            Uint8List.fromList(base64.decode(img)),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     )),
@@ -533,14 +533,15 @@ class _ViewItemPageState extends State<ViewItemPage> {
       message: "",
       child: InkWell(
         onTap: () async {
-          if (_itemNameController.text.trim() != "") {
+          if (itemNameController.text.trim() != "") {
             // add item
             if (widget.itemMap == null) {
-              String nama_barang = _itemNameController.text;
-              String catatan = _itemDescriptionController.text;
-              String stok = _itemStockController.text.trim();
-              String hbli = _purchasePriceController.text.trim();
-              String hjal = _sellingPriceController.text.trim();
+              String nama_barang = itemNameController.text;
+              String catatan = itemDescriptionController.text;
+              String stok = itemStockController.text.trim();
+              String hbli = purchasePriceController.text.trim();
+              String hjal = sellingPriceController.text.trim();
+              String kdBrg = kodeBarangController.text.trim();
 
               int stok_barang = int.parse(stok == "" ? "0" : stok);
               int harga_beli = int.parse(hbli == "" ? "0" : hbli);
@@ -557,9 +558,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
               setState(() {
                 ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
                     harga_beli, harga_jual,
-                    catatan: catatan, id_inventory: id_inventory);
+                    catatan: catatan,
+                    id_inventory: id_inventory,
+                    kode_barang: kdBrg);
               });
 
+              // bersihkan controller
               clearTextController();
               // ignore: use_build_context_synchronously
               Navigator.pushAndRemoveUntil(
@@ -572,11 +576,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
             }
             // edit item
             else if (widget.itemMap != null) {
-              String nama_barang = _itemNameController.text.trim();
-              String catatan = _itemDescriptionController.text.trim();
-              String stok = _itemStockController.text.trim();
-              String hbli = _purchasePriceController.text.trim();
-              String hjal = _sellingPriceController.text.trim();
+              String nama_barang = itemNameController.text.trim();
+              String catatan = itemDescriptionController.text.trim();
+              String stok = itemStockController.text.trim();
+              String hbli = purchasePriceController.text.trim();
+              String hjal = sellingPriceController.text.trim();
+              String kdBrg = kodeBarangController.text.trim();
 
               int stok_barang = int.parse(stok == "" ? "0" : stok);
               int harga_beli = int.parse(hbli == "" ? "0" : hbli);
@@ -591,6 +596,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 widget.itemMap!["harga_jual"],
                 widget.itemMap!["photo_barang"],
                 widget.itemMap!["id_inventory"],
+                widget.itemMap!["kode_barang"]
               ];
               List baru = [
                 nama_barang,
@@ -599,7 +605,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 harga_beli,
                 harga_jual,
                 img,
-                invDropdownValue
+                invDropdownValue,
+                kdBrg
               ];
 
               // cek apakah data berbeda, jika beda berarti diedit
@@ -614,6 +621,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               if (isEdited) {
                 ItemWise().update(widget.itemMap!['id_barang'],
                     nama_barang: nama_barang,
+                    kode_barang: kdBrg,
                     catatan: catatan,
                     stok_barang: stok_barang,
                     harga_beli: harga_beli,
@@ -626,10 +634,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
             ScaffoldMessenger.of(context).showSnackBar(successSnackbar(
                 context, AppLocalizations.of(context)!.successSave));
           } else {
-            if (_itemNameController.text.trim() == "") {
+            if (itemNameController.text.trim() == "") {
               ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                   context, AppLocalizations.of(context)!.itemNameAlert));
-            } else if (_itemStockController.text.trim() == "") {
+            } else if (itemStockController.text.trim() == "") {
               ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                   context, AppLocalizations.of(context)!.itemStockAlert));
             }

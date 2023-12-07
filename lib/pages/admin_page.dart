@@ -89,18 +89,16 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Widget _controllItems(BuildContext context) {
-    log(jsonEncode(adminAccess.itemList));
+    // log(jsonEncode(adminAccess.itemList));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: adminAccess.itemList.isNotEmpty
           ? List.generate(adminAccess.itemList.length, (index) {
               Map item = adminAccess.itemList[index];
 
-              print(adminAccess.userList);
-
               Map? user = null;
               // jika userlist tidak kosong
-              log("admin 100: ${adminAccess.userList}");
+              // log("admin 100: ${adminAccess.userList}");
               try {
                 if (adminAccess.userList.isNotEmpty) {
                   var a = adminAccess.userList.firstWhere(
