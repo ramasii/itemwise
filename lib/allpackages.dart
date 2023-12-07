@@ -20,4 +20,5 @@ export './apis/anu.dart';
 export './apis/authapi.dart';
 export './apis/itemapi_utils.dart';
 export './functions.dart';
+export './utils/settings_utils.dart';
 export 'package:itemwise/apis/inventoryapi_utils.dart';

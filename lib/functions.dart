@@ -8,9 +8,8 @@ class fungsies {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 1,
-        maxHeight: 50,
-        maxWidth: 50);
+        maxHeight: 400,
+        maxWidth: 400);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
