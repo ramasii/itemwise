@@ -471,7 +471,8 @@ class _MyHomePageState extends State<MyHomePage>
     Map barang = ItemWise().readByUser().firstWhere(
           (element) => element['id_barang'] == id_barang,
         );
-
+    
+    // ini pencegahan value kena reset ketika render ulang (biasanya terjadi ketika menutup/memunculkan keyboard)
     // jika id_barang beda berarti ini build id_barang baru
     if (id_barang != idBrgOld) {
       hargaJualController.text = barang['harga_jual'].toString();
@@ -523,7 +524,7 @@ class _MyHomePageState extends State<MyHomePage>
                             height: 10,
                           ),
                           Text(
-                            "Edit Stok dan Harga",
+                            AppLocalizations.of(context)!.editStockAndPrice,
                             style: TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
@@ -646,7 +647,8 @@ class _MyHomePageState extends State<MyHomePage>
                                           stok_barang: int.parse(
                                               stokController.text.trim()),
                                           harga_jual: int.parse(
-                                              hargaJualController.text.trim()));
+                                              hargaJualController.text.trim()),
+                                              id_inventory: barang['id_inventory']);
                                     });
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context)
@@ -880,11 +882,25 @@ class _MyHomePageState extends State<MyHomePage>
               ? ItemWise().readByUser()
               : ItemWise().readByInventory(invState, id_user);
           return Column(
-            children: List.generate(brgs.length, (index) {
-              var id = brgs[index]['id_barang'];
-              var title = brgs[index]['nama_barang'];
-              return buildItem(index, context, id, title, brgs[index]);
-            }),
+            children: [
+              Column(
+                children: List.generate(brgs.length, (index) {
+                  var id = brgs[index]['id_barang'];
+                  var title = brgs[index]['nama_barang'];
+                  return buildItem(index, context, id, title, brgs[index]);
+                }),
+              ),
+              Container(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      AppLocalizations.of(context)!.tapAndHoldToSelect,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500, color: Colors.blue[200]),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              Container(height: 150,)
+            ],
           );
         },
       ),
@@ -947,16 +963,16 @@ class _MyHomePageState extends State<MyHomePage>
                                 color: selectedItems.isEmpty
                                     ? Colors.blue
                                     : Color.fromARGB(100, 158, 158, 158),
-                                width: 1.5),
+                                width: 1),
                             borderRadius: BorderRadius.circular(10)),
                         child: Text(
-                          "Edit Stok dan Harga",
+                          AppLocalizations.of(context)!.editStockAndPrice,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: selectedItems.isEmpty
                                   ? Colors.blue
                                   : Color.fromARGB(100, 158, 158, 158),
-                              fontWeight: FontWeight.bold),
+                              fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),

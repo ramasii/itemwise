@@ -21,7 +21,7 @@ class _userPageState extends State<userPage> {
   TextEditingController passwordController = TextEditingController();
 
   final connection = InternetConnectionCheckerPlus.createInstance(
-      addresses: [AddressCheckOptions(Uri.parse("http://localhost:8003"))]);
+      addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
 
   bool emailValid = false;
   bool passwordValid = false;

@@ -51,5 +51,7 @@
     "delDataCantRecover":"Data yang dihapus tidak bisa dikembalikan",
     "thisIsYourAcc":"Anda menggunakan akun ini",
     "add":"Tambah",
-    "productCode":"Kode Barang"
+    "productCode":"Kode Barang",
+    "editStockAndPrice":"Edit Stok dan Harga",
+    "tapAndHoldToSelect":"Tekan dan tahan untuk memilih"
 }
