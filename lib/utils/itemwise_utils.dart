@@ -102,6 +102,12 @@ class ItemWise {
     }
   }
 
+  Map readByIdBarang(String id_barang) {
+    Map byIdBarang = readByUser()
+        .firstWhere((element) => element['id_barang'] == id_barang);
+    return byIdBarang;
+  }
+
   update(String id_barang,
       {String? id_user,
       String? id_inventory,

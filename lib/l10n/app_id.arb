@@ -38,6 +38,7 @@
     "max50Characters":"Maksimal 50 karakter",
     "enterValidEmail":"Masukkan e-mail dengan benar",
     "selectInv":"Pilih inventaris",
+    "selectItem":"Pilih barang",
     "clearSelection":"Bersihkan pilihan",
     "wrongPassword":"Password salah",
     "noInternet":"Tidak ada internet",
@@ -53,5 +54,7 @@
     "add":"Tambah",
     "productCode":"Kode Barang",
     "editStockAndPrice":"Edit Stok dan Harga",
-    "tapAndHoldToSelect":"Tekan dan tahan untuk memilih"
+    "tapAndHoldToSelect":"Tekan dan tahan untuk memilih",
+    "editItemDetail":"Edit detail barang",
+    "action":"Tindakan"
 }

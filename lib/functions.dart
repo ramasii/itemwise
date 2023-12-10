@@ -32,4 +32,31 @@ class fungsies {
       return true;
     }
   }
+
+  Future<bool> konfirmasiHapus(BuildContext context) async {
+    bool? result = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("${AppLocalizations.of(context)!.attention}"),
+            content: Text(AppLocalizations.of(context)!.delDataCantRecover),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                  )),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: Text(AppLocalizations.of(context)!.delete,
+                      style: TextStyle(color: Colors.red))),
+            ],
+          );
+        });
+    return result ?? false;
+  }
 }

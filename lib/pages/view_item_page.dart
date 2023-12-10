@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
 
 class ViewItemPage extends StatefulWidget {
+  /// jika itemMap != null maka invState akan dibiarkan, nilai invState akan mengikuti itemMap['id_inventory']
   const ViewItemPage({super.key, this.itemMap, this.invState});
 
   final Map? itemMap;

@@ -626,7 +626,7 @@ class _AdminPanelState extends State<AdminPanel> {
   TextButton _deleteButton(BuildContext context, String tipe, String id) {
     return TextButton(
         onPressed: () async {
-          var hapus = await konfirmasiHapus();
+          var hapus = await fungsies().konfirmasiHapus(context);
 
           if (hapus) {
             setState(() {
@@ -672,33 +672,6 @@ class _AdminPanelState extends State<AdminPanel> {
             style: TextStyle(color: Colors.red),
           ),
         ));
-  }
-
-  Future<bool> konfirmasiHapus() async {
-    bool? result = await showDialog<bool>(
-        context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("${AppLocalizations.of(context)!.attention}"),
-            content: Text(AppLocalizations.of(context)!.delDataCantRecover),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.cancel,
-                  )),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: Text(AppLocalizations.of(context)!.delete,
-                      style: TextStyle(color: Colors.red))),
-            ],
-          );
-        });
-    return result ?? false;
   }
 
   Widget _addButton(BuildContext context) {

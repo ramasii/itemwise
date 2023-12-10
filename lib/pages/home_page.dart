@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage>
         toolbarHeight: 55,
         leading: selectedItems.isEmpty
             ? IconButton(
-                icon: Icon(Icons.menu),
+                icon: const Icon(Icons.menu),
                 onPressed: () => _scaffoldKey.currentState!.openDrawer(),
               )
             : Container(),
@@ -268,7 +268,7 @@ class _MyHomePageState extends State<MyHomePage>
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         });
@@ -315,7 +315,7 @@ class _MyHomePageState extends State<MyHomePage>
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         });
@@ -471,7 +471,7 @@ class _MyHomePageState extends State<MyHomePage>
     Map barang = ItemWise().readByUser().firstWhere(
           (element) => element['id_barang'] == id_barang,
         );
-    
+
     // ini pencegahan value kena reset ketika render ulang (biasanya terjadi ketika menutup/memunculkan keyboard)
     // jika id_barang beda berarti ini build id_barang baru
     if (id_barang != idBrgOld) {
@@ -499,8 +499,8 @@ class _MyHomePageState extends State<MyHomePage>
             children: [
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  decoration: BoxDecoration(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -525,7 +525,7 @@ class _MyHomePageState extends State<MyHomePage>
                           ),
                           Text(
                             AppLocalizations.of(context)!.editStockAndPrice,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           Container(
@@ -533,7 +533,7 @@ class _MyHomePageState extends State<MyHomePage>
                           ),
                           Text(
                             barang['nama_barang'],
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.w500),
                           ),
                           Container(
@@ -541,13 +541,13 @@ class _MyHomePageState extends State<MyHomePage>
                           ),
                           Text(
                             barang['kode_barang'],
-                            style: TextStyle(fontSize: 15),
+                            style: const TextStyle(fontSize: 15),
                           ),
                           Container(
                             height: 20,
                           ),
                           Text(AppLocalizations.of(context)!.selPrice,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w500)),
                           TextFormField(
                             controller: hargaJualController,
@@ -577,7 +577,7 @@ class _MyHomePageState extends State<MyHomePage>
                               Expanded(
                                 child: Text(
                                   AppLocalizations.of(context)!.stok,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w500),
                                 ),
@@ -648,7 +648,7 @@ class _MyHomePageState extends State<MyHomePage>
                                               stokController.text.trim()),
                                           harga_jual: int.parse(
                                               hargaJualController.text.trim()),
-                                              id_inventory: barang['id_inventory']);
+                                          id_inventory: barang['id_inventory']);
                                     });
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context)
@@ -657,7 +657,7 @@ class _MyHomePageState extends State<MyHomePage>
                                       content: Text(
                                           AppLocalizations.of(context)!
                                               .successSave),
-                                      duration: Duration(seconds: 1),
+                                      duration: const Duration(seconds: 1),
                                     ));
                                   },
                                   child: Container(
@@ -665,16 +665,16 @@ class _MyHomePageState extends State<MyHomePage>
                                         color: Colors.blue,
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
-                                          BoxShadow(
+                                          const BoxShadow(
                                               color:
                                                   Color.fromARGB(70, 0, 0, 0),
                                               blurRadius: 2)
                                         ]),
-                                    padding: EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(12),
                                     child: Text(
                                       AppLocalizations.of(context)!.save,
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold),
                                     ),
@@ -686,9 +686,172 @@ class _MyHomePageState extends State<MyHomePage>
                           // mendorong bottomsheet ke atas ketika buka keyboard
                           AnimatedContainer(
                               height: MediaQuery.of(context).viewInsets.bottom,
-                              duration: Duration(milliseconds: 200))
+                              duration: const Duration(milliseconds: 200))
                         ],
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  Widget moreMenuItem(BuildContext context, String id_barang) {
+    // dapatkan map berdasarkan id_barang
+    Map barang = ItemWise().readByIdBarang(id_barang);
+    return BottomSheet(
+        backgroundColor: Colors.transparent,
+        animationController: bottomSheetAC,
+        onClosing: () {
+          Navigator.pop(context);
+        },
+        builder: (BuildContext context) {
+          return Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 5,
+                          width: 60,
+                          decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(5)),
+                        ),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      // info barang yang diklik
+                      // nama barang
+                      Text(
+                        barang['nama_barang'],
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                      Container(
+                        height: 5,
+                      ),
+                      // kode barang
+                      Text(
+                        barang['kode_barang'],
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Text("${AppLocalizations.of(context)!.action}:",style: TextStyle(fontWeight: FontWeight.w500),),
+                      Container(
+                        height: 10,
+                      ),
+                      // menu edit detail
+                      InkWell(
+                        onTap: () async {
+                          log("edit detail");
+                          // tutup menu
+                          Navigator.pop(context);
+                          // menuju halaman view/edit
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => ViewItemPage(
+                                        itemMap: barang,
+                                      )));
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: IntrinsicWidth(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(AppLocalizations.of(context)!
+                                        .editItemDetail),
+                                    Divider(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 10,
+                      ),
+                      // menu pilih
+                      InkWell(
+                        onTap: () {
+                          log("pilih");
+                          setState(() {
+                            selectedItems.add(id_barang);
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: IntrinsicWidth(
+                                stepHeight: null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(AppLocalizations.of(context)!
+                                        .selectItem),
+                                    Divider(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 10,
+                      ),
+                      // menu hapus
+                      InkWell(
+                        onTap: () async {
+                          log("hapus");
+                          bool hapus =
+                              await fungsies().konfirmasiHapus(context);
+                          if (hapus) {
+                            setState(() {
+                              ItemWise().delete(id_barang);
+                            });
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: IntrinsicWidth(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(AppLocalizations.of(context)!.delete),
+                                    Divider(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 50,
+                      )
                     ],
                   ),
                 ),
@@ -710,12 +873,12 @@ class _MyHomePageState extends State<MyHomePage>
 
   Container circledIcon(IconData ikon) {
     return Container(
-        padding: EdgeInsets.all(5),
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
             color: Colors.blue,
             borderRadius: BorderRadius.circular(50),
             boxShadow: [
-              BoxShadow(
+              const BoxShadow(
                   color: Color.fromARGB(55, 0, 0, 0),
                   blurRadius: 5,
                   spreadRadius: 1,
@@ -850,7 +1013,7 @@ class _MyHomePageState extends State<MyHomePage>
   Widget addButton(BuildContext context) {
     return AnimatedScale(
       scale: selectedItems.isEmpty ? 1 : 0,
-      duration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
       child: Tooltip(
         message: AppLocalizations.of(context)!.addItem,
         child: InkWell(
@@ -891,15 +1054,17 @@ class _MyHomePageState extends State<MyHomePage>
                 }),
               ),
               Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      AppLocalizations.of(context)!.tapAndHoldToSelect,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500, color: Colors.blue[200]),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-              Container(height: 150,)
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  AppLocalizations.of(context)!.tapAndHoldToSelect,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500, color: Colors.blue[200]),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Container(
+                height: 150,
+              )
             ],
           );
         },
@@ -914,23 +1079,23 @@ class _MyHomePageState extends State<MyHomePage>
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
-              BoxShadow(
+              const BoxShadow(
                   color: Color.fromARGB(26, 0, 0, 0),
                   blurRadius: 2,
                   spreadRadius: 1)
             ],
             color: Colors.white),
-        padding: EdgeInsets.fromLTRB(5, 10, 5, 10),
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
               child: Row(
                 children: [
-                  buildFotoBarang(barang, id),
-                  Container(
-                    width: 5,
-                  ),
+                  // buildFotoBarang(barang, id),
+                  // Container(
+                  //   width: 5,
+                  // ),
                   Expanded(
                     child: MyListTile(context, index, id, barang, tinggi: 70),
                   )
@@ -957,12 +1122,12 @@ class _MyHomePageState extends State<MyHomePage>
                         }
                       },
                       child: Container(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                             border: Border.all(
                                 color: selectedItems.isEmpty
                                     ? Colors.blue
-                                    : Color.fromARGB(100, 158, 158, 158),
+                                    : const Color.fromARGB(100, 158, 158, 158),
                                 width: 1),
                             borderRadius: BorderRadius.circular(10)),
                         child: Text(
@@ -971,7 +1136,7 @@ class _MyHomePageState extends State<MyHomePage>
                           style: TextStyle(
                               color: selectedItems.isEmpty
                                   ? Colors.blue
-                                  : Color.fromARGB(100, 158, 158, 158),
+                                  : const Color.fromARGB(100, 158, 158, 158),
                               fontWeight: FontWeight.w500),
                         ),
                       ),
@@ -993,8 +1158,8 @@ class _MyHomePageState extends State<MyHomePage>
       decoration: BoxDecoration(
           color: barang["photo_barang"] != ""
               ? Colors.transparent
-              : Color.fromARGB(255, 186, 186, 186),
-          borderRadius: BorderRadius.all(Radius.circular(15))),
+              : const Color.fromARGB(255, 186, 186, 186),
+          borderRadius: const BorderRadius.all(Radius.circular(15))),
       child: barang["photo_barang"] != ""
           ? ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
@@ -1060,7 +1225,7 @@ class _MyHomePageState extends State<MyHomePage>
       },
       borderRadius: const BorderRadius.all(Radius.circular(15)),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
+        padding: const EdgeInsets.fromLTRB(10, 0, 0, 5),
         decoration: BoxDecoration(
             color: Color.fromARGB(
                 selectedItems.contains(id) == true ? 100 : 0, 255, 229, 59),
@@ -1068,19 +1233,46 @@ class _MyHomePageState extends State<MyHomePage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // info nama brg
-            Text(
-              barang['nama_barang'],
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+            Row(
+              children: [
+                // info nama brg
+                Expanded(
+                  child: Text(
+                    barang['nama_barang'],
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                // menu lainnya
+                AnimatedScale(
+                  scale: selectedItems.isEmpty ? 1 : 0,
+                  duration: Duration(milliseconds: 100),
+                  child: IconButton(
+                    onPressed: () {
+                      log("tekan more");
+                      showModalBottomSheet(
+                          useSafeArea: true,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          context: context,
+                          builder: (BuildContext context) {
+                            return moreMenuItem(context, barang['id_barang']);
+                          });
+                    },
+                    icon: const Icon(Icons.more_horiz_rounded),
+                    iconSize: 25,
+                  ),
+                )
+              ],
             ),
             // info kode brg
             Text(
               barang['kode_barang'],
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(height: 1.4),
+              style: const TextStyle(height: 1.4),
             ),
-            Divider(
+            const Divider(
               color: Colors.transparent,
             ),
             //info harga jual + stok barang
@@ -1089,9 +1281,9 @@ class _MyHomePageState extends State<MyHomePage>
                 children: [
                   Text(
                     "${pengaturan.mataUang} ${barang['harga_jual']}",
-                    style: TextStyle(color: Colors.deepOrange),
+                    style: const TextStyle(color: Colors.deepOrange),
                   ),
-                  VerticalDivider(),
+                  const VerticalDivider(),
                   Text(
                     "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
                     overflow: TextOverflow.ellipsis,
@@ -1225,7 +1417,7 @@ class _MyHomePageState extends State<MyHomePage>
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.redAccent,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
   }
 }
