@@ -261,8 +261,8 @@ class _AdminPanelState extends State<AdminPanel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      _deleteButton(context, "item", item['id_barang']),
                       _updateButton(context, item: item),
-                      _deleteButton(context, "item", item['id_barang'])
                     ],
                   )
                 ],
@@ -430,8 +430,8 @@ class _AdminPanelState extends State<AdminPanel> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    _deleteButton(context, "inv", inv['id_inventory']),
                     _updateButton(context, inv: inv),
-                    _deleteButton(context, "inv", inv['id_inventory'])
                   ],
                 )
               ]),
@@ -612,8 +612,8 @@ class _AdminPanelState extends State<AdminPanel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      _deleteButton(context, "user", user['id_user']),
                       _updateButton(context, user: user),
-                      _deleteButton(context, "user", user['id_user'])
                     ],
                   )
                 ],
@@ -966,7 +966,7 @@ class _AdminPanelState extends State<AdminPanel> {
             // tambah item
             case "item":
               String added = DateTime.now().millisecondsSinceEpoch.toString();
-              await itemApiWise().createOne(
+              await itemApiWise().create(
                   id_barang: idItem.text.trim(),
                   id_user: userState,
                   id_inventory: invState,

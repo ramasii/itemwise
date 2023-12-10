@@ -9,7 +9,7 @@ class itemApiWise {
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
 
-  create() async {
+  createBulk() async {
     log("backup barang");
 
     try {
@@ -32,7 +32,7 @@ class itemApiWise {
           await authapi().auth(userWise.userData['email_user'],
               userWise.userData['password_user']);
           // tambahkan ulang
-          await create();
+          await createBulk();
           break;
         case 403:
           // auth baru
@@ -41,12 +41,12 @@ class itemApiWise {
             await authapi().auth(userWise.userData['email_user'],
                 userWise.userData['password_user']);
             // tambah ulang
-            await create();
+            await createBulk();
           } else if (response.body == "token not found") {
             await authapi().auth(userWise.userData['email_user'],
                 userWise.userData['password_user']);
             // tambah ulang
-            await create();
+            await createBulk();
           }
           break;
         default:
@@ -57,7 +57,7 @@ class itemApiWise {
     }
   }
 
-  createOne({
+  create({
     String id_barang = '',
     String? id_user,
     String? id_inventory,
@@ -67,7 +67,7 @@ class itemApiWise {
     String stok_barang = '',
     String harga_beli = '',
     String harga_jual = '',
-    String photo_barang = '',
+    String? photo_barang,
     String added = '',
     String edited = '',
   }) async {
@@ -75,11 +75,13 @@ class itemApiWise {
     try {
       var response = await http.post(
           Uri.parse(
-              "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang$photo_barang&added=$added&edited=$edited"),
+                "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang=$photo_barang&added=$added&edited=$edited"
+              ),
           headers: {
             "Content-Type": "application/json",
             "authorization": authapi.authorization,
           });
+
       switch (response.statusCode) {
         case 200:
           log("sukses");
@@ -95,12 +97,12 @@ class itemApiWise {
         case 403:
           // auth baru
           log("auth baru");
-          if (response.body == "token invalid") {
+          if (response.toString() == "token invalid") {
             await authapi().auth(userWise.userData['email_user'],
                 userWise.userData['password_user']);
             // tambah ulang
             await create();
-          } else if (response.body == "token not found") {
+          } else if (response.toString() == "token not found") {
             await authapi().auth(userWise.userData['email_user'],
                 userWise.userData['password_user']);
             // tambah ulang

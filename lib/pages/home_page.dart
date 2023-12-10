@@ -67,6 +67,13 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _homeDrawer(context),
+      onDrawerChanged: (isOpened) {
+        if (isOpened == false) {
+          setState(() {
+            invEditMode = false;
+          });
+        }
+      },
       drawerEnableOpenDragGesture: selectedItems.isEmpty,
       key: _scaffoldKey,
       appBar: AppBar(
@@ -192,9 +199,19 @@ class _MyHomePageState extends State<MyHomePage>
                     IconButton(
                         highlightColor: Colors.red,
                         splashColor: Colors.transparent,
-                        onPressed: () {
+                        onPressed: () async {
                           log("delete $selectedItems", name: "delete button");
-                          deleteItemDialog(context);
+                          bool hapus = await fungsies().konfirmasiHapus(context,
+                              msg:
+                                  "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
+                          if (hapus) {
+                            setState(() {
+                              for (String a in selectedItems) {
+                                ItemWise().delete(a);
+                              }
+                              selectedItems.clear();
+                            });
+                          }
                         },
                         icon: const Icon(
                           Icons.delete,
@@ -286,8 +303,26 @@ class _MyHomePageState extends State<MyHomePage>
             userWise.userData['password_user']);
         // bakcup inventory
         await inventoryApiWise().create();
-        // backup barang
-        await itemApiWise().create();
+
+        // backup barang, tiap barang akan diupload satu persatu
+        for (var e in itm) {
+          await itemApiWise().create(
+            id_barang: e['id_barang'],
+            id_inventory: e['id_inventory'],
+            id_user: e['id_user'],
+            kode_barang: e['kode_barang'],
+            nama_barang: e['nama_barang'],
+            catatan: e['catatan'],
+            stok_barang: e['stok_barang'].toString(),
+            harga_beli: e['harga_beli'].toString(),
+            harga_jual: e['harga_jual'].toString(),
+            photo_barang: e['photo_barang'],
+            added: e['added'],
+            edited: e['edited'],
+          );
+        }
+        // await itemApiWise().createBulk();
+
         // tutup loading
         setState(() {
           Navigator.pop(context);
@@ -752,7 +787,10 @@ class _MyHomePageState extends State<MyHomePage>
                       Container(
                         height: 20,
                       ),
-                      Text("${AppLocalizations.of(context)!.action}:",style: TextStyle(fontWeight: FontWeight.w500),),
+                      Text(
+                        "${AppLocalizations.of(context)!.action}:",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
                       Container(
                         height: 10,
                       ),
@@ -988,9 +1026,16 @@ class _MyHomePageState extends State<MyHomePage>
             }
           },
           // hapus
-          onLongPress: () {
+          onLongPress: () async {
             if (invState != id_inventory && invEditMode == false) {
-              deleteInvDialog(context, id_inventory);
+              bool hapus = await fungsies().konfirmasiHapus(context,
+                  msg:
+                      "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readById(id_inventory)!["nama_inventory"]}\"?");
+              if (hapus) {
+                setState(() {
+                  inventoryWise().delete(id_inventory);
+                });
+              }
             }
           },
           title: Text(
@@ -1295,87 +1340,6 @@ class _MyHomePageState extends State<MyHomePage>
           ],
         ),
       ),
-    );
-  }
-
-  Future<dynamic> deleteItemDialog(BuildContext context, {String? id}) {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(
-              "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: greyButton(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () async {
-                setState(() {
-                  for (var id in selectedItems) {
-                    ItemWise().delete(id);
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
-                      context,
-                      "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}"));
-                  selectedItems.clear();
-                });
-                Navigator.of(context).pop();
-              },
-              child: dangerButton(AppLocalizations.of(context)!.delete),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<dynamic> deleteInvDialog(BuildContext context, String id) {
-    var idx =
-        inventoryWise().readByUser().indexWhere((e) => e["id_inventory"] == id);
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(
-              "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readByUser()[idx]["nama_inventory"]}\"?"),
-          actions: <Widget>[
-            // tombol cancel
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: greyButton(AppLocalizations.of(context)!.cancel),
-            ),
-            // tombol hapus
-            TextButton(
-              onPressed: () async {
-                setState(() {
-                  // hapus
-                  inventoryWise().delete(id);
-                  // ubah id_inventory menjadi null ke semua barang yang mengandung id ini
-                  ItemWise.items.forEach((element) {
-                    if (element["id_inventory"] == id) {
-                      ItemWise()
-                          .update(element["id_barang"], id_inventory: null);
-                    }
-                  });
-                  // tampilkan snakbar
-                  ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
-                      context,
-                      "${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.inventory}"));
-                  selectedItems.clear();
-                });
-                Navigator.of(context).pop();
-              },
-              child: dangerButton(AppLocalizations.of(context)!.delete),
-            ),
-          ],
-        );
-      },
     );
   }
 

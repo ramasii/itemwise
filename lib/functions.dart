@@ -1,5 +1,7 @@
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class fungsies {
   pickImage() async {
@@ -7,14 +9,12 @@ class fungsies {
 
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxHeight: 400,
-        maxWidth: 400);
+        source: ImageSource.gallery, maxHeight: 100, maxWidth: 100);
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
       final encodedImage = base64Encode(bytes);
-
+      log(encodedImage.length.toString());
       // kembalikan gambar yang dienkode
       return encodedImage;
     } else {
@@ -33,14 +33,20 @@ class fungsies {
     }
   }
 
-  Future<bool> konfirmasiHapus(BuildContext context) async {
+  Future<dynamic> konfirmasiHapus(BuildContext context, {String? judul, String? msg}) async {
     bool? result = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("${AppLocalizations.of(context)!.attention}"),
-            content: Text(AppLocalizations.of(context)!.delDataCantRecover),
+            title: Text(judul ?? AppLocalizations.of(context)!.attention),
+            content: Text(msg ?? AppLocalizations.of(context)!.delDataCantRecover),
             actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: Text(AppLocalizations.of(context)!.delete,
+                      style: TextStyle(color: Colors.red))),
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(false);
@@ -48,12 +54,6 @@ class fungsies {
                   child: Text(
                     AppLocalizations.of(context)!.cancel,
                   )),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: Text(AppLocalizations.of(context)!.delete,
-                      style: TextStyle(color: Colors.red))),
             ],
           );
         });
