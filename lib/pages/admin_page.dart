@@ -626,9 +626,9 @@ class _AdminPanelState extends State<AdminPanel> {
   TextButton _deleteButton(BuildContext context, String tipe, String id) {
     return TextButton(
         onPressed: () async {
-          var hapus = await fungsies().konfirmasiDialog(context);
+          bool? hapus = await fungsies().konfirmasiDialog(context);
 
-          if (hapus) {
+          if (hapus == true) {
             setState(() {
               loading = true;
             });
@@ -640,6 +640,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 }
                 // jika sama
                 else {
+                  // ignore: use_build_context_synchronously
                   showDialog(
                       context: context,
                       builder: (_) {

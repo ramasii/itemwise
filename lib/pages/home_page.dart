@@ -157,10 +157,10 @@ class _MyHomePageState extends State<MyHomePage>
               splashColor: Colors.transparent,
               onPressed: () async {
                 log("delete $selectedItems", name: "delete button");
-                bool hapus = await fungsies().konfirmasiDialog(context,
+                bool? hapus = await fungsies().konfirmasiDialog(context,
                     msg:
                         "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
-                if (hapus) {
+                if (hapus == true) {
                   for (String a in selectedItems) {
                     await ItemWise().delete(a);
                   }
@@ -931,9 +931,9 @@ class _MyHomePageState extends State<MyHomePage>
                       InkWell(
                         onTap: () async {
                           log("hapus");
-                          bool hapus =
+                          bool? hapus =
                               await fungsies().konfirmasiDialog(context);
-                          if (hapus) {
+                          if (hapus == true) {
                             await ItemWise().delete(id_barang);
                             setState(() {
                               // refresh filteredItems karena yang ditampilkan adalah filteredItems
@@ -1102,10 +1102,10 @@ class _MyHomePageState extends State<MyHomePage>
           // hapus
           onLongPress: () async {
             if (invState != id_inventory && invEditMode == false) {
-              bool hapus = await fungsies().konfirmasiDialog(context,
+              bool? hapus = await fungsies().konfirmasiDialog(context,
                   msg:
                       "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readById(id_inventory)!["nama_inventory"]}\"?");
-              if (hapus) {
+              if (hapus == true) {
                 setState(() {
                   inventoryWise().delete(id_inventory);
                 });

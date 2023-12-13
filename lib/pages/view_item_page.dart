@@ -419,8 +419,19 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   ? Center(
                       child: InkWell(
                         onTap: () async {
-                          // ambil gambar
-                          var imeg = await fungsies().pickImage();
+                          // ambil gambar dari galeri atau dari kamera
+                          bool? fromCam = await fungsies().konfirmasiDialog(
+                              context,
+                              msg: AppLocalizations.of(context)!
+                                  .choosePhotoSource,
+                              trueText: AppLocalizations.of(context)!.camera,
+                              falseText: AppLocalizations.of(context)!.gallery,
+                              trueColor: Colors.blue);
+                          var imeg = "";
+                          // ambil foto berdasarkan pilihan
+                          if(fromCam!=null){
+                            imeg = await fungsies().pickImage(from: fromCam ? PickImageFrom.camera : PickImageFrom.gallery);
+                          }
                           if (imeg != "") {
                             // cek apakah landscape atau bukan
                             var isLscape = await fungsies().CheckIsImgLscape(
@@ -459,10 +470,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
                       borderRadius: BorderRadius.circular(10),
                       onLongPress: () async {
                         // confirmDialog(context);
-                        bool hapus = await fungsies().konfirmasiDialog(context,
+                        bool? hapus = await fungsies().konfirmasiDialog(context,
                             msg: AppLocalizations.of(context)!
                                 .deleteImgCfrmation);
-                        if (hapus) {
+                        if (hapus == true) {
                           setState(() {
                             img = "";
                             isImgLscape = true;
@@ -570,7 +581,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     harga_beli, harga_jual,
                     catatan: catatan,
                     id_inventory: id_inventory,
-                    kode_barang: kdBrg);
+                    kode_barang: kdBrg,
+                    photo_barang: img);
               });
 
               // bersihkan controller

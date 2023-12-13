@@ -57,5 +57,8 @@
     "tapAndHoldToSelect":"Tekan dan tahan untuk memilih",
     "editItemDetail":"Edit detail barang",
     "action":"Tindakan",
-    "searchItem":"Cari barang"
+    "searchItem":"Cari barang",
+    "camera":"Kamera",
+    "gallery":"Galeri",
+    "choosePhotoSource":"Pilih sumber foto"
 }

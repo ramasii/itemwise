@@ -1,9 +1,10 @@
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
-enum PickImageFrom {gallery,camera}
+
+enum PickImageFrom { gallery, camera }
 
 /// ini sebenernya multifungsi, berisi fungsi atau variabel global
-/// mungkin bisa bikin efisien 
+/// mungkin bisa bikin efisien
 class fungsies {
   // List filteredItems = ItemWise().
 
@@ -14,14 +15,13 @@ class fungsies {
     XFile? pickedImage;
 
     // ambil lewat kamera atau dari galeri
-    if(from == PickImageFrom.gallery){
+    if (from == PickImageFrom.gallery) {
       pickedImage = await imagePicker.pickImage(
-        source: ImageSource.gallery, maxHeight: 100, maxWidth: 100);
-    } else {
+          source: ImageSource.gallery, maxHeight: 500, maxWidth: 500);
+    } else if(from == PickImageFrom.camera){
       pickedImage = await imagePicker.pickImage(
-        source: ImageSource.camera, maxHeight: 100, maxWidth: 100);
+          source: ImageSource.camera, maxHeight: 500, maxWidth: 500);
     }
-    
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
@@ -45,13 +45,20 @@ class fungsies {
     }
   }
 
-  Future<bool> konfirmasiDialog(BuildContext context,
-      {String? judul, String? msg, String? trueText, String? falseText}) async {
+  Future<bool?> konfirmasiDialog(
+    BuildContext context, {
+    // String? judul,
+    String? msg,
+    String? trueText,
+    String? falseText,
+    Color? trueColor,
+    Color? falseColor,
+  }) async {
     bool? result = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text(judul ?? AppLocalizations.of(context)!.attention),
+            // title: Text(judul ?? AppLocalizations.of(context)!.attention),
             content:
                 Text(msg ?? AppLocalizations.of(context)!.delDataCantRecover),
             actions: [
@@ -60,17 +67,18 @@ class fungsies {
                     Navigator.of(context).pop(true);
                   },
                   child: Text(trueText ?? AppLocalizations.of(context)!.delete,
-                      style: const TextStyle(color: Colors.red))),
+                      style: TextStyle(color: trueColor ?? Colors.red))),
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
                   child: Text(
                     falseText ?? AppLocalizations.of(context)!.cancel,
+                    style: TextStyle(color: falseColor ?? Colors.blue),
                   )),
             ],
           );
         });
-    return result ?? false;
+    return result;
   }
 }
