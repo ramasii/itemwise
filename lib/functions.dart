@@ -1,15 +1,27 @@
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'dart:io';
+enum PickImageFrom {gallery,camera}
 
+/// ini sebenernya multifungsi, berisi fungsi atau variabel global
+/// mungkin bisa bikin efisien 
 class fungsies {
-  pickImage() async {
+  // List filteredItems = ItemWise().
+
+  pickImage({PickImageFrom from = PickImageFrom.gallery}) async {
     log("START _pickImage");
 
     final imagePicker = ImagePicker();
-    final pickedImage = await imagePicker.pickImage(
+    XFile? pickedImage;
+
+    // ambil lewat kamera atau dari galeri
+    if(from == PickImageFrom.gallery){
+      pickedImage = await imagePicker.pickImage(
         source: ImageSource.gallery, maxHeight: 100, maxWidth: 100);
+    } else {
+      pickedImage = await imagePicker.pickImage(
+        source: ImageSource.camera, maxHeight: 100, maxWidth: 100);
+    }
+    
 
     if (pickedImage != null) {
       final bytes = await pickedImage.readAsBytes();
@@ -33,26 +45,28 @@ class fungsies {
     }
   }
 
-  Future<dynamic> konfirmasiHapus(BuildContext context, {String? judul, String? msg}) async {
+  Future<bool> konfirmasiDialog(BuildContext context,
+      {String? judul, String? msg, String? trueText, String? falseText}) async {
     bool? result = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text(judul ?? AppLocalizations.of(context)!.attention),
-            content: Text(msg ?? AppLocalizations.of(context)!.delDataCantRecover),
+            content:
+                Text(msg ?? AppLocalizations.of(context)!.delDataCantRecover),
             actions: [
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(true);
                   },
-                  child: Text(AppLocalizations.of(context)!.delete,
-                      style: TextStyle(color: Colors.red))),
+                  child: Text(trueText ?? AppLocalizations.of(context)!.delete,
+                      style: const TextStyle(color: Colors.red))),
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
                   child: Text(
-                    AppLocalizations.of(context)!.cancel,
+                    falseText ?? AppLocalizations.of(context)!.cancel,
                   )),
             ],
           );

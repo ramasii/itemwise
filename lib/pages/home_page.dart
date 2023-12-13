@@ -15,6 +15,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   List<String> selectedItems = [];
+  List filteredItems = [];
   String hjalNew = "";
   String stokNew = "";
   String idBrgOld = "";
@@ -24,12 +25,14 @@ class _MyHomePageState extends State<MyHomePage>
   TextEditingController hargaJualController = TextEditingController();
   TextEditingController mataUangController = TextEditingController();
   TextEditingController stokController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
   ScrollController invScrollController =
       ScrollController(keepScrollOffset: false);
   bool invEditMode = false;
+  bool searchMode = false;
   GlobalKey namaInvKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  late String invState;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late String invState = widget.id_inv ?? "all";
   late AnimationController bottomSheetAC;
 
   @override
@@ -40,9 +43,9 @@ class _MyHomePageState extends State<MyHomePage>
     checkDeviceId();
     authapi().auth(
         userWise.userData['email_user'], userWise.userData['password_user']);
-    invState = widget.id_inv ?? "all";
     bottomSheetAC = BottomSheet.createAnimationController(this);
     mataUangController.text = pengaturan.mataUang;
+    filteredItems = ItemWise().readByInventory(invState, id_user);
   }
 
   void checkDeviceId() async {
@@ -73,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage>
             invEditMode = false;
           });
         }
+        resetPencarian();
       },
       drawerEnableOpenDragGesture: selectedItems.isEmpty,
       key: _scaffoldKey,
@@ -85,40 +89,30 @@ class _MyHomePageState extends State<MyHomePage>
               )
             : Container(),
         title: selectedItems.isEmpty
-            ? Column(
+            // jika tidak ada barang terpilih, maka tampilkan default atau pencarian
+            ? Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(widget.title),
-                  if (invState != "all")
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width - 150),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 3),
-                                child: Icon(
-                                  Icons.inventory,
-                                  color: Colors.green,
-                                  size: 17,
-                                ),
-                              ),
-                            ),
-                            TextSpan(
-                              text: inventoryWise().readByUser().firstWhere(
-                                  (element) =>
-                                      element["id_inventory"] ==
-                                      invState)["nama_inventory"],
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ],
-                        ),
-                        overflow: TextOverflow.fade,
+                  defaultAppBar(context),
+                  AnimatedScale(
+                    alignment: Alignment.centerRight,
+                    scale: searchMode ? 1 : 0,
+                    duration: const Duration(milliseconds: 100),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 244, 250, 255)),
+                      child: TextFormField(
+                        controller: searchController,
+                        autofocus: searchMode,
+                        decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)!.searchItem),
+                        onChanged: (value) => cariBarang(value),
                       ),
-                    )
+                    ),
+                  ),
                 ],
               )
+            // jika ada barang terpilih maka tampilkan jumlah barang dipilih
             : Text(
                 "${selectedItems.length}",
                 style: const TextStyle(color: Colors.white),
@@ -127,113 +121,11 @@ class _MyHomePageState extends State<MyHomePage>
         titleSpacing: 0,
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : null,
         actions: selectedItems.isEmpty
-            ? [
-                PopupMenuButton(onSelected: (value) async {
-                  switch (value) {
-                    case "profil":
-                      log("profil");
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const userPage()));
-                      break;
-                    case "ekspor":
-                      await backupAsset();
-                      break;
-                    case "impor":
-                      await loadAsset();
-                      break;
-                    case "adminPanel":
-                      log("goto adminPanel");
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AdminPanel()));
-                      break;
-                    default:
-                  }
-                }, itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(
-                        value: "profil",
-                        child: _menuItem(
-                            context,
-                            userWise.isLoggedIn
-                                ? Icons.account_box_rounded
-                                : Icons.login_rounded,
-                            userWise.isLoggedIn
-                                ? AppLocalizations.of(context)!.profile
-                                : AppLocalizations.of(context)!.login)),
-                    if (userWise.isLoggedIn)
-                      PopupMenuItem(
-                          value: "ekspor",
-                          child: _menuItem(context, Icons.backup_rounded,
-                              AppLocalizations.of(context)!.bakcup)),
-                    if (userWise.isLoggedIn)
-                      PopupMenuItem(
-                          value: "impor",
-                          child: _menuItem(context, Icons.download_rounded,
-                              AppLocalizations.of(context)!.loadData)),
-                    // akses khusus admean
-                    if (userWise.userData['role'] == "admin" &&
-                        userWise.isLoggedIn)
-                      PopupMenuItem(
-                        value: "adminPanel",
-                        child: _menuItem(
-                            context,
-                            Icons.admin_panel_settings_rounded,
-                            AppLocalizations.of(context)!.adminPanel),
-                      )
-                  ];
-                })
-              ]
-            : [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(
-                      Icons.circle,
-                      color: Colors.white,
-                      size: 45,
-                    ),
-                    IconButton(
-                        highlightColor: Colors.red,
-                        splashColor: Colors.transparent,
-                        onPressed: () async {
-                          log("delete $selectedItems", name: "delete button");
-                          bool hapus = await fungsies().konfirmasiHapus(context,
-                              msg:
-                                  "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
-                          if (hapus) {
-                            setState(() {
-                              for (String a in selectedItems) {
-                                ItemWise().delete(a);
-                              }
-                              selectedItems.clear();
-                            });
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ))
-                  ],
-                ),
-                IconButton(
-                    onPressed: () {
-                      log("cancel");
-                      setState(() {
-                        selectedItems.clear();
-                      });
-                    },
-                    splashRadius: 20,
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: Colors.white,
-                    ))
-              ],
+            ? actionsIfSelectedItemsEmpty(context)
+            : actionsIfSelectedItemsNotEmpty(context),
       ),
-      body: ItemWise().readByInventory(invState, id_user).isNotEmpty
+      body: filteredItems.isNotEmpty
+          // body: ItemWise().readByInventory(invState, id_user).isNotEmpty
           ? Padding(
               padding: const EdgeInsets.only(top: 10),
               child: listItems(context))
@@ -247,6 +139,166 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
       floatingActionButton: addButton(context),
+    );
+  }
+
+  List<Widget> actionsIfSelectedItemsNotEmpty(BuildContext context) {
+    return [
+      Stack(
+        alignment: Alignment.center,
+        children: [
+          const Icon(
+            Icons.circle,
+            color: Colors.white,
+            size: 45,
+          ),
+          IconButton(
+              highlightColor: Colors.red,
+              splashColor: Colors.transparent,
+              onPressed: () async {
+                log("delete $selectedItems", name: "delete button");
+                bool hapus = await fungsies().konfirmasiDialog(context,
+                    msg:
+                        "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
+                if (hapus) {
+                  for (String a in selectedItems) {
+                    await ItemWise().delete(a);
+                  }
+                  setState(() {
+                    selectedItems.clear();
+                    // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                    filteredItems =
+                        ItemWise().readByInventory(invState, id_user);
+                  });
+                }
+              },
+              icon: const Icon(
+                Icons.delete,
+                color: Colors.red,
+              ))
+        ],
+      ),
+      IconButton(
+          onPressed: () {
+            log("cancel");
+            setState(() {
+              selectedItems.clear();
+            });
+          },
+          splashRadius: 20,
+          icon: const Icon(
+            Icons.close_rounded,
+            color: Colors.white,
+          ))
+    ];
+  }
+
+  List<Widget> actionsIfSelectedItemsEmpty(BuildContext context) {
+    return [
+      IconButton(
+          onPressed: () {
+            log("ngubah searchMode");
+            // jika searchMode == true maka akan mereset filteredItems
+            if (searchMode) {
+              resetPencarian();
+            } else {
+              setState(() {
+                searchMode = true;
+              });
+            }
+          },
+          icon: const Icon(Icons.search_rounded)),
+      PopupMenuButton(
+          onOpened: () => resetPencarian(),
+          onSelected: (value) async {
+            switch (value) {
+              case "profil":
+                log("profil");
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const userPage()));
+                break;
+              case "ekspor":
+                await backupAsset();
+                break;
+              case "impor":
+                await loadAsset();
+                break;
+              case "adminPanel":
+                log("goto adminPanel");
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AdminPanel()));
+                break;
+              default:
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem(
+                  value: "profil",
+                  child: _menuItem(
+                      context,
+                      userWise.isLoggedIn
+                          ? Icons.account_box_rounded
+                          : Icons.login_rounded,
+                      userWise.isLoggedIn
+                          ? AppLocalizations.of(context)!.profile
+                          : AppLocalizations.of(context)!.login)),
+              if (userWise.isLoggedIn)
+                PopupMenuItem(
+                    value: "ekspor",
+                    child: _menuItem(context, Icons.backup_rounded,
+                        AppLocalizations.of(context)!.bakcup)),
+              if (userWise.isLoggedIn)
+                PopupMenuItem(
+                    value: "impor",
+                    child: _menuItem(context, Icons.download_rounded,
+                        AppLocalizations.of(context)!.loadData)),
+              // akses khusus admean
+              if (userWise.userData['role'] == "admin" && userWise.isLoggedIn)
+                PopupMenuItem(
+                  value: "adminPanel",
+                  child: _menuItem(context, Icons.admin_panel_settings_rounded,
+                      AppLocalizations.of(context)!.adminPanel),
+                )
+            ];
+          }),
+    ];
+  }
+
+  Column defaultAppBar(BuildContext context) {
+    return Column(
+      children: [
+        Text(widget.title),
+        if (invState != "all")
+          ConstrainedBox(
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width - 150),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  const WidgetSpan(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 3),
+                      child: Icon(
+                        Icons.inventory,
+                        color: Colors.green,
+                        size: 17,
+                      ),
+                    ),
+                  ),
+                  TextSpan(
+                    text: inventoryWise().readByUser().firstWhere((element) =>
+                        element["id_inventory"] == invState)["nama_inventory"],
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
+              overflow: TextOverflow.fade,
+            ),
+          )
+      ],
     );
   }
 
@@ -276,6 +328,16 @@ class _MyHomePageState extends State<MyHomePage>
       print('Terhubung ke internet');
       return true;
     }
+  }
+
+  /// reset pencarian
+  resetPencarian() {
+    setState(() {
+      searchMode = false;
+      searchController.clear();
+      // refresh filteredItems karena yang ditampilkan adalah filteredItems
+      filteredItems = ItemWise().readByInventory(invState, id_user);
+    });
   }
 
   Future backupAsset() async {
@@ -370,7 +432,7 @@ class _MyHomePageState extends State<MyHomePage>
       setState(() {
         // ignore: use_build_context_synchronously
         Navigator.pop(context);
-        log(ItemWise().readByUser().toList().toString());
+        // log(ItemWise().readByUser().toList().toString());
       });
     }
 
@@ -432,11 +494,14 @@ class _MyHomePageState extends State<MyHomePage>
                           color: invEditMode ? Colors.green : Colors.grey[400],
                         ),
                       ),
+                      // tombol semua barang
                       Stack(alignment: Alignment.center, children: [
                         InkWell(
                           onTap: () {
                             setState(() {
                               invState = "all";
+                              filteredItems =
+                                  ItemWise().readByInventory("all", id_user);
                             });
                             Navigator.pop(context);
                           },
@@ -503,9 +568,10 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget stokAndHargaSheet(BuildContext context, String id_barang) {
-    Map barang = ItemWise().readByUser().firstWhere(
-          (element) => element['id_barang'] == id_barang,
-        );
+    Map barang = filteredItems.firstWhere(
+      // Map barang = ItemWise().readByUser().firstWhere(
+      (element) => element['id_barang'] == id_barang,
+    );
 
     // ini pencegahan value kena reset ketika render ulang (biasanya terjadi ketika menutup/memunculkan keyboard)
     // jika id_barang beda berarti ini build id_barang baru
@@ -677,13 +743,16 @@ class _MyHomePageState extends State<MyHomePage>
                                 child: InkWell(
                                   onTap: () async {
                                     log("simpan lewat bottomsheet");
+                                    await ItemWise().update(id_barang,
+                                        stok_barang: int.parse(
+                                            stokController.text.trim()),
+                                        harga_jual: int.parse(
+                                            hargaJualController.text.trim()),
+                                        id_inventory: barang['id_inventory']);
                                     setState(() {
-                                      ItemWise().update(id_barang,
-                                          stok_barang: int.parse(
-                                              stokController.text.trim()),
-                                          harga_jual: int.parse(
-                                              hargaJualController.text.trim()),
-                                          id_inventory: barang['id_inventory']);
+                                      // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                                      filteredItems = ItemWise()
+                                          .readByInventory(invState, id_user);
                                     });
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context)
@@ -699,8 +768,8 @@ class _MyHomePageState extends State<MyHomePage>
                                     decoration: BoxDecoration(
                                         color: Colors.blue,
                                         borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          const BoxShadow(
+                                        boxShadow: const [
+                                          BoxShadow(
                                               color:
                                                   Color.fromARGB(70, 0, 0, 0),
                                               blurRadius: 2)
@@ -789,7 +858,7 @@ class _MyHomePageState extends State<MyHomePage>
                       ),
                       Text(
                         "${AppLocalizations.of(context)!.action}:",
-                        style: TextStyle(fontWeight: FontWeight.w500),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                       Container(
                         height: 10,
@@ -817,7 +886,7 @@ class _MyHomePageState extends State<MyHomePage>
                                   children: [
                                     Text(AppLocalizations.of(context)!
                                         .editItemDetail),
-                                    Divider(),
+                                    const Divider(),
                                   ],
                                 ),
                               ),
@@ -847,7 +916,7 @@ class _MyHomePageState extends State<MyHomePage>
                                   children: [
                                     Text(AppLocalizations.of(context)!
                                         .selectItem),
-                                    Divider(),
+                                    const Divider(),
                                   ],
                                 ),
                               ),
@@ -863,10 +932,13 @@ class _MyHomePageState extends State<MyHomePage>
                         onTap: () async {
                           log("hapus");
                           bool hapus =
-                              await fungsies().konfirmasiHapus(context);
+                              await fungsies().konfirmasiDialog(context);
                           if (hapus) {
+                            await ItemWise().delete(id_barang);
                             setState(() {
-                              ItemWise().delete(id_barang);
+                              // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                              filteredItems =
+                                  ItemWise().readByInventory(invState, id_user);
                             });
                           }
                           Navigator.pop(context);
@@ -879,7 +951,7 @@ class _MyHomePageState extends State<MyHomePage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(AppLocalizations.of(context)!.delete),
-                                    Divider(),
+                                    const Divider(),
                                   ],
                                 ),
                               ),
@@ -915,8 +987,8 @@ class _MyHomePageState extends State<MyHomePage>
         decoration: BoxDecoration(
             color: Colors.blue,
             borderRadius: BorderRadius.circular(50),
-            boxShadow: [
-              const BoxShadow(
+            boxShadow: const [
+              BoxShadow(
                   color: Color.fromARGB(55, 0, 0, 0),
                   blurRadius: 5,
                   spreadRadius: 1,
@@ -1005,6 +1077,8 @@ class _MyHomePageState extends State<MyHomePage>
               case false:
                 setState(() {
                   invState = id_inventory;
+                  // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                  filteredItems = ItemWise().readByInventory(invState, id_user);
                 });
                 Navigator.pop(context);
                 break;
@@ -1028,7 +1102,7 @@ class _MyHomePageState extends State<MyHomePage>
           // hapus
           onLongPress: () async {
             if (invState != id_inventory && invEditMode == false) {
-              bool hapus = await fungsies().konfirmasiHapus(context,
+              bool hapus = await fungsies().konfirmasiDialog(context,
                   msg:
                       "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readById(id_inventory)!["nama_inventory"]}\"?");
               if (hapus) {
@@ -1062,12 +1136,15 @@ class _MyHomePageState extends State<MyHomePage>
       child: Tooltip(
         message: AppLocalizations.of(context)!.addItem,
         child: InkWell(
-          onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (ctx) => ViewItemPage(
-                        invState: invState,
-                      ))),
+          onTap: () {
+            resetPencarian();
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (ctx) => ViewItemPage(
+                          invState: invState,
+                        )));
+          },
           radius: 35,
           borderRadius: BorderRadius.circular(30),
           child: const CircleAvatar(
@@ -1086,9 +1163,11 @@ class _MyHomePageState extends State<MyHomePage>
     return SingleChildScrollView(
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-          List brgs = invState == "all"
-              ? ItemWise().readByUser()
-              : ItemWise().readByInventory(invState, id_user);
+          List brgs = filteredItems;
+          // List brgs = invState == "all"
+          //     ? filteredItems
+          //     // ? ItemWise().readByUser()
+          //     : ItemWise().readByInventory(invState, id_user);
           return Column(
             children: [
               Column(
@@ -1123,8 +1202,8 @@ class _MyHomePageState extends State<MyHomePage>
       child: Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              const BoxShadow(
+            boxShadow: const [
+              BoxShadow(
                   color: Color.fromARGB(26, 0, 0, 0),
                   blurRadius: 2,
                   spreadRadius: 1)
@@ -1292,7 +1371,7 @@ class _MyHomePageState extends State<MyHomePage>
                 // menu lainnya
                 AnimatedScale(
                   scale: selectedItems.isEmpty ? 1 : 0,
-                  duration: Duration(milliseconds: 100),
+                  duration: const Duration(milliseconds: 100),
                   child: IconButton(
                     onPressed: () {
                       log("tekan more");
@@ -1343,15 +1422,23 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  Container dangerButton(String msg) {
-    return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10), color: Colors.redAccent),
-        child: Text(
-          msg,
-          style: const TextStyle(color: Colors.white),
-        ));
+  /// cari barang berdasarkan teks lalu set filteredItems
+  void cariBarang(String teks) {
+    setState(() {
+      filteredItems = ItemWise()
+          .readByInventory(invState, id_user)
+          .where((element) =>
+              (element['nama_barang'] as String)
+                  .toLowerCase()
+                  .contains(teks.toLowerCase()) ||
+              (element['kode_barang'] as String)
+                  .toLowerCase()
+                  .contains(teks.toLowerCase()) ||
+              (element['catatan'] as String)
+                  .toLowerCase()
+                  .contains(teks.toLowerCase()))
+          .toList();
+    });
   }
 
   Container successButton(String msg) {
@@ -1363,25 +1450,5 @@ class _MyHomePageState extends State<MyHomePage>
           msg,
           style: const TextStyle(color: Colors.white),
         ));
-  }
-
-  Container greyButton(String msg) {
-    return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10), color: Colors.grey),
-        child: Text(
-          msg,
-          style: const TextStyle(color: Colors.white),
-        ));
-  }
-
-  SnackBar dangerSnackbar(BuildContext context, String msg) {
-    return SnackBar(
-      content: Text(msg),
-      dismissDirection: DismissDirection.horizontal,
-      backgroundColor: Colors.redAccent,
-      duration: const Duration(seconds: 1),
-    );
   }
 }

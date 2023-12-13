@@ -56,5 +56,6 @@
     "editStockAndPrice":"Edit Stok dan Harga",
     "tapAndHoldToSelect":"Tekan dan tahan untuk memilih",
     "editItemDetail":"Edit detail barang",
-    "action":"Tindakan"
+    "action":"Tindakan",
+    "searchItem":"Cari barang"
 }

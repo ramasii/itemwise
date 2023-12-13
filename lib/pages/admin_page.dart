@@ -626,7 +626,7 @@ class _AdminPanelState extends State<AdminPanel> {
   TextButton _deleteButton(BuildContext context, String tipe, String id) {
     return TextButton(
         onPressed: () async {
-          var hapus = await fungsies().konfirmasiHapus(context);
+          var hapus = await fungsies().konfirmasiDialog(context);
 
           if (hapus) {
             setState(() {

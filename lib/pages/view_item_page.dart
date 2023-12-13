@@ -457,8 +457,17 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     )
                   : InkWell(
                       borderRadius: BorderRadius.circular(10),
-                      onLongPress: () {
-                        confirmDialog(context);
+                      onLongPress: () async {
+                        // confirmDialog(context);
+                        bool hapus = await fungsies().konfirmasiDialog(context,
+                            msg: AppLocalizations.of(context)!
+                                .deleteImgCfrmation);
+                        if (hapus) {
+                          setState(() {
+                            img = "";
+                            isImgLscape = true;
+                          });
+                        }
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
