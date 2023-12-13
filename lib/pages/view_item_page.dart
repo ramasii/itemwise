@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
 
 class ViewItemPage extends StatefulWidget {
+  /// jika itemMap != null maka invState akan dibiarkan, nilai invState akan mengikuti itemMap['id_inventory']
   const ViewItemPage({super.key, this.itemMap, this.invState});
 
   final Map? itemMap;
@@ -23,14 +24,13 @@ class _ViewItemPageState extends State<ViewItemPage> {
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
 
-  final TextEditingController _itemNameController = TextEditingController();
-  final TextEditingController _itemDescriptionController =
-      TextEditingController();
-  final TextEditingController _itemStockController = TextEditingController();
-  final TextEditingController _purchasePriceController =
-      TextEditingController();
-  final TextEditingController _sellingPriceController = TextEditingController();
+  TextEditingController itemNameController = TextEditingController();
+  TextEditingController itemDescriptionController = TextEditingController();
+  TextEditingController itemStockController = TextEditingController();
+  TextEditingController purchasePriceController = TextEditingController();
+  TextEditingController sellingPriceController = TextEditingController();
   TextEditingController NamaInvController = TextEditingController();
+  TextEditingController kodeBarangController = TextEditingController();
 
   @override
   void initState() {
@@ -38,11 +38,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
     log('in viewItemPage');
     if (widget.itemMap != null) {
       isEdit = true;
-      _itemNameController.text = widget.itemMap!['nama_barang'];
-      _itemDescriptionController.text = widget.itemMap!['catatan'];
-      _itemStockController.text = widget.itemMap!['stok_barang'].toString();
-      _purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
-      _sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
+      itemNameController.text = widget.itemMap!['nama_barang'];
+      kodeBarangController.text = widget.itemMap!['kode_barang'];
+      itemDescriptionController.text = widget.itemMap!['catatan'];
+      itemStockController.text = widget.itemMap!['stok_barang'].toString();
+      purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
+      sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
       img = widget.itemMap!["photo_barang"];
       // kalo bukan null, dicek dulu apakah masih ada di inventoryWise
       // takutnya kalo inventorynya dihapus, trs viewItem yang punya id_inventory yang dihapus malah eror
@@ -60,7 +61,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
         }
       }
 
-      CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
+      // cek img
+      if (img != "") {
+        var isL =
+            fungsies().CheckIsImgLscape(Uint8List.fromList(base64.decode(img)));
+        setState(() {
+          isImgLscape = isL;
+        });
+      }
     } else if (widget.itemMap == null) {
       isEdit == false;
       invDropdownValue = widget.invState == "all" ? null : widget.invState;
@@ -108,21 +116,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /* // tampilkan id barang
-              if (widget.itemMap != null)
-                Text("barang: ${widget.itemMap!['id_barang']}"),
-              // tampilkan id user pemilik barang
-              if (widget.itemMap != null)
-                Text("pemilik: ${widget.itemMap!['id_user']}"),
-              // tampilkan user saat ini
-              if (userWise.isLoggedIn)
-                Text("user now: ${userWise.userData['id_user']}")
-              else
-                Text("tanpa akun: ${deviceData.id}"), */
-
               // nama item | item name
               TextFormField(
-                controller: _itemNameController,
+                controller: itemNameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppLocalizations.of(context)!.required;
@@ -134,9 +130,16 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     labelText: AppLocalizations.of(context)!.itemName),
               ),
 
+              // kode barang
+              TextFormField(
+                controller: kodeBarangController,
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.productCode),
+              ),
+
               // deskripsi | description
               TextFormField(
-                controller: _itemDescriptionController,
+                controller: itemDescriptionController,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.description),
                 maxLines: null,
@@ -144,12 +147,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
               // stok | stock
               TextFormField(
-                controller: _itemStockController,
+                controller: itemStockController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.itemStock),
                 onChanged: (value) {
-                  clearNotNumber(value, _itemStockController);
+                  clearNotNumber(value, itemStockController);
                 },
               ),
 
@@ -163,7 +166,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   Expanded(
                     flex: 5,
                     child: TextFormField(
-                      controller: _purchasePriceController,
+                      controller: purchasePriceController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Item name is required';
@@ -178,7 +181,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                         ),
                       ),
                       onChanged: (value) {
-                        clearNotNumber(value, _purchasePriceController);
+                        clearNotNumber(value, purchasePriceController);
                       },
                     ),
                   ),
@@ -187,7 +190,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   Expanded(
                     flex: 5,
                     child: TextFormField(
-                      controller: _sellingPriceController,
+                      controller: sellingPriceController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Item name is required';
@@ -202,7 +205,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                         ),
                       ),
                       onChanged: (value) {
-                        clearNotNumber(value, _sellingPriceController);
+                        clearNotNumber(value, sellingPriceController);
                       },
                     ),
                   ),
@@ -223,7 +226,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           child: Container(
                               padding: const EdgeInsets.all(10),
                               width: MediaQuery.of(context).size.width / 2,
-                              child: Text(inv["nama_inventory"],maxLines: 1, overflow: TextOverflow.ellipsis,)),
+                              child: Text(
+                                inv["nama_inventory"],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
                         );
                       }),
                       elevation: 6,
@@ -388,47 +395,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
   void clearTextController() {
     setState(() {
-      _itemDescriptionController.clear();
-      _itemNameController.clear();
-      _itemStockController.clear();
-      _purchasePriceController.clear();
-      _sellingPriceController.clear();
+      itemDescriptionController.clear();
+      itemNameController.clear();
+      itemStockController.clear();
+      purchasePriceController.clear();
+      sellingPriceController.clear();
     });
-  }
-
-  Future<void> _pickImage() async {
-    log("START _pickImage");
-
-    final imagePicker = ImagePicker();
-    final pickedImage = await imagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 25,
-        maxHeight: 500.0,
-        maxWidth: 500.0);
-
-    if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
-      final encodedImage = base64Encode(bytes);
-
-      setState(() {
-        img = encodedImage;
-      });
-      await CheckIsImgLscape(bytes);
-    }
-
-    log("DONE _pickedImage");
-  }
-
-  Future<void> CheckIsImgLscape(Uint8List bytes) async {
-    if (img != "") {
-      final size = ImageSizeGetter.getSize(MemoryInput(bytes));
-
-      if (size.height > size.width) {
-        setState(() {
-          isImgLscape = false;
-        });
-      }
-    }
   }
 
   Widget cardFotoBarang(BuildContext context) {
@@ -446,8 +418,30 @@ class _ViewItemPageState extends State<ViewItemPage> {
               child: img == ""
                   ? Center(
                       child: InkWell(
-                        onTap: () {
-                          _pickImage();
+                        onTap: () async {
+                          // ambil gambar dari galeri atau dari kamera
+                          bool? fromCam = await fungsies().konfirmasiDialog(
+                              context,
+                              msg: AppLocalizations.of(context)!
+                                  .choosePhotoSource,
+                              trueText: AppLocalizations.of(context)!.camera,
+                              falseText: AppLocalizations.of(context)!.gallery,
+                              trueColor: Colors.blue);
+                          var imeg = "";
+                          // ambil foto berdasarkan pilihan
+                          if(fromCam!=null){
+                            imeg = await fungsies().pickImage(from: fromCam ? PickImageFrom.camera : PickImageFrom.gallery);
+                          }
+                          if (imeg != "") {
+                            // cek apakah landscape atau bukan
+                            var isLscape = await fungsies().CheckIsImgLscape(
+                                Uint8List.fromList(base64.decode(imeg)));
+                            // set nilai
+                            setState(() {
+                              img = imeg;
+                              isImgLscape = isLscape;
+                            });
+                          }
                         },
                         borderRadius: BorderRadius.circular(10),
                         child: Padding(
@@ -474,14 +468,28 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     )
                   : InkWell(
                       borderRadius: BorderRadius.circular(10),
-                      onLongPress: () {
-                        confirmDialog(context);
+                      onLongPress: () async {
+                        // confirmDialog(context);
+                        bool? hapus = await fungsies().konfirmasiDialog(context,
+                            msg: AppLocalizations.of(context)!
+                                .deleteImgCfrmation);
+                        if (hapus == true) {
+                          setState(() {
+                            img = "";
+                            isImgLscape = true;
+                          });
+                        }
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.memory(
-                          Uint8List.fromList(base64.decode(img)),
-                          fit: BoxFit.cover,
+                        child: Hero(
+                          tag: widget.itemMap != null
+                              ? "image${widget.itemMap!['id_barang']}"
+                              : "image${DateTime.now().millisecondsSinceEpoch}",
+                          child: Image.memory(
+                            Uint8List.fromList(base64.decode(img)),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     )),
@@ -546,14 +554,15 @@ class _ViewItemPageState extends State<ViewItemPage> {
       message: "",
       child: InkWell(
         onTap: () async {
-          if (_itemNameController.text.trim() != "") {
+          if (itemNameController.text.trim() != "") {
             // add item
             if (widget.itemMap == null) {
-              String nama_barang = _itemNameController.text;
-              String catatan = _itemDescriptionController.text;
-              String stok = _itemStockController.text.trim();
-              String hbli = _purchasePriceController.text.trim();
-              String hjal = _sellingPriceController.text.trim();
+              String nama_barang = itemNameController.text;
+              String catatan = itemDescriptionController.text;
+              String stok = itemStockController.text.trim();
+              String hbli = purchasePriceController.text.trim();
+              String hjal = sellingPriceController.text.trim();
+              String kdBrg = kodeBarangController.text.trim();
 
               int stok_barang = int.parse(stok == "" ? "0" : stok);
               int harga_beli = int.parse(hbli == "" ? "0" : hbli);
@@ -570,9 +579,13 @@ class _ViewItemPageState extends State<ViewItemPage> {
               setState(() {
                 ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
                     harga_beli, harga_jual,
-                    catatan: catatan, id_inventory: id_inventory);
+                    catatan: catatan,
+                    id_inventory: id_inventory,
+                    kode_barang: kdBrg,
+                    photo_barang: img);
               });
 
+              // bersihkan controller
               clearTextController();
               // ignore: use_build_context_synchronously
               Navigator.pushAndRemoveUntil(
@@ -585,11 +598,12 @@ class _ViewItemPageState extends State<ViewItemPage> {
             }
             // edit item
             else if (widget.itemMap != null) {
-              String nama_barang = _itemNameController.text.trim();
-              String catatan = _itemDescriptionController.text.trim();
-              String stok = _itemStockController.text.trim();
-              String hbli = _purchasePriceController.text.trim();
-              String hjal = _sellingPriceController.text.trim();
+              String nama_barang = itemNameController.text.trim();
+              String catatan = itemDescriptionController.text.trim();
+              String stok = itemStockController.text.trim();
+              String hbli = purchasePriceController.text.trim();
+              String hjal = sellingPriceController.text.trim();
+              String kdBrg = kodeBarangController.text.trim();
 
               int stok_barang = int.parse(stok == "" ? "0" : stok);
               int harga_beli = int.parse(hbli == "" ? "0" : hbli);
@@ -604,6 +618,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 widget.itemMap!["harga_jual"],
                 widget.itemMap!["photo_barang"],
                 widget.itemMap!["id_inventory"],
+                widget.itemMap!["kode_barang"]
               ];
               List baru = [
                 nama_barang,
@@ -612,7 +627,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
                 harga_beli,
                 harga_jual,
                 img,
-                invDropdownValue
+                invDropdownValue,
+                kdBrg
               ];
 
               // cek apakah data berbeda, jika beda berarti diedit
@@ -627,6 +643,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               if (isEdited) {
                 ItemWise().update(widget.itemMap!['id_barang'],
                     nama_barang: nama_barang,
+                    kode_barang: kdBrg,
                     catatan: catatan,
                     stok_barang: stok_barang,
                     harga_beli: harga_beli,
@@ -639,10 +656,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
             ScaffoldMessenger.of(context).showSnackBar(successSnackbar(
                 context, AppLocalizations.of(context)!.successSave));
           } else {
-            if (_itemNameController.text.trim() == "") {
+            if (itemNameController.text.trim() == "") {
               ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                   context, AppLocalizations.of(context)!.itemNameAlert));
-            } else if (_itemStockController.text.trim() == "") {
+            } else if (itemStockController.text.trim() == "") {
               ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
                   context, AppLocalizations.of(context)!.itemStockAlert));
             }

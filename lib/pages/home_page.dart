@@ -12,17 +12,28 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   List<String> selectedItems = [];
-  late String invState;
+  List filteredItems = [];
+  String hjalNew = "";
+  String stokNew = "";
+  String idBrgOld = "";
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
   TextEditingController NamaInvController = TextEditingController();
+  TextEditingController hargaJualController = TextEditingController();
+  TextEditingController mataUangController = TextEditingController();
+  TextEditingController stokController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
   ScrollController invScrollController =
       ScrollController(keepScrollOffset: false);
   bool invEditMode = false;
+  bool searchMode = false;
   GlobalKey namaInvKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late String invState = widget.id_inv ?? "all";
+  late AnimationController bottomSheetAC;
 
   @override
   void initState() {
@@ -30,9 +41,11 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     log('in homePage');
     checkDeviceId();
-    authapi().auth(userWise.userData['email_user'], userWise.userData['password_user']);
-    invState = widget.id_inv ?? "all";
-    log("WOIIII${widget.id_inv}$invState");
+    authapi().auth(
+        userWise.userData['email_user'], userWise.userData['password_user']);
+    bottomSheetAC = BottomSheet.createAnimationController(this);
+    mataUangController.text = pengaturan.mataUang;
+    filteredItems = ItemWise().readByInventory(invState, id_user);
   }
 
   void checkDeviceId() async {
@@ -57,51 +70,49 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _homeDrawer(context),
+      onDrawerChanged: (isOpened) {
+        if (isOpened == false) {
+          setState(() {
+            invEditMode = false;
+          });
+        }
+        resetPencarian();
+      },
       drawerEnableOpenDragGesture: selectedItems.isEmpty,
       key: _scaffoldKey,
       appBar: AppBar(
         toolbarHeight: 55,
         leading: selectedItems.isEmpty
             ? IconButton(
-                icon: Icon(Icons.menu),
+                icon: const Icon(Icons.menu),
                 onPressed: () => _scaffoldKey.currentState!.openDrawer(),
               )
             : Container(),
         title: selectedItems.isEmpty
-            ? Column(
+            // jika tidak ada barang terpilih, maka tampilkan default atau pencarian
+            ? Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(widget.title),
-                  if (invState != "all")
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width - 150),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              child: Padding(
-                                padding: EdgeInsets.only(right: 3),
-                                child: Icon(
-                                  Icons.inventory,
-                                  color: Colors.green,
-                                  size: 17,
-                                ),
-                              ),
-                            ),
-                            TextSpan(
-                              text: inventoryWise().readByUser().firstWhere(
-                                  (element) =>
-                                      element["id_inventory"] ==
-                                      invState)["nama_inventory"],
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ],
-                        ),
-                        overflow: TextOverflow.fade,
+                  defaultAppBar(context),
+                  AnimatedScale(
+                    alignment: Alignment.centerRight,
+                    scale: searchMode ? 1 : 0,
+                    duration: const Duration(milliseconds: 100),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 244, 250, 255)),
+                      child: TextFormField(
+                        controller: searchController,
+                        autofocus: searchMode,
+                        decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)!.searchItem),
+                        onChanged: (value) => cariBarang(value),
                       ),
-                    )
+                    ),
+                  ),
                 ],
               )
+            // jika ada barang terpilih maka tampilkan jumlah barang dipilih
             : Text(
                 "${selectedItems.length}",
                 style: const TextStyle(color: Colors.white),
@@ -110,103 +121,11 @@ class _MyHomePageState extends State<MyHomePage> {
         titleSpacing: 0,
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : null,
         actions: selectedItems.isEmpty
-            ? [
-                PopupMenuButton(onSelected: (value) async {
-                  switch (value) {
-                    case "profil":
-                      log("profil");
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const userPage()));
-                      break;
-                    case "ekspor":
-                      await backupAsset();
-                      break;
-                    case "impor":
-                      await loadAsset();
-                      break;
-                    case "adminPanel":
-                      log("goto adminPanel");
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AdminPanel()));
-                      break;
-                    default:
-                  }
-                }, itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(
-                        value: "profil",
-                        child: _menuItem(
-                            context,
-                            userWise.isLoggedIn
-                                ? Icons.account_box_rounded
-                                : Icons.login_rounded,
-                            userWise.isLoggedIn
-                                ? AppLocalizations.of(context)!.profile
-                                : AppLocalizations.of(context)!.login)),
-                    if (userWise.isLoggedIn)
-                      PopupMenuItem(
-                          value: "ekspor",
-                          child: _menuItem(context, Icons.backup_rounded,
-                              AppLocalizations.of(context)!.bakcup)),
-                    if (userWise.isLoggedIn)
-                      PopupMenuItem(
-                          value: "impor",
-                          child: _menuItem(context, Icons.download_rounded,
-                              AppLocalizations.of(context)!.loadData)),
-                    // akses khusus admean
-                    if (userWise.userData['role'] == "admin" &&
-                        userWise.isLoggedIn)
-                      PopupMenuItem(
-                        value: "adminPanel",
-                        child: _menuItem(
-                            context,
-                            Icons.admin_panel_settings_rounded,
-                            AppLocalizations.of(context)!.adminPanel),
-                      )
-                  ];
-                })
-              ]
-            : [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    const Icon(
-                      Icons.circle,
-                      color: Colors.white,
-                      size: 45,
-                    ),
-                    IconButton(
-                        highlightColor: Colors.red,
-                        splashColor: Colors.transparent,
-                        onPressed: () {
-                          log("delete $selectedItems", name: "delete button");
-                          deleteItemDialog(context);
-                        },
-                        icon: const Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ))
-                  ],
-                ),
-                IconButton(
-                    onPressed: () {
-                      log("cancel");
-                      setState(() {
-                        selectedItems.clear();
-                      });
-                    },
-                    splashRadius: 20,
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: Colors.white,
-                    ))
-              ],
+            ? actionsIfSelectedItemsEmpty(context)
+            : actionsIfSelectedItemsNotEmpty(context),
       ),
-      body: ItemWise().readByInventory(invState, id_user).isNotEmpty
+      body: filteredItems.isNotEmpty
+          // body: ItemWise().readByInventory(invState, id_user).isNotEmpty
           ? Padding(
               padding: const EdgeInsets.only(top: 10),
               child: listItems(context))
@@ -219,10 +138,167 @@ class _MyHomePageState extends State<MyHomePage> {
                 textAlign: TextAlign.center,
               ),
             ),
-      floatingActionButton: Visibility(
-        child: addButton(context),
-        visible: selectedItems.isEmpty,
+      floatingActionButton: addButton(context),
+    );
+  }
+
+  List<Widget> actionsIfSelectedItemsNotEmpty(BuildContext context) {
+    return [
+      Stack(
+        alignment: Alignment.center,
+        children: [
+          const Icon(
+            Icons.circle,
+            color: Colors.white,
+            size: 45,
+          ),
+          IconButton(
+              highlightColor: Colors.red,
+              splashColor: Colors.transparent,
+              onPressed: () async {
+                log("delete $selectedItems", name: "delete button");
+                bool? hapus = await fungsies().konfirmasiDialog(context,
+                    msg:
+                        "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
+                if (hapus == true) {
+                  for (String a in selectedItems) {
+                    await ItemWise().delete(a);
+                  }
+                  setState(() {
+                    selectedItems.clear();
+                    // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                    filteredItems =
+                        ItemWise().readByInventory(invState, id_user);
+                  });
+                }
+              },
+              icon: const Icon(
+                Icons.delete,
+                color: Colors.red,
+              ))
+        ],
       ),
+      IconButton(
+          onPressed: () {
+            log("cancel");
+            setState(() {
+              selectedItems.clear();
+            });
+          },
+          splashRadius: 20,
+          icon: const Icon(
+            Icons.close_rounded,
+            color: Colors.white,
+          ))
+    ];
+  }
+
+  List<Widget> actionsIfSelectedItemsEmpty(BuildContext context) {
+    return [
+      IconButton(
+          onPressed: () {
+            log("ngubah searchMode");
+            // jika searchMode == true maka akan mereset filteredItems
+            if (searchMode) {
+              resetPencarian();
+            } else {
+              setState(() {
+                searchMode = true;
+              });
+            }
+          },
+          icon: const Icon(Icons.search_rounded)),
+      PopupMenuButton(
+          onOpened: () => resetPencarian(),
+          onSelected: (value) async {
+            switch (value) {
+              case "profil":
+                log("profil");
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const userPage()));
+                break;
+              case "ekspor":
+                await backupAsset();
+                break;
+              case "impor":
+                await loadAsset();
+                break;
+              case "adminPanel":
+                log("goto adminPanel");
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AdminPanel()));
+                break;
+              default:
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem(
+                  value: "profil",
+                  child: _menuItem(
+                      context,
+                      userWise.isLoggedIn
+                          ? Icons.account_box_rounded
+                          : Icons.login_rounded,
+                      userWise.isLoggedIn
+                          ? AppLocalizations.of(context)!.profile
+                          : AppLocalizations.of(context)!.login)),
+              if (userWise.isLoggedIn)
+                PopupMenuItem(
+                    value: "ekspor",
+                    child: _menuItem(context, Icons.backup_rounded,
+                        AppLocalizations.of(context)!.bakcup)),
+              if (userWise.isLoggedIn)
+                PopupMenuItem(
+                    value: "impor",
+                    child: _menuItem(context, Icons.download_rounded,
+                        AppLocalizations.of(context)!.loadData)),
+              // akses khusus admean
+              if (userWise.userData['role'] == "admin" && userWise.isLoggedIn)
+                PopupMenuItem(
+                  value: "adminPanel",
+                  child: _menuItem(context, Icons.admin_panel_settings_rounded,
+                      AppLocalizations.of(context)!.adminPanel),
+                )
+            ];
+          }),
+    ];
+  }
+
+  Column defaultAppBar(BuildContext context) {
+    return Column(
+      children: [
+        Text(widget.title),
+        if (invState != "all")
+          ConstrainedBox(
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width - 150),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  const WidgetSpan(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 3),
+                      child: Icon(
+                        Icons.inventory,
+                        color: Colors.green,
+                        size: 17,
+                      ),
+                    ),
+                  ),
+                  TextSpan(
+                    text: inventoryWise().readByUser().firstWhere((element) =>
+                        element["id_inventory"] == invState)["nama_inventory"],
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
+              overflow: TextOverflow.fade,
+            ),
+          )
+      ],
     );
   }
 
@@ -254,6 +330,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  /// reset pencarian
+  resetPencarian() {
+    setState(() {
+      searchMode = false;
+      searchController.clear();
+      // refresh filteredItems karena yang ditampilkan adalah filteredItems
+      filteredItems = ItemWise().readByInventory(invState, id_user);
+    });
+  }
+
   Future backupAsset() async {
     log("ekspor aset");
 
@@ -261,7 +347,7 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         });
@@ -279,8 +365,26 @@ class _MyHomePageState extends State<MyHomePage> {
             userWise.userData['password_user']);
         // bakcup inventory
         await inventoryApiWise().create();
-        // backup barang
-        await itemApiWise().create();
+
+        // backup barang, tiap barang akan diupload satu persatu
+        for (var e in itm) {
+          await itemApiWise().create(
+            id_barang: e['id_barang'],
+            id_inventory: e['id_inventory'],
+            id_user: e['id_user'],
+            kode_barang: e['kode_barang'],
+            nama_barang: e['nama_barang'],
+            catatan: e['catatan'],
+            stok_barang: e['stok_barang'].toString(),
+            harga_beli: e['harga_beli'].toString(),
+            harga_jual: e['harga_jual'].toString(),
+            photo_barang: e['photo_barang'],
+            added: e['added'],
+            edited: e['edited'],
+          );
+        }
+        // await itemApiWise().createBulk();
+
         // tutup loading
         setState(() {
           Navigator.pop(context);
@@ -308,7 +412,7 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         });
@@ -328,7 +432,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         // ignore: use_build_context_synchronously
         Navigator.pop(context);
-        log(ItemWise().readByUser().toList().toString());
+        // log(ItemWise().readByUser().toList().toString());
       });
     }
 
@@ -390,11 +494,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           color: invEditMode ? Colors.green : Colors.grey[400],
                         ),
                       ),
+                      // tombol semua barang
                       Stack(alignment: Alignment.center, children: [
                         InkWell(
                           onTap: () {
                             setState(() {
                               invState = "all";
+                              filteredItems =
+                                  ItemWise().readByInventory("all", id_user);
                             });
                             Navigator.pop(context);
                           },
@@ -458,6 +565,439 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  Widget stokAndHargaSheet(BuildContext context, String id_barang) {
+    Map barang = filteredItems.firstWhere(
+      // Map barang = ItemWise().readByUser().firstWhere(
+      (element) => element['id_barang'] == id_barang,
+    );
+
+    // ini pencegahan value kena reset ketika render ulang (biasanya terjadi ketika menutup/memunculkan keyboard)
+    // jika id_barang beda berarti ini build id_barang baru
+    if (id_barang != idBrgOld) {
+      hargaJualController.text = barang['harga_jual'].toString();
+      stokController.text = barang['stok_barang'].toString();
+    }
+    // ini kalo sama
+    else {
+      if (hjalNew == "") {
+        hargaJualController.text = barang['harga_jual'].toString();
+      }
+      if (stokNew == "") {
+        stokController.text = barang['stok_barang'].toString();
+      }
+    }
+    idBrgOld = id_barang;
+    return BottomSheet(
+        onClosing: () {
+          Navigator.pop(context);
+        },
+        backgroundColor: Colors.transparent,
+        animationController: bottomSheetAC,
+        builder: (BuildContext context) {
+          return Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 5,
+                          width: 60,
+                          decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(5)),
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 10,
+                          ),
+                          Text(
+                            AppLocalizations.of(context)!.editStockAndPrice,
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          Container(
+                            height: 20,
+                          ),
+                          Text(
+                            barang['nama_barang'],
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w500),
+                          ),
+                          Container(
+                            height: 5,
+                          ),
+                          Text(
+                            barang['kode_barang'],
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          Container(
+                            height: 20,
+                          ),
+                          Text(AppLocalizations.of(context)!.selPrice,
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w500)),
+                          TextFormField(
+                            controller: hargaJualController,
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                                icon: Text(pengaturan.mataUang)),
+                            onChanged: (value) {
+                              clearNotNumber(value, hargaJualController);
+                              if (value == "") {
+                                setState(() {
+                                  hargaJualController.text = "0";
+                                });
+                              } else {
+                                setState(() {
+                                  hjalNew = value;
+                                });
+                              }
+                            },
+                          ),
+                          Container(
+                            height: 20,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)!.stok,
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    InkWell(
+                                        onTap: () {
+                                          log("minus");
+                                          int stok =
+                                              int.parse(stokController.text);
+                                          if (stok > 0) {
+                                            setState(() {
+                                              stokController.text =
+                                                  (stok - 1).toString();
+                                            });
+                                          }
+                                          setState(() {
+                                            stokNew = stok.toString();
+                                          });
+                                        },
+                                        child:
+                                            circledIcon(Icons.remove_rounded)),
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: stokController,
+                                        textAlign: TextAlign.center,
+                                        onChanged: (value) {
+                                          clearNotNumber(value, stokController);
+                                          if (value == "") {
+                                            setState(() {
+                                              stokController.text = "0";
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    InkWell(
+                                        onTap: () {
+                                          log("add");
+                                          int stok =
+                                              int.parse(stokController.text);
+                                          setState(() {
+                                            stokController.text =
+                                                (stok + 1).toString();
+                                            stokNew = stok.toString();
+                                          });
+                                        },
+                                        child: circledIcon(Icons.add_rounded))
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                          Container(
+                            height: 40,
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () async {
+                                    log("simpan lewat bottomsheet");
+                                    await ItemWise().update(id_barang,
+                                        stok_barang: int.parse(
+                                            stokController.text.trim()),
+                                        harga_jual: int.parse(
+                                            hargaJualController.text.trim()),
+                                        id_inventory: barang['id_inventory']);
+                                    setState(() {
+                                      // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                                      filteredItems = ItemWise()
+                                          .readByInventory(invState, id_user);
+                                    });
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      backgroundColor: Colors.green,
+                                      content: Text(
+                                          AppLocalizations.of(context)!
+                                              .successSave),
+                                      duration: const Duration(seconds: 1),
+                                    ));
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                              color:
+                                                  Color.fromARGB(70, 0, 0, 0),
+                                              blurRadius: 2)
+                                        ]),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      AppLocalizations.of(context)!.save,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // mendorong bottomsheet ke atas ketika buka keyboard
+                          AnimatedContainer(
+                              height: MediaQuery.of(context).viewInsets.bottom,
+                              duration: const Duration(milliseconds: 200))
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  Widget moreMenuItem(BuildContext context, String id_barang) {
+    // dapatkan map berdasarkan id_barang
+    Map barang = ItemWise().readByIdBarang(id_barang);
+    return BottomSheet(
+        backgroundColor: Colors.transparent,
+        animationController: bottomSheetAC,
+        onClosing: () {
+          Navigator.pop(context);
+        },
+        builder: (BuildContext context) {
+          return Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20))),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 5,
+                          width: 60,
+                          decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(5)),
+                        ),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      // info barang yang diklik
+                      // nama barang
+                      Text(
+                        barang['nama_barang'],
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                      Container(
+                        height: 5,
+                      ),
+                      // kode barang
+                      Text(
+                        barang['kode_barang'],
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Text(
+                        "${AppLocalizations.of(context)!.action}:",
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      Container(
+                        height: 10,
+                      ),
+                      // menu edit detail
+                      InkWell(
+                        onTap: () async {
+                          log("edit detail");
+                          // tutup menu
+                          Navigator.pop(context);
+                          // menuju halaman view/edit
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => ViewItemPage(
+                                        itemMap: barang,
+                                      )));
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: IntrinsicWidth(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(AppLocalizations.of(context)!
+                                        .editItemDetail),
+                                    const Divider(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 10,
+                      ),
+                      // menu pilih
+                      InkWell(
+                        onTap: () {
+                          log("pilih");
+                          setState(() {
+                            selectedItems.add(id_barang);
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: IntrinsicWidth(
+                                stepHeight: null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(AppLocalizations.of(context)!
+                                        .selectItem),
+                                    const Divider(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 10,
+                      ),
+                      // menu hapus
+                      InkWell(
+                        onTap: () async {
+                          log("hapus");
+                          bool? hapus =
+                              await fungsies().konfirmasiDialog(context);
+                          if (hapus == true) {
+                            await ItemWise().delete(id_barang);
+                            setState(() {
+                              // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                              filteredItems =
+                                  ItemWise().readByInventory(invState, id_user);
+                            });
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: IntrinsicWidth(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(AppLocalizations.of(context)!.delete),
+                                    const Divider(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 50,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  void clearNotNumber(String value, TextEditingController controller) {
+    final cleanedValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanedValue != value) {
+      controller.text = cleanedValue;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: cleanedValue.length),
+      );
+    }
+  }
+
+  Container circledIcon(IconData ikon) {
+    return Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color.fromARGB(55, 0, 0, 0),
+                  blurRadius: 5,
+                  spreadRadius: 1,
+                  offset: Offset(0, 5))
+            ]),
+        child: Icon(
+          ikon,
+          color: Colors.white,
+        ));
   }
 
   Future<dynamic> invNameDialog(
@@ -537,6 +1077,8 @@ class _MyHomePageState extends State<MyHomePage> {
               case false:
                 setState(() {
                   invState = id_inventory;
+                  // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                  filteredItems = ItemWise().readByInventory(invState, id_user);
                 });
                 Navigator.pop(context);
                 break;
@@ -558,9 +1100,16 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           },
           // hapus
-          onLongPress: () {
+          onLongPress: () async {
             if (invState != id_inventory && invEditMode == false) {
-              deleteInvDialog(context, id_inventory);
+              bool? hapus = await fungsies().konfirmasiDialog(context,
+                  msg:
+                      "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readById(id_inventory)!["nama_inventory"]}\"?");
+              if (hapus == true) {
+                setState(() {
+                  inventoryWise().delete(id_inventory);
+                });
+              }
             }
           },
           title: Text(
@@ -581,22 +1130,29 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget addButton(BuildContext context) {
-    return Tooltip(
-      message: AppLocalizations.of(context)!.addItem,
-      child: InkWell(
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (ctx) => ViewItemPage(
-                      invState: invState,
-                    ))),
-        radius: 35,
-        borderRadius: BorderRadius.circular(30),
-        child: const CircleAvatar(
+    return AnimatedScale(
+      scale: selectedItems.isEmpty ? 1 : 0,
+      duration: const Duration(milliseconds: 200),
+      child: Tooltip(
+        message: AppLocalizations.of(context)!.addItem,
+        child: InkWell(
+          onTap: () {
+            resetPencarian();
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (ctx) => ViewItemPage(
+                          invState: invState,
+                        )));
+          },
           radius: 35,
-          child: Icon(
-            Icons.add,
-            size: 30,
+          borderRadius: BorderRadius.circular(30),
+          child: const CircleAvatar(
+            radius: 35,
+            child: Icon(
+              Icons.add,
+              size: 30,
+            ),
           ),
         ),
       ),
@@ -607,15 +1163,33 @@ class _MyHomePageState extends State<MyHomePage> {
     return SingleChildScrollView(
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-          List brgs = invState == "all"
-              ? ItemWise().readByUser()
-              : ItemWise().readByInventory(invState, id_user);
+          List brgs = filteredItems;
+          // List brgs = invState == "all"
+          //     ? filteredItems
+          //     // ? ItemWise().readByUser()
+          //     : ItemWise().readByInventory(invState, id_user);
           return Column(
-            children: List.generate(brgs.length, (index) {
-              var id = brgs[index]['id_barang'];
-              var title = brgs[index]['nama_barang'];
-              return buildItem(index, context, id, title, brgs[index]);
-            }),
+            children: [
+              Column(
+                children: List.generate(brgs.length, (index) {
+                  var id = brgs[index]['id_barang'];
+                  var title = brgs[index]['nama_barang'];
+                  return buildItem(index, context, id, title, brgs[index]);
+                }),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  AppLocalizations.of(context)!.tapAndHoldToSelect,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500, color: Colors.blue[200]),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Container(
+                height: 150,
+              )
+            ],
           );
         },
       ),
@@ -623,53 +1197,112 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildItem(int index, BuildContext context, id, title, barang) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: Row(
-            children: [
-              Hero(
-                tag: "image$id",
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.all(Radius.circular(15))),
-                  child: barang["photo_barang"] != ""
-                      ? ClipRRect(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(15)),
-                          child: Image.memory(
-                            Uint8List.fromList(
-                                base64.decode(barang["photo_barang"])),
-                            fit: BoxFit.cover,
-                            gaplessPlayback: true,
-                          ),
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.image_rounded,
-                            color: Colors.white,
-                            size: 45,
-                          ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 8, 15, 8),
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color.fromARGB(26, 0, 0, 0),
+                  blurRadius: 2,
+                  spreadRadius: 1)
+            ],
+            color: Colors.white),
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10),
+              child: Row(
+                children: [
+                  // buildFotoBarang(barang, id),
+                  // Container(
+                  //   width: 5,
+                  // ),
+                  Expanded(
+                    child: MyListTile(context, index, id, barang, tinggi: 70),
+                  )
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        // buka bottomsheet
+                        if (selectedItems.isEmpty) {
+                          showModalBottomSheet(
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              context: context,
+                              builder: (BuildContext context) {
+                                return stokAndHargaSheet(
+                                    context, barang['id_barang']);
+                              });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: selectedItems.isEmpty
+                                    ? Colors.blue
+                                    : const Color.fromARGB(100, 158, 158, 158),
+                                width: 1),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Text(
+                          AppLocalizations.of(context)!.editStockAndPrice,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: selectedItems.isEmpty
+                                  ? Colors.blue
+                                  : const Color.fromARGB(100, 158, 158, 158),
+                              fontWeight: FontWeight.w500),
                         ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Container buildFotoBarang(barang, id) {
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+          color: barang["photo_barang"] != ""
+              ? Colors.transparent
+              : const Color.fromARGB(255, 186, 186, 186),
+          borderRadius: const BorderRadius.all(Radius.circular(15))),
+      child: barang["photo_barang"] != ""
+          ? ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(15)),
+              child: Hero(
+                tag: "image$id",
+                child: Image.memory(
+                  Uint8List.fromList(base64.decode(barang["photo_barang"])),
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true,
                 ),
               ),
-              Container(
-                width: 5,
+            )
+          : const Center(
+              child: Icon(
+                Icons.image_rounded,
+                color: Colors.white,
+                size: 45,
               ),
-              Expanded(
-                child: MyListTile(context, index, id, barang, tinggi: 70),
-              )
-            ],
-          ),
-        ),
-        const Divider(
-          height: 10,
-        )
-      ],
+            ),
     );
   }
 
@@ -716,7 +1349,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       borderRadius: const BorderRadius.all(Radius.circular(15)),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 5, 0, 5),
+        padding: const EdgeInsets.fromLTRB(10, 0, 0, 5),
         decoration: BoxDecoration(
             color: Color.fromARGB(
                 selectedItems.contains(id) == true ? 100 : 0, 255, 229, 59),
@@ -724,20 +1357,64 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              barang['nama_barang'],
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 18),
+            Row(
+              children: [
+                // info nama brg
+                Expanded(
+                  child: Text(
+                    barang['nama_barang'],
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                // menu lainnya
+                AnimatedScale(
+                  scale: selectedItems.isEmpty ? 1 : 0,
+                  duration: const Duration(milliseconds: 100),
+                  child: IconButton(
+                    onPressed: () {
+                      log("tekan more");
+                      showModalBottomSheet(
+                          useSafeArea: true,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          context: context,
+                          builder: (BuildContext context) {
+                            return moreMenuItem(context, barang['id_barang']);
+                          });
+                    },
+                    icon: const Icon(Icons.more_horiz_rounded),
+                    iconSize: 25,
+                  ),
+                )
+              ],
             ),
+            // info kode brg
             Text(
-              barang['catatan'],
+              barang['kode_barang'],
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey[600]),
+              style: const TextStyle(height: 1.4),
             ),
-            Text(
-              "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey[600]),
+            const Divider(
+              color: Colors.transparent,
+            ),
+            //info harga jual + stok barang
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  Text(
+                    "${pengaturan.mataUang} ${barang['harga_jual']}",
+                    style: const TextStyle(color: Colors.deepOrange),
+                  ),
+                  const VerticalDivider(),
+                  Text(
+                    "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -745,96 +1422,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<dynamic> deleteItemDialog(BuildContext context, {String? id}) {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(
-              "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: greyButton(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () async {
-                setState(() {
-                  for (var id in selectedItems) {
-                    ItemWise().delete(id);
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
-                      context,
-                      "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}"));
-                  selectedItems.clear();
-                });
-                Navigator.of(context).pop();
-              },
-              child: dangerButton(AppLocalizations.of(context)!.delete),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<dynamic> deleteInvDialog(BuildContext context, String id) {
-    var idx =
-        inventoryWise().readByUser().indexWhere((e) => e["id_inventory"] == id);
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(
-              "${AppLocalizations.of(context)!.delete} \"${inventoryWise().readByUser()[idx]["nama_inventory"]}\"?"),
-          actions: <Widget>[
-            // tombol cancel
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: greyButton(AppLocalizations.of(context)!.cancel),
-            ),
-            // tombol hapus
-            TextButton(
-              onPressed: () async {
-                setState(() {
-                  // hapus
-                  inventoryWise().delete(id);
-                  // ubah id_inventory menjadi null ke semua barang yang mengandung id ini
-                  ItemWise.items.forEach((element) {
-                    if (element["id_inventory"] == id) {
-                      ItemWise()
-                          .update(element["id_barang"], id_inventory: null);
-                    }
-                  });
-                  // tampilkan snakbar
-                  ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
-                      context,
-                      "${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.inventory}"));
-                  selectedItems.clear();
-                });
-                Navigator.of(context).pop();
-              },
-              child: dangerButton(AppLocalizations.of(context)!.delete),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Container dangerButton(String msg) {
-    return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10), color: Colors.redAccent),
-        child: Text(
-          msg,
-          style: const TextStyle(color: Colors.white),
-        ));
+  /// cari barang berdasarkan teks lalu set filteredItems
+  void cariBarang(String teks) {
+    setState(() {
+      filteredItems = ItemWise()
+          .readByInventory(invState, id_user)
+          .where((element) =>
+              (element['nama_barang'] as String)
+                  .toLowerCase()
+                  .contains(teks.toLowerCase()) ||
+              (element['kode_barang'] as String)
+                  .toLowerCase()
+                  .contains(teks.toLowerCase()) ||
+              (element['catatan'] as String)
+                  .toLowerCase()
+                  .contains(teks.toLowerCase()))
+          .toList();
+    });
   }
 
   Container successButton(String msg) {
@@ -846,25 +1450,5 @@ class _MyHomePageState extends State<MyHomePage> {
           msg,
           style: const TextStyle(color: Colors.white),
         ));
-  }
-
-  Container greyButton(String msg) {
-    return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10), color: Colors.grey),
-        child: Text(
-          msg,
-          style: const TextStyle(color: Colors.white),
-        ));
-  }
-
-  SnackBar dangerSnackbar(BuildContext context, String msg) {
-    return SnackBar(
-      content: Text(msg),
-      dismissDirection: DismissDirection.horizontal,
-      backgroundColor: Colors.redAccent,
-      duration: Duration(seconds: 1),
-    );
   }
 }

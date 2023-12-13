@@ -89,18 +89,16 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Widget _controllItems(BuildContext context) {
-    log(jsonEncode(adminAccess.itemList));
+    // log(jsonEncode(adminAccess.itemList));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: adminAccess.itemList.isNotEmpty
           ? List.generate(adminAccess.itemList.length, (index) {
               Map item = adminAccess.itemList[index];
 
-              print(adminAccess.userList);
-
               Map? user = null;
               // jika userlist tidak kosong
-              log("admin 100: ${adminAccess.userList}");
+              // log("admin 100: ${adminAccess.userList}");
               try {
                 if (adminAccess.userList.isNotEmpty) {
                   var a = adminAccess.userList.firstWhere(
@@ -263,8 +261,8 @@ class _AdminPanelState extends State<AdminPanel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      _deleteButton(context, "item", item['id_barang']),
                       _updateButton(context, item: item),
-                      _deleteButton(context, "item", item['id_barang'])
                     ],
                   )
                 ],
@@ -432,8 +430,8 @@ class _AdminPanelState extends State<AdminPanel> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    _deleteButton(context, "inv", inv['id_inventory']),
                     _updateButton(context, inv: inv),
-                    _deleteButton(context, "inv", inv['id_inventory'])
                   ],
                 )
               ]),
@@ -614,8 +612,8 @@ class _AdminPanelState extends State<AdminPanel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      _deleteButton(context, "user", user['id_user']),
                       _updateButton(context, user: user),
-                      _deleteButton(context, "user", user['id_user'])
                     ],
                   )
                 ],
@@ -628,9 +626,9 @@ class _AdminPanelState extends State<AdminPanel> {
   TextButton _deleteButton(BuildContext context, String tipe, String id) {
     return TextButton(
         onPressed: () async {
-          var hapus = await konfirmasiHapus();
+          bool? hapus = await fungsies().konfirmasiDialog(context);
 
-          if (hapus) {
+          if (hapus == true) {
             setState(() {
               loading = true;
             });
@@ -642,6 +640,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 }
                 // jika sama
                 else {
+                  // ignore: use_build_context_synchronously
                   showDialog(
                       context: context,
                       builder: (_) {
@@ -674,33 +673,6 @@ class _AdminPanelState extends State<AdminPanel> {
             style: TextStyle(color: Colors.red),
           ),
         ));
-  }
-
-  Future<bool> konfirmasiHapus() async {
-    bool? result = await showDialog<bool>(
-        context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: Text("${AppLocalizations.of(context)!.attention}"),
-            content: Text(AppLocalizations.of(context)!.delDataCantRecover),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.cancel,
-                  )),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: Text(AppLocalizations.of(context)!.delete,
-                      style: TextStyle(color: Colors.red))),
-            ],
-          );
-        });
-    return result ?? false;
   }
 
   Widget _addButton(BuildContext context) {
@@ -969,14 +941,23 @@ class _AdminPanelState extends State<AdminPanel> {
           });
           switch (tableState) {
             case "user":
-              // tambah user
-              await userApiWise().create(
-                  id_user: idUser.text.trim(),
-                  username_user: usernameUser.text.trim(),
-                  email_user: emailUser.text.trim(),
-                  photo_user: photo_user,
-                  password_user: passwordUser.text.trim(),
-                  isAdmin: true);
+              // cek apakah ada email yang sama, jika ada maka batalkan pembuatan akun
+              List cekEmail = adminAccess.userList
+                  .where(
+                    (element) => element['email_user'] == emailUser.text.trim(),
+                  )
+                  .toList();
+
+              if (cekEmail.isEmpty) {
+                // tambah user
+                await userApiWise().create(
+                    id_user: idUser.text.trim(),
+                    username_user: usernameUser.text.trim(),
+                    email_user: emailUser.text.trim(),
+                    photo_user: photo_user,
+                    password_user: passwordUser.text.trim(),
+                    isAdmin: true);
+              }
               break;
             case "inventory":
               // tambah inv
@@ -986,7 +967,7 @@ class _AdminPanelState extends State<AdminPanel> {
             // tambah item
             case "item":
               String added = DateTime.now().millisecondsSinceEpoch.toString();
-              await itemApiWise().createOne(
+              await itemApiWise().create(
                   id_barang: idItem.text.trim(),
                   id_user: userState,
                   id_inventory: invState,
@@ -1025,6 +1006,7 @@ class _AdminPanelState extends State<AdminPanel> {
           //loading
           showDialog(
               context: context,
+              barrierDismissible: false,
               builder: (_) => Center(
                     child: CircularProgressIndicator(),
                   ));

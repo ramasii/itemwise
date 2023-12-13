@@ -90,6 +90,7 @@ class ItemWise {
     return filtered.toList();
   }
 
+  /// kalo statenya id_inventory == all maka akan dikembalikan data berdasarkan id_user
   List readByInventory(String id_inventory, String id_user) {
     if (id_inventory != "all") {
       var filtered = items.where((element) =>
@@ -100,6 +101,12 @@ class ItemWise {
       var filtered = items.where((element) => element["id_user"] == id_user);
       return filtered.toList();
     }
+  }
+
+  Map readByIdBarang(String id_barang) {
+    Map byIdBarang = readByUser()
+        .firstWhere((element) => element['id_barang'] == id_barang);
+    return byIdBarang;
   }
 
   update(String id_barang,
@@ -140,7 +147,7 @@ class ItemWise {
     await prefs.setString("items", encoded);
   }
 
-  void delete(String id_barang) async {
+  delete(String id_barang) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // hapus dari items
