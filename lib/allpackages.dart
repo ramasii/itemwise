@@ -9,6 +9,8 @@ export 'package:image_size_getter/image_size_getter.dart';
 export 'dart:typed_data';
 export 'package:device_info_plus/device_info_plus.dart';
 export 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+export 'package:path_provider/path_provider.dart';
+export 'dart:io';
 
 export './utils/devicedata_utils.dart';
 export './utils/itemwise_utils.dart';
@@ -22,3 +24,4 @@ export './apis/itemapi_utils.dart';
 export './functions.dart';
 export './utils/settings_utils.dart';
 export 'package:itemwise/apis/inventoryapi_utils.dart';
+export 'package:itemwise/apis/photobarangapi_utils.dart';

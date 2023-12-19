@@ -367,6 +367,7 @@ class _MyHomePageState extends State<MyHomePage>
         await inventoryApiWise().create();
 
         // backup barang, tiap barang akan diupload satu persatu
+        // ini juga upload foto barang jika ada
         for (var e in itm) {
           await itemApiWise().create(
             id_barang: e['id_barang'],
@@ -382,8 +383,9 @@ class _MyHomePageState extends State<MyHomePage>
             added: e['added'],
             edited: e['edited'],
           );
+          await photoBarangApiWise()
+              .create(e['id_barang'], base64photo: e['photo_barang']);
         }
-        // await itemApiWise().createBulk();
 
         // tutup loading
         setState(() {
@@ -1216,10 +1218,16 @@ class _MyHomePageState extends State<MyHomePage>
               padding: const EdgeInsets.only(left: 10, right: 10),
               child: Row(
                 children: [
-                  // buildFotoBarang(barang, id),
-                  // Container(
-                  //   width: 5,
-                  // ),
+                  Visibility(
+                      visible: barang['photo_barang'] != "",
+                      child: Row(
+                        children: [
+                          buildFotoBarang(barang, id),
+                          Container(
+                            width: 5,
+                          ),
+                        ],
+                      )),
                   Expanded(
                     child: MyListTile(context, index, id, barang, tinggi: 70),
                   )
@@ -1394,7 +1402,7 @@ class _MyHomePageState extends State<MyHomePage>
             Text(
               barang['kode_barang'],
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(height: 1.4),
+              style: const TextStyle(height: 0.6),
             ),
             const Divider(
               color: Colors.transparent,

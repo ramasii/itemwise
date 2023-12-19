@@ -485,15 +485,6 @@ class _AdminPanelState extends State<AdminPanel> {
                 child: Column(
                   children: [
                     ListTile(
-                      leading: user['photo_user'] == "null" ||
-                              user['photo_user'] == null
-                          ? Icon(Icons.person_2_rounded)
-                          : Container(
-                              height: 70,
-                              width: 70,
-                              child: Image.memory(Uint8List.fromList(
-                                  base64.decode(user['photo_user']))),
-                            ),
                       title: Text(
                         user['email_user'],
                         maxLines: 1,
@@ -549,43 +540,6 @@ class _AdminPanelState extends State<AdminPanel> {
             content: SingleChildScrollView(
               child: Column(
                 children: [
-                  photo_user != "null"
-                      // render foto
-                      ? Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                            child: Image.memory(
-                                Uint8List.fromList(base64.decode(photo_user))),
-                          ),
-                        )
-                      // tampilkan tombol tambah foto
-                      : Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                              child: InkWell(
-                            borderRadius: BorderRadius.circular(50),
-                            onTap: () {
-                              log("add user photo");
-                              showDialog(
-                                  context: context,
-                                  builder: (_) {
-                                    return AlertDialog(
-                                      content: Text("TAMBAH FOTO USER"),
-                                    );
-                                  });
-                            },
-                            child: Container(
-                              decoration:
-                                  BoxDecoration(color: Colors.grey[300]),
-                              child: Icon(
-                                Icons.add_a_photo_rounded,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          )),
-                        ),
                   Container(
                     height: 20,
                   ),
@@ -724,43 +678,6 @@ class _AdminPanelState extends State<AdminPanel> {
             content: SingleChildScrollView(
               child: Column(
                 children: [
-                  photo_user != "null"
-                      // render foto
-                      ? Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                            child: Image.memory(
-                                Uint8List.fromList(base64.decode(photo_user))),
-                          ),
-                        )
-                      // tampilkan tombol tambah foto
-                      : Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                              child: InkWell(
-                            borderRadius: BorderRadius.circular(50),
-                            onTap: () {
-                              log("add user photo");
-                              showDialog(
-                                  context: context,
-                                  builder: (_) {
-                                    return AlertDialog(
-                                      content: Text("TAMBAH FOTO USER"),
-                                    );
-                                  });
-                            },
-                            child: Container(
-                              decoration:
-                                  BoxDecoration(color: Colors.grey[300]),
-                              child: Icon(
-                                Icons.add_a_photo_rounded,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          )),
-                        ),
                   Container(
                     height: 20,
                   ),

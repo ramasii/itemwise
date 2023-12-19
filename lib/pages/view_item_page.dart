@@ -429,8 +429,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
                               trueColor: Colors.blue);
                           var imeg = "";
                           // ambil foto berdasarkan pilihan
-                          if(fromCam!=null){
-                            imeg = await fungsies().pickImage(from: fromCam ? PickImageFrom.camera : PickImageFrom.gallery);
+                          if (fromCam != null) {
+                            imeg = await fungsies().pickImage(
+                                from: fromCam
+                                    ? PickImageFrom.camera
+                                    : PickImageFrom.gallery);
+                            setState(() {
+                              log("message: $imeg");
+                            });
                           }
                           if (imeg != "") {
                             // cek apakah landscape atau bukan
@@ -486,6 +492,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           tag: widget.itemMap != null
                               ? "image${widget.itemMap!['id_barang']}"
                               : "image${DateTime.now().millisecondsSinceEpoch}",
+                          // child: Image.file(
+                          //   File(img),
+                          //   fit: BoxFit.cover,
+                          // ),
                           child: Image.memory(
                             Uint8List.fromList(base64.decode(img)),
                             fit: BoxFit.cover,
@@ -577,6 +587,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               log("id_user: $id_user");
 
               setState(() {
+                // print("photobrg:$img");
                 ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
                     harga_beli, harga_jual,
                     catatan: catatan,
