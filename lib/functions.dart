@@ -18,7 +18,7 @@ class fungsies {
     if (from == PickImageFrom.gallery) {
       pickedImage = await imagePicker.pickImage(
           source: ImageSource.gallery, maxHeight: 500, maxWidth: 500);
-    } else if(from == PickImageFrom.camera){
+    } else if (from == PickImageFrom.camera) {
       pickedImage = await imagePicker.pickImage(
           source: ImageSource.camera, maxHeight: 500, maxWidth: 500);
     }

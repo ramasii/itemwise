@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,54 +5,6 @@ class itemApiWise {
   String url = "${anu.emm}/barang";
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
-
-  createBulk() async {
-    log("backup barang");
-
-    try {
-      var enkodeItems =
-          Uri.encodeQueryComponent(jsonEncode(ItemWise().readByUser()));
-      var response =
-          await http.post(Uri.parse("$url/addBulk?items=$enkodeItems"),
-              // Uri.parse("$url/addBulk"),
-              headers: {
-            "Content-Type": "application/json",
-            "authorization": authapi.authorization,
-          });
-      switch (response.statusCode) {
-        case 200:
-          log("sukses");
-          break;
-        case 401:
-          log("token expired");
-          // ambil token baru
-          await authapi().auth(userWise.userData['email_user'],
-              userWise.userData['password_user']);
-          // tambahkan ulang
-          await createBulk();
-          break;
-        case 403:
-          // auth baru
-          log("auth baru");
-          if (response.body == "token invalid") {
-            await authapi().auth(userWise.userData['email_user'],
-                userWise.userData['password_user']);
-            // tambah ulang
-            await createBulk();
-          } else if (response.body == "token not found") {
-            await authapi().auth(userWise.userData['email_user'],
-                userWise.userData['password_user']);
-            // tambah ulang
-            await createBulk();
-          }
-          break;
-        default:
-          log(response.statusCode.toString());
-      }
-    } catch (e) {
-      print("bakup brg: $e");
-    }
-  }
 
   create({
     String id_barang = '',
@@ -73,10 +22,10 @@ class itemApiWise {
   }) async {
     log("itemapi create one");
     try {
+      photo_barang = "";
       var response = await http.post(
           Uri.parse(
-                "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang=$photo_barang&added=$added&edited=$edited"
-              ),
+              "$url/add?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&kode_barang=$kode_barang&nama_barang=$nama_barang&catatan=$catatan&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&photo_barang=$photo_barang&added=$added&edited=$edited"),
           headers: {
             "Content-Type": "application/json",
             "authorization": authapi.authorization,
@@ -179,6 +128,7 @@ class itemApiWise {
       String? edited}) async {
     log("START update itemapi");
     try {
+      photo_barang = "";
       var response = await http.put(
           Uri.parse(
               "${url}/update?id_barang=$id_barang&id_user=$id_user&id_inventory=$id_inventory&nama_barang=$nama_barang&stok_barang=$stok_barang&harga_beli=$harga_beli&harga_jual=$harga_jual&kode_barang=$kode_barang&catatan=$catatan&photo_barang=$photo_barang&edited=$edited"),
