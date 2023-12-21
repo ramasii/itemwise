@@ -40,16 +40,36 @@ class photoBarangApiWise {
     }
   }
 
-  get(String id_barang) async {
+  delete(String id_barang) async {
+    log("START DELETE FOTO BARANG: $id_barang");
+    // prepare variabel
+    Uri uri = Uri.parse("$url?id_barang=$id_barang");
+
+    // prepare request
+    log("PREPARE RESPONSE");
+    var response = await http.delete(uri);
+
+    switch (response.statusCode) {
+      case 200:
+        log("sukses delete: $id_barang");
+        break;
+      default:
+        log("${response.statusCode}");
+    }
+  }
+
+  Future<String?> get(String id_barang) async {
     try {
-      var response = await http.get(Uri.parse("$url/id_barang=$id_barang"));
+      var response = await http.get(Uri.parse("$url?id_barang=$id_barang"));
 
       switch (response.statusCode) {
         case 200:
-          // simpan file ke itemwise()
-          ItemWise().update(id_barang,
-              photo_barang: base64Encode(response.bodyBytes));
-          break;
+          // // simpan file ke itemwise()
+          // ItemWise().update(id_barang,
+          //     photo_barang: base64Encode(response.bodyBytes));
+
+          // return return byte yang sudah dienkode
+          return base64Encode(response.bodyBytes);
         default:
           log(response.statusCode.toString());
       }

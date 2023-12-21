@@ -434,9 +434,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
                                 from: fromCam
                                     ? PickImageFrom.camera
                                     : PickImageFrom.gallery);
-                            setState(() {
-                              log("message: $imeg");
-                            });
+                            // setState(() {
+                            //   log("message: $imeg");
+                            // });
                           }
                           if (imeg != "") {
                             // cek apakah landscape atau bukan
