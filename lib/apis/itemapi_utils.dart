@@ -66,6 +66,11 @@ class itemApiWise {
     }
   }
 
+  /// ini juga akan mengimpor foto barang
+  ///
+  /// setelah ItemWise().setAll(itms);
+  ///
+  /// lalu load foto barang untuk setiap barang user
   read() async {
     log("START: IMPORT ITEM CONNECT TO SERVER");
 
@@ -82,6 +87,16 @@ class itemApiWise {
           await ItemWise().clear();
           // ubah data ItemWise
           await ItemWise().setAll(itms);
+          log("total barang user: ${ItemWise().readByUser().length}");
+
+          // load foto barang untuk setiap barang user
+          for (var e in ItemWise().readByUser()) {
+            String? base64img = await photoBarangApiWise().get(e['id_barang']);
+            if (base64img != null) {
+              ItemWise().update(e['id_barang'], photo_barang: base64img);
+            }
+          }
+
           break;
         case 401:
           log("token expired");
@@ -199,6 +214,11 @@ class itemApiWise {
     }
   }
 
+  /// ini juga akan mengimpor foto barang
+  ///
+  /// HANYA [ADMIN] YANG BOLEH AKSES
+  ///
+  /// ini juga load foto barang untuk setiap barand admin access
   readAll() async {
     log("START get all items data");
     try {
@@ -206,7 +226,22 @@ class itemApiWise {
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
+          // ini load barang
           adminAccess.itemList = jsonDecode(response.body);
+
+          log("jml barang di adminaccss: ${adminAccess.itemList.length}");
+          // ini load foto barang
+          for (var e in adminAccess.itemList) {
+            String? base64img = await photoBarangApiWise().get(e['id_barang']);
+            if (base64img != null) {
+              // ItemWise().update(e['id_barang'], photo_barang: base64img);
+              // dapatkan index berdasarkan e['id_barang']
+              int idx = adminAccess.itemList.indexWhere(
+                  (element) => element['id_barang'] == e['id_barang']);
+
+              adminAccess.itemList[idx]['photo_barang'] = base64img;
+            }
+          }
           break;
         case 401:
           await authapi().auth(userWise.userData['email_user'],

@@ -96,61 +96,29 @@ class _AdminPanelState extends State<AdminPanel> {
           ? List.generate(adminAccess.itemList.length, (index) {
               Map item = adminAccess.itemList[index];
 
-              Map? user = null;
-              // jika userlist tidak kosong
-              // log("admin 100: ${adminAccess.userList}");
+              Map? user;
               try {
-                if (adminAccess.userList.isNotEmpty) {
-                  var a = adminAccess.userList.firstWhere(
+                // jika userlist tidak kosong & item['id_user'] bukan null
+                if (adminAccess.userList.isNotEmpty &&
+                    item['id_user'] != null) {
+                  var tempUser = adminAccess.userList.firstWhere(
                     (element) => element['id_user'] == item['id_user'],
                   );
-                  // jika variabel userList mengandung idnya
-                  if (a != -1) {
-                    user = a;
+                  // jika variabel userList mengandung id-nya
+                  if (tempUser != -1) {
+                    user = tempUser;
                   }
                 }
               } catch (e) {
-                print(e);
+                print("_controllItems: $e");
               }
               return Padding(
                 padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
                 child: Column(
                   children: [
-                    ListTile(
-                      leading: item['photo_barang'] == ""
-                          ? Icon(Icons.photo_album_rounded)
-                          : Container(
-                              height: 70,
-                              width: 70,
-                              child: Image.memory(Uint8List.fromList(
-                                  base64.decode(item['photo_barang']))),
-                            ),
-                      title: Text(
-                        item['nama_barang'],
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: user != null
-                          ? Text(
-                              user['email_user'],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          : null,
-                      onTap: () {
-                        setState(() {
-                          idItem.text = item['id_barang'];
-                          namaItem.text = item['nama_barang'];
-                          kodeItem.text = item['kode_barang'];
-                          catatanItem.text = item['catatan'];
-                          stokItem.text = item['stok_barang'].toString();
-                          hBliItem.text = item['harga_beli'].toString();
-                          hJalItem.text = item['harga_jual'].toString();
-                          userState = item['id_user'];
-                          invState = item['id_inventory'];
-                        });
-                        _viewItem(context, item);
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: _customListTile(item, user, context),
                     ),
                     Divider(
                       indent: 50,
@@ -174,101 +142,239 @@ class _AdminPanelState extends State<AdminPanel> {
     );
   }
 
-  Future<dynamic> _viewItem(BuildContext context, Map item) {
+  Widget _customListTile(Map item, Map? user, BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        // color: Color.fromARGB(255, 244, 250, 255)
+      ),
+      child: Row(
+        children: [
+          item['photo_barang'] != ""
+              ? fungsies().buildFotoBarang(item, "${item['id_barang']}admin")
+              : Container(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    idItem.text = item['id_barang'];
+                    namaItem.text = item['nama_barang'];
+                    kodeItem.text = item['kode_barang'];
+                    catatanItem.text = item['catatan'];
+                    stokItem.text = item['stok_barang'].toString();
+                    hBliItem.text = item['harga_beli'].toString();
+                    hJalItem.text = item['harga_jual'].toString();
+                    userState = item['id_user'];
+                    invState = item['id_inventory'];
+                    photoItem = item['photo_barang'];
+                  });
+                  _viewItem(context, item);
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        // info nama brg
+                        Expanded(
+                          child: Text(
+                            item['nama_barang'],
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // info pemilik brg
+                    Text(
+                      user == null ? "" : user['email_user'],
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Divider(
+                      color: Colors.transparent,
+                    ),
+                    //info harga jual + stok item
+                    IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Text(
+                            "${pengaturan.mataUang} ${item['harga_jual']}",
+                            style: const TextStyle(color: Colors.deepOrange),
+                          ),
+                          const VerticalDivider(),
+                          Text(
+                            "${AppLocalizations.of(context)!.stok}: ${item['stok_barang']}",
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+    /* return ListTile(
+      leading: item['photo_barang'] == ""
+          ? Icon(Icons.photo_album_rounded)
+          : fungsies().buildFotoBarang(item, item['photo_barang']),
+      title: Text(
+        item['nama_barang'],
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: user != null
+          ? Text(
+              user['email_user'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            )
+          : null,
+      onTap: () {
+        setState(() {
+          idItem.text = item['id_barang'];
+          namaItem.text = item['nama_barang'];
+          kodeItem.text = item['kode_barang'];
+          catatanItem.text = item['catatan'];
+          stokItem.text = item['stok_barang'].toString();
+          hBliItem.text = item['harga_beli'].toString();
+          hJalItem.text = item['harga_jual'].toString();
+          userState = item['id_user'];
+          invState = item['id_inventory'];
+        });
+        _viewItem(context, item);
+      },
+    ); */
+  }
+
+  _viewItem(BuildContext context, Map item) {
+    log("buka view item");
     return showDialog(
         context: context,
         builder: (_) {
-          return AlertDialog(
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  item['photo_barang'] != ""
-                      // render foto barnag
-                      ? Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                            child: Image.memory(Uint8List.fromList(
-                                base64.decode(item['photo_barang']))),
-                          ),
-                        )
-                      // tampilkan tombol tambah foto
-                      : Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    photoItem != ""
+                        // render foto barnag
+                        ? Container(
+                            constraints:
+                                BoxConstraints(maxHeight: 500, maxWidth: 350),
+                            // child: ClipOval(
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(50),
-                              onTap: () {
-                                log("add user photo");
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return AlertDialog(
-                                        content: Text("TAMBAH FOTO BARANG"),
-                                      );
-                                    });
+                              onLongPress: () async {
+                                // hapus gambar
+                                bool? hapus = await fungsies().konfirmasiDialog(
+                                    context,
+                                    msg: AppLocalizations.of(context)!
+                                        .deleteImgCfrmation);
+                                if (hapus == true) {
+                                  log("hapus");
+                                  setState(() {
+                                    photoItem = "";
+                                  });
+                                }
                               },
-                              child: Container(
-                                decoration:
-                                    BoxDecoration(color: Colors.grey[300]),
-                                child: Icon(
-                                  Icons.add_a_photo_rounded,
-                                  color: Colors.grey,
+                              child: Image.memory(
+                                  Uint8List.fromList(base64.decode(photoItem))),
+                            ),
+                            // ),
+                          )
+                        // tampilkan tombol tambah foto
+                        : Container(
+                            height: 100,
+                            width: 100,
+                            child: ClipOval(
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () async {
+                                  setState(() {
+                                    _addPhotoBarang(context,setState);
+                                  });
+                                },
+                                child: Container(
+                                  decoration:
+                                      BoxDecoration(color: Colors.grey[300]),
+                                  child: Icon(
+                                    Icons.add_a_photo_rounded,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("id_barang", ctrler: idItem, enable: false),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("nama_barang", ctrler: namaItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("kode_barang", ctrler: kodeItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("catatan", ctrler: catatanItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("stok_barang",
-                      ctrler: stokItem, inputType: TextInputType.number),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("harga_beli",
-                      ctrler: hBliItem, inputType: TextInputType.number),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("harga_jual",
-                      ctrler: hJalItem, inputType: TextInputType.number),
-                  Container(
-                    height: 20,
-                  ),
-                  _invUsrDropDown(),
-                  Container(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _deleteButton(context, "item", item['id_barang']),
-                      _updateButton(context, item: item),
-                    ],
-                  )
-                ],
+                    Container(
+                      height: 10,
+                    ),
+                    Visibility(
+                        visible: photoItem != "",
+                        child: Text(
+                          AppLocalizations.of(context)!.holdToRemoveImg,
+                          style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey),
+                        )),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("id_barang", ctrler: idItem, enable: false),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("nama_barang", ctrler: namaItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("kode_barang", ctrler: kodeItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("catatan", ctrler: catatanItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("stok_barang",
+                        ctrler: stokItem, inputType: TextInputType.number),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("harga_beli",
+                        ctrler: hBliItem, inputType: TextInputType.number),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("harga_jual",
+                        ctrler: hJalItem, inputType: TextInputType.number),
+                    Container(
+                      height: 20,
+                    ),
+                    _invUsrDropDown(),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _deleteButton(context, "item", item['id_barang']),
+                        _updateButton(context, item: item),
+                      ],
+                    )
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          });
         });
   }
 
@@ -610,6 +716,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 break;
               case "item":
                 await itemApiWise().delete(id);
+                await photoBarangApiWise().delete(id);
                 break;
               default:
             }
@@ -743,7 +850,7 @@ class _AdminPanelState extends State<AdminPanel> {
         });
   }
 
-  Future<dynamic> _addItemDialog(BuildContext context) {
+  _addItemDialog(BuildContext context) {
     // buat id_barang
     String id_barang =
         "${userWise.userData['id_user']}brg${DateTime.now().millisecondsSinceEpoch}";
@@ -764,89 +871,108 @@ class _AdminPanelState extends State<AdminPanel> {
     return showDialog(
         context: context,
         builder: (_) {
-          return AlertDialog(
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  photoItem != ""
-                      // render foto barnag
-                      ? Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                            child: Image.memory(
-                                Uint8List.fromList(base64.decode(photoItem))),
-                          ),
-                        )
-                      // tampilkan tombol tambah foto
-                      : Container(
-                          height: 100,
-                          width: 100,
-                          child: ClipOval(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(50),
-                              onTap: () {
-                                log("add user photo");
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return AlertDialog(
-                                        content: Text("TAMBAH FOTO BARANG"),
-                                      );
-                                    });
-                              },
-                              child: Container(
-                                decoration:
-                                    BoxDecoration(color: Colors.grey[300]),
-                                child: Icon(
-                                  Icons.add_a_photo_rounded,
-                                  color: Colors.grey,
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    photoItem != ""
+                        // render foto barnag
+                        ? Container(
+                            height: 100,
+                            width: 100,
+                            child: ClipOval(
+                              child: Image.memory(
+                                  Uint8List.fromList(base64.decode(photoItem))),
+                            ),
+                          )
+                        // tampilkan tombol tambah foto
+                        : Container(
+                            height: 100,
+                            width: 100,
+                            child: ClipOval(
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () async {
+                                  setState(() async {
+                                    await _addPhotoBarang(context, setState);
+                                  });
+                                },
+                                child: Container(
+                                  decoration:
+                                      BoxDecoration(color: Colors.grey[300]),
+                                  child: Icon(
+                                    Icons.add_a_photo_rounded,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("id_barang", ctrler: idItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("nama_barang", ctrler: namaItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("kode_barang", ctrler: kodeItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("catatan", ctrler: catatanItem),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("stok_barang",
-                      ctrler: stokItem, inputType: TextInputType.number),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("harga_beli",
-                      ctrler: hBliItem, inputType: TextInputType.number),
-                  Container(
-                    height: 20,
-                  ),
-                  _fieldInfo("harga_jual",
-                      ctrler: hJalItem, inputType: TextInputType.number),
-                  Container(
-                    height: 20,
-                  ),
-                  _invUsrDropDown(),
-                ],
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("id_barang", ctrler: idItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("nama_barang", ctrler: namaItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("kode_barang", ctrler: kodeItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("catatan", ctrler: catatanItem),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("stok_barang",
+                        ctrler: stokItem, inputType: TextInputType.number),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("harga_beli",
+                        ctrler: hBliItem, inputType: TextInputType.number),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("harga_jual",
+                        ctrler: hJalItem, inputType: TextInputType.number),
+                    Container(
+                      height: 20,
+                    ),
+                    _invUsrDropDown(),
+                  ],
+                ),
               ),
-            ),
-            actions: [postButton(context)],
-          );
+              actions: [postButton(context)],
+            );
+          });
         });
+  }
+
+  Future<void> _addPhotoBarang(BuildContext context, StateSetter setState) async {
+    log("add item photo");
+    // ambil gambar dari galeri atau dari kamera
+    bool? fromCam = await fungsies().konfirmasiDialog(context,
+        msg: AppLocalizations.of(context)!.choosePhotoSource,
+        trueText: AppLocalizations.of(context)!.camera,
+        falseText: AppLocalizations.of(context)!.gallery,
+        trueColor: Colors.blue);
+    var imeg = "";
+    // ambil foto berdasarkan pilihan
+    if (fromCam != null) {
+      imeg = await fungsies().pickImage(
+          from: fromCam ? PickImageFrom.camera : PickImageFrom.gallery);
+    }
+    if (imeg != "") {
+      // set nilai
+      setState(() {
+        photoItem = imeg;
+      });
+    }
   }
 
   Widget postButton(BuildContext context) {
@@ -921,12 +1047,15 @@ class _AdminPanelState extends State<AdminPanel> {
           log("update");
           Navigator.pop(context);
           //loading
-          showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => Center(
-                    child: CircularProgressIndicator(),
-                  ));
+          setState(() {
+            loading = true;
+          });
+          // showDialog(
+          //     context: context,
+          //     barrierDismissible: false,
+          //     builder: (_) => Center(
+          //           child: CircularProgressIndicator(),
+          //         ));
           // ini update user
           if (user != null) {
             await userApiWise().update(
@@ -963,12 +1092,21 @@ class _AdminPanelState extends State<AdminPanel> {
                 photo_barang: photoItem == "" ? "" : photoItem,
                 edited: edited,
                 added: item['added']);
+
+            // update photo barang
+            if (photoItem != "") {
+              await photoBarangApiWise()
+                  .create(item['id_barang'], base64photo: photoItem);
+            } else {
+              await photoBarangApiWise().delete(item['id_barang']);
+            }
           }
           // selaraskan data dengan database
           await selaraskanData();
           //tutup loading
           setState(() {
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            loading = false;
           });
         },
         child: Padding(

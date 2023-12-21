@@ -103,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage>
                           color: Color.fromARGB(255, 244, 250, 255)),
                       child: TextFormField(
                         controller: searchController,
+                        enabled: searchMode,
                         autofocus: searchMode,
                         decoration: InputDecoration(
                             hintText: AppLocalizations.of(context)!.searchItem),
@@ -200,8 +201,10 @@ class _MyHomePageState extends State<MyHomePage>
             log("ngubah searchMode");
             // jika searchMode == true maka akan mereset filteredItems
             if (searchMode) {
+              log("↳ false");
               resetPencarian();
             } else {
+              log("↳ true");
               setState(() {
                 searchMode = true;
               });
@@ -222,6 +225,10 @@ class _MyHomePageState extends State<MyHomePage>
                 break;
               case "impor":
                 await loadAsset();
+                // refresh filter
+                setState(() {
+                  filteredItems = ItemWise().readByInventory(invState, id_user);
+                });
                 break;
               case "adminPanel":
                 log("goto adminPanel");
@@ -359,9 +366,8 @@ class _MyHomePageState extends State<MyHomePage>
     if (inventoryWise().readByUser().isNotEmpty ||
         ItemWise().readByUser().isNotEmpty) {
       if (terkonek && userWise.isLoggedIn) {
-        await authapi().auth(
-            // auth dulu ajah
-            userWise.userData['email_user'],
+        // auth dulu ajah
+        await authapi().auth(userWise.userData['email_user'],
             userWise.userData['password_user']);
         // bakcup inventory
         await inventoryApiWise().create();
@@ -383,8 +389,17 @@ class _MyHomePageState extends State<MyHomePage>
             added: e['added'],
             edited: e['edited'],
           );
-          await photoBarangApiWise()
-              .create(e['id_barang'], base64photo: e['photo_barang']);
+
+          // bakckup foto barang
+          // jika foto barang ada maka backup, jika tidak maka hapus foto di server
+          if (e['photo_barang'] != "") {
+            await photoBarangApiWise()
+                .create(e['id_barang'], base64photo: e['photo_barang']);
+          } else {
+            print(
+                "foto barang tidak ditemukan: ${e['id_barang']}, maka lakukan delete");
+            await photoBarangApiWise().delete(e['id_barang']);
+          }
         }
 
         // tutup loading
@@ -407,7 +422,7 @@ class _MyHomePageState extends State<MyHomePage>
     log("bakcup func done");
   }
 
-  Future loadAsset() async {
+  loadAsset() async {
     log("load aset");
 
     showDialog(
@@ -426,16 +441,23 @@ class _MyHomePageState extends State<MyHomePage>
     if (terkonek && userWise.isLoggedIn) {
       // load inventory
       await inventoryApiWise().read();
+
       // load barang
       // await ItemWise().clear();
+      // load barang ini sekaligus mendapatkan foto barangnya
       await itemApiWise().read();
 
+      // load foto barang untuk setiap item milik user
+      // for (var e in ItemWise().readByUser()) {
+      //   String? base64img = await photoBarangApiWise().get(e['id_barang']);
+      //   if (base64img != null) {
+      //     ItemWise().update(e['id_barang'], photo_barang: base64img);
+      //   }
+      // }
+
       // tutup loading
-      setState(() {
-        // ignore: use_build_context_synchronously
-        Navigator.pop(context);
-        // log(ItemWise().readByUser().toList().toString());
-      });
+      Navigator.pop(context);
+      // log(ItemWise().readByUser().toList().toString());
     }
 
     log("load func done");
@@ -1222,7 +1244,7 @@ class _MyHomePageState extends State<MyHomePage>
                       visible: barang['photo_barang'] != "",
                       child: Row(
                         children: [
-                          buildFotoBarang(barang, id),
+                         fungsies().buildFotoBarang(barang, id),
                           Container(
                             width: 5,
                           ),
@@ -1280,37 +1302,6 @@ class _MyHomePageState extends State<MyHomePage>
           ],
         ),
       ),
-    );
-  }
-
-  Container buildFotoBarang(barang, id) {
-    return Container(
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
-          color: barang["photo_barang"] != ""
-              ? Colors.transparent
-              : const Color.fromARGB(255, 186, 186, 186),
-          borderRadius: const BorderRadius.all(Radius.circular(15))),
-      child: barang["photo_barang"] != ""
-          ? ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(15)),
-              child: Hero(
-                tag: "image$id",
-                child: Image.memory(
-                  Uint8List.fromList(base64.decode(barang["photo_barang"])),
-                  fit: BoxFit.cover,
-                  gaplessPlayback: true,
-                ),
-              ),
-            )
-          : const Center(
-              child: Icon(
-                Icons.image_rounded,
-                color: Colors.white,
-                size: 45,
-              ),
-            ),
     );
   }
 
