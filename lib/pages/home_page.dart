@@ -558,6 +558,7 @@ class _MyHomePageState extends State<MyHomePage>
               ),
               if (inventoryWise().readByUser().isNotEmpty)
                 Expanded(
+                  // list inventory
                   child: ListView(
                     controller: invScrollController,
                     children: List.generate(inventoryWise().readByUser().length,
@@ -1095,8 +1096,10 @@ class _MyHomePageState extends State<MyHomePage>
       children: [
         Expanded(
             child: ListTile(
+          // pindah inventaris
           onTap: () {
             log("tap ${id_inventory}");
+            log("jml brg: $jml_brg");
             switch (invEditMode) {
               case false:
                 setState(() {
@@ -1188,10 +1191,7 @@ class _MyHomePageState extends State<MyHomePage>
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           List brgs = filteredItems;
-          // List brgs = invState == "all"
-          //     ? filteredItems
-          //     // ? ItemWise().readByUser()
-          //     : ItemWise().readByInventory(invState, id_user);
+
           return Column(
             children: [
               Column(
@@ -1244,7 +1244,7 @@ class _MyHomePageState extends State<MyHomePage>
                       visible: barang['photo_barang'] != "",
                       child: Row(
                         children: [
-                         fungsies().buildFotoBarang(barang, id),
+                          fungsies().buildFotoBarang(barang, id),
                           Container(
                             width: 5,
                           ),

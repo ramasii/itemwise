@@ -410,7 +410,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
         height: 700,
         constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width - 10,
-            maxHeight: img != ""  && !isImgLscape ? ((MediaQuery.of(context).size.width - 10)/3)*5 : ((MediaQuery.of(context).size.width - 10)/5)*3),
+            maxHeight: img != "" && !isImgLscape
+                ? ((MediaQuery.of(context).size.width - 10) / 3) * 5
+                : ((MediaQuery.of(context).size.width - 10) / 5) * 3),
         child: Card(
           elevation: 5,
           color: const Color.fromARGB(255, 232, 232, 232),
@@ -663,7 +665,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     harga_beli: harga_beli,
                     harga_jual: harga_jual,
                     photo_barang: img,
-                    id_inventory: invDropdownValue);
+                    id_inventory: invDropdownValue ?? "tanpa*inventaris");
               }
             }
             // ignore: use_build_context_synchronously

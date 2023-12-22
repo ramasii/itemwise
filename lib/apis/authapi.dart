@@ -25,7 +25,7 @@ class authapi {
           log("mungkin eror di server");
           break;
         default:
-          log("${response.statusCode}");
+          log("authapi auth: ${response.statusCode}");
       }
     } catch (e) {
       log("$e");

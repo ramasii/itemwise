@@ -70,6 +70,8 @@ class itemApiWise {
   ///
   /// setelah ItemWise().setAll(itms);
   ///
+  /// khusus user
+  ///
   /// lalu load foto barang untuk setiap barang user
   read() async {
     log("START: IMPORT ITEM CONNECT TO SERVER");

@@ -222,41 +222,34 @@ class _AdminPanelState extends State<AdminPanel> {
         ],
       ),
     );
-    /* return ListTile(
-      leading: item['photo_barang'] == ""
-          ? Icon(Icons.photo_album_rounded)
-          : fungsies().buildFotoBarang(item, item['photo_barang']),
-      title: Text(
-        item['nama_barang'],
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: user != null
-          ? Text(
-              user['email_user'],
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      onTap: () {
-        setState(() {
-          idItem.text = item['id_barang'];
-          namaItem.text = item['nama_barang'];
-          kodeItem.text = item['kode_barang'];
-          catatanItem.text = item['catatan'];
-          stokItem.text = item['stok_barang'].toString();
-          hBliItem.text = item['harga_beli'].toString();
-          hJalItem.text = item['harga_jual'].toString();
-          userState = item['id_user'];
-          invState = item['id_inventory'];
-        });
-        _viewItem(context, item);
-      },
-    ); */
   }
 
-  _viewItem(BuildContext context, Map item) {
+  /// jika parameter [item] == null -> `MENAMBAH` file
+  ///
+  /// jika parameter [item] != null -> `MENGEDIT` file
+  _viewItem(BuildContext context, Map? item) {
     log("buka view item");
+
+    if (item == null) {
+      log("buka view item: nambah");
+      // buat id_barang
+      String id_barang =
+          "${userWise.userData['id_user']}brg${DateTime.now().millisecondsSinceEpoch}";
+      // clear textfieldcontroller untuk membuat item
+      setState(() {
+        idItem.text = id_barang;
+        namaItem.clear();
+        kodeItem.clear();
+        catatanItem.clear();
+        stokItem.clear();
+        hBliItem.clear();
+        hJalItem.clear();
+        photoItem = "";
+        invState = null;
+        userState = null;
+      });
+    }
+
     return showDialog(
         context: context,
         builder: (_) {
@@ -266,7 +259,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 child: Column(
                   children: [
                     photoItem != ""
-                        // render foto barnag
+                        // render foto barang
                         ? Container(
                             constraints:
                                 BoxConstraints(maxHeight: 500, maxWidth: 350),
@@ -299,7 +292,7 @@ class _AdminPanelState extends State<AdminPanel> {
                                 borderRadius: BorderRadius.circular(50),
                                 onTap: () async {
                                   setState(() {
-                                    _addPhotoBarang(context,setState);
+                                    _addPhotoBarang(context, setState);
                                   });
                                 },
                                 child: Container(
@@ -328,7 +321,9 @@ class _AdminPanelState extends State<AdminPanel> {
                     Container(
                       height: 20,
                     ),
-                    _fieldInfo("id_barang", ctrler: idItem, enable: false),
+                    _fieldInfo("id_barang",
+                        ctrler: idItem, enable: item == null),
+                    // _fieldInfo("id_barang", ctrler: idItem, enable: false),
                     Container(
                       height: 20,
                     ),
@@ -366,7 +361,11 @@ class _AdminPanelState extends State<AdminPanel> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _deleteButton(context, "item", item['id_barang']),
+                        Visibility(
+                          visible: item != null,
+                          child: _deleteButton(
+                              context, "item", item!['id_barang']),
+                        ),
                         _updateButton(context, item: item),
                       ],
                     )
@@ -816,8 +815,7 @@ class _AdminPanelState extends State<AdminPanel> {
 
   Future<dynamic> _addInvDialog(BuildContext context) {
     // buat id_inventory
-    String id_inventory =
-        "${deviceData.id}inv${DateTime.now().millisecondsSinceEpoch}";
+    String id_inventory ="${userWise.userData['id_user']}inv${DateTime.now().millisecondsSinceEpoch}";
     // bersihkan textController untuk add inv
     setState(() {
       idInv.text = id_inventory;
@@ -953,7 +951,8 @@ class _AdminPanelState extends State<AdminPanel> {
         });
   }
 
-  Future<void> _addPhotoBarang(BuildContext context, StateSetter setState) async {
+  Future<void> _addPhotoBarang(
+      BuildContext context, StateSetter setState) async {
     log("add item photo");
     // ambil gambar dari galeri atau dari kamera
     bool? fromCam = await fungsies().konfirmasiDialog(context,

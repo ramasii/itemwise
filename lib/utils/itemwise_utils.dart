@@ -104,11 +104,14 @@ class ItemWise {
   }
 
   Map readByIdBarang(String id_barang) {
-    Map byIdBarang = readByUser()
-        .firstWhere((element) => element['id_barang'] == id_barang);
+    Map byIdBarang =
+        readByUser().firstWhere((element) => element['id_barang'] == id_barang);
     return byIdBarang;
   }
 
+  /// jika [id_inventory] == `null` maka [id_inventory] tidak akan diubah
+  ///
+  /// jika [id_inventory] == `"tanpa*inventaris"` maka [id_inventory] = `null`
   update(String id_barang,
       {String? id_user,
       String? id_inventory,
@@ -129,7 +132,7 @@ class ItemWise {
     items[idx]["id_barang"] = id_barang;
     items[idx]["id_user"] = id_user ?? items[idx]["id_user"];
     items[idx]["id_inventory"] =
-        id_inventory /* ?? items[idx]["id_inventory"] */;
+        id_inventory ?? items[idx]["id_inventory"];
     items[idx]["nama_barang"] = nama_barang ?? items[idx]["nama_barang"];
     items[idx]["stok_barang"] = stok_barang ?? items[idx]["stok_barang"];
     items[idx]["harga_beli"] = harga_beli ?? items[idx]["harga_beli"];
