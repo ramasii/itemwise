@@ -1402,15 +1402,25 @@ class _MyHomePageState extends State<MyHomePage>
             IntrinsicHeight(
               child: Row(
                 children: [
-                  Text(
-                    "${pengaturan.mataUang} ${barang['harga_jual']}",
-                    style: const TextStyle(color: Colors.deepOrange),
+                  Expanded(
+                    child: 
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${pengaturan.mataUang} ${barang['harga_jual']}",
+                        style: const TextStyle(color: Colors.deepOrange),
+                      ),
+                    ),
                   ),
                   const VerticalDivider(),
-                  Text(
-                    "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[600]),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
                   ),
                 ],
               ),
