@@ -41,6 +41,7 @@ class ItemWise {
       String? added,
       String? edited}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String sekarang = DateTime.now().toString();
 
     // ubah nilai item
     item["id_barang"] = id_barang;
@@ -53,8 +54,8 @@ class ItemWise {
     item["kode_barang"] = kode_barang ?? "";
     item["catatan"] = catatan ?? "";
     item["photo_barang"] = photo_barang ?? "";
-    item["added"] = added ?? "";
-    item["edited"] = edited ?? "";
+    item["added"] = added ?? sekarang;
+    item["edited"] = edited ?? sekarang;
 
     // tambahkan item ke items
     items.add(item);
@@ -128,11 +129,15 @@ class ItemWise {
     // cari index berdasarkan id_barang
     var idx = items.indexWhere((element) => element["id_barang"] == id_barang);
 
+    // jika id_inventory == "tanpa*inventaris" maka ubah jadi null
+    if (id_inventory == "tanpa*inventaris") {
+      id_inventory = null;
+    }
+
     // ubah nilai element berdasarkan index
     items[idx]["id_barang"] = id_barang;
     items[idx]["id_user"] = id_user ?? items[idx]["id_user"];
-    items[idx]["id_inventory"] =
-        id_inventory ?? items[idx]["id_inventory"];
+    items[idx]["id_inventory"] = id_inventory ?? items[idx]["id_inventory"];
     items[idx]["nama_barang"] = nama_barang ?? items[idx]["nama_barang"];
     items[idx]["stok_barang"] = stok_barang ?? items[idx]["stok_barang"];
     items[idx]["harga_beli"] = harga_beli ?? items[idx]["harga_beli"];
