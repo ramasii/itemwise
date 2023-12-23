@@ -2,8 +2,11 @@ import 'package:itemwise/allpackages.dart';
 
 enum currencies { rupiah, dollar, ringgit, yen }
 
+enum sorter { name12, name21, added12, added21 }
+
 class pengaturan {
   static String mataUang = "Rp.";
+  static sorter sortBy = sorter.name12;
 
   ubahMataUang(var mata) async {
     switch (mata) {
@@ -26,10 +29,29 @@ class pengaturan {
     await prefs.setString("pengaturan.mataUang", mataUang);
   }
 
-  loadPengaturan() async {
-    log("START memuat pengaturan");
+  loadMataUang() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     mataUang = prefs.getString("pengaturan.mataUang") ?? "Rp.";
+  }
+
+  ubahSorting(sorter by) async {
+    log("ubah sorter->${by.name}");
+    sortBy = by;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("pengaturan.sortBy", by.name);
+  }
+
+  loadSorting() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String tempSort = prefs.getString("pengaturan.sortBy") ?? "name12";
+    sortBy = sorter.values.firstWhere((element) => element.name == tempSort);
+  }
+
+  loadPengaturan() async {
+    log("START memuat pengaturan");
+    loadMataUang();
+    loadSorting();
     log("DONE membuat pengaturan");
   }
 }

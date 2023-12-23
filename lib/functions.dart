@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
 
@@ -85,8 +87,9 @@ class fungsies {
     Color? trueColor,
     Color? falseColor,
   }) async {
-    bool? result = await showDialog<bool>(
+    bool? result = await showCupertinoDialog<bool>(
         context: context,
+        barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
             // title: Text(judul ?? AppLocalizations.of(context)!.attention),

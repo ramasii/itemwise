@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'pages.dart';
@@ -237,6 +238,10 @@ class _MyHomePageState extends State<MyHomePage>
                     MaterialPageRoute(
                         builder: (context) => const AdminPanel()));
                 break;
+              case "sort":
+                log("sort");
+                sortingDialog(context);
+                break;
               default:
             }
           },
@@ -252,6 +257,11 @@ class _MyHomePageState extends State<MyHomePage>
                       userWise.isLoggedIn
                           ? AppLocalizations.of(context)!.profile
                           : AppLocalizations.of(context)!.login)),
+              PopupMenuItem(
+                value: "sort",
+                child: _menuItem(
+                    context, Icons.sort, AppLocalizations.of(context)!.sort),
+              ),
               if (userWise.isLoggedIn)
                 PopupMenuItem(
                     value: "ekspor",
@@ -268,10 +278,80 @@ class _MyHomePageState extends State<MyHomePage>
                   value: "adminPanel",
                   child: _menuItem(context, Icons.admin_panel_settings_rounded,
                       AppLocalizations.of(context)!.adminPanel),
-                )
+                ),
             ];
           }),
     ];
+  }
+
+  Future<dynamic> sortingDialog(BuildContext context) {
+    return showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+            content: StatefulBuilder(builder: ((context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile(
+                      value: sorter.name12,
+                      groupValue: pengaturan.sortBy,
+                      title: Text(AppLocalizations.of(context)!.nameAZ),
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.name21,
+                      title: Text(AppLocalizations.of(context)!.nameZA),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.added12,
+                      title: Text(AppLocalizations.of(context)!.newestAdded),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.added21,
+                      title: Text(AppLocalizations.of(context)!.oldestAdded),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                ],
+              );
+            })),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    log("ok");
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  child: Text(AppLocalizations.of(context)!.ok))
+            ],
+          );
+        });
   }
 
   Column defaultAppBar(BuildContext context) {
@@ -350,9 +430,8 @@ class _MyHomePageState extends State<MyHomePage>
   Future backupAsset() async {
     log("ekspor aset");
 
-    showDialog(
+    showCupertinoDialog(
         context: context,
-        barrierDismissible: false,
         builder: (BuildContext context) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -411,7 +490,8 @@ class _MyHomePageState extends State<MyHomePage>
         setState(() {
           Navigator.pop(context);
         });
-        showDialog(
+        showCupertinoDialog(
+          barrierDismissible: true,
             context: context,
             builder: (BuildContext context) => AlertDialog(
                   content: Text(AppLocalizations.of(context)!.noInternet),
@@ -425,9 +505,8 @@ class _MyHomePageState extends State<MyHomePage>
   loadAsset() async {
     log("load aset");
 
-    showDialog(
+    showCupertinoDialog(
         context: context,
-        barrierDismissible: false,
         builder: (BuildContext context) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -1027,8 +1106,9 @@ class _MyHomePageState extends State<MyHomePage>
 
   Future<dynamic> invNameDialog(
       BuildContext context, String id_inventory, String mode) {
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         useRootNavigator: false,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -1044,8 +1124,8 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             actions: [
-              InkWell(
-                onTap: () async {
+              TextButton(
+                onPressed: () async {
                   log("simpan");
                   if (NamaInvController.text.trim().isNotEmpty) {
                     setState(() {
@@ -1080,9 +1160,7 @@ class _MyHomePageState extends State<MyHomePage>
                     Navigator.pop(context);
                   }
                 },
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: successButton(AppLocalizations.of(context)!.save)),
+                child: Text(AppLocalizations.of(context)!.save),
               )
             ],
           );
@@ -1191,6 +1269,27 @@ class _MyHomePageState extends State<MyHomePage>
       child: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           List brgs = filteredItems;
+
+          // mengurutkan barang
+          brgs.sort((a, b) {
+            String namaA = a['nama_barang'];
+            String namaB = b['nama_barang'];
+            DateTime timeA = DateTime.parse(a['added']);
+            DateTime timeB = DateTime.parse(b['added']);
+
+            switch (pengaturan.sortBy) {
+              case sorter.name12:
+                return namaA.compareTo(namaB);
+              case sorter.name21:
+                return namaB.compareTo(namaA);
+              case sorter.added21:
+                return timeA.compareTo(timeB);
+              case sorter.added12:
+                return timeB.compareTo(timeA);
+              default:
+                return namaA.compareTo(namaB);
+            }
+          });
 
           return Column(
             children: [
@@ -1403,8 +1502,7 @@ class _MyHomePageState extends State<MyHomePage>
               child: Row(
                 children: [
                   Expanded(
-                    child: 
-                    SingleChildScrollView(
+                    child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
                         "${pengaturan.mataUang} ${barang['harga_jual']}",

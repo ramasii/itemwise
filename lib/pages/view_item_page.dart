@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
@@ -312,8 +313,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
   Future<dynamic> invNameDialog(
       BuildContext context, String id_inventory, String mode) {
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         useRootNavigator: false,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -328,8 +330,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
               ),
             ),
             actions: [
-              InkWell(
-                onTap: () async {
+              TextButton(
+                onPressed: () async {
                   log("simpan");
                   if (NamaInvController.text.trim().isNotEmpty) {
                     String id_user = "";
@@ -363,9 +365,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     Navigator.pop(context);
                   }
                 },
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: successButton(AppLocalizations.of(context)!.save)),
+                child: Text(AppLocalizations.of(context)!.save),
               )
             ],
           );
@@ -514,7 +514,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
   }
 
   Future<dynamic> confirmDialog(BuildContext context) {
-    return showDialog(
+    return showCupertinoDialog(
+      barrierDismissible: true,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(

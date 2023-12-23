@@ -2,6 +2,7 @@
 
 import 'dart:collection';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -107,9 +108,8 @@ class _userPageState extends State<userPage> {
     return TextButton(
         onPressed: () async {
           // berikan loading
-          showDialog(
+          showCupertinoDialog(
               context: context,
-              barrierDismissible: false,
               builder: (BuildContext context) => Center(
                     child: CircularProgressIndicator(),
                   ));
@@ -171,8 +171,9 @@ class _userPageState extends State<userPage> {
                       Navigator.pop(context);
 
                       // ignore: use_build_context_synchronously
-                      showDialog(
+                      showCupertinoDialog(
                           context: context,
+                          barrierDismissible: true,
                           builder: (_) => AlertDialog(
                                 content: Text(AppLocalizations.of(context)!
                                     .wrongPassword),
@@ -205,8 +206,9 @@ class _userPageState extends State<userPage> {
                 }
               } else {
                 Navigator.pop(context);
-                showDialog(
+                showCupertinoDialog(
                     context: context,
+                    barrierDismissible: true,
                     builder: (_) {
                       return AlertDialog(
                         content: Text(AppLocalizations.of(context)!.noInternet),

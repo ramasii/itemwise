@@ -10,16 +10,18 @@ class userApiWise {
       String? email_user,
       String? photo_user,
       String? password_user,
+      String role = "user",
       bool isAdmin = false}) async {
     log("create user to API");
     try {
       final response = await http.post(Uri.parse(
-          "$url/add?id_user=$id_user&username_user=$username_user&email_user=$email_user&photo_user=$photo_user&password_user=$password_user"));
+          "$url/add?id_user=$id_user&username_user=$username_user&email_user=$email_user&photo_user=$photo_user&password_user=$password_user&role=$role"));
       log(response.body);
       log(email_user!);
 
       // tambahkan data user ke device
       if (response.statusCode == 200) {
+        // isAdmin == false berarti user login, jika true berarti admin nambah user
         if (isAdmin == false) {
           userWise().edit(
               username_user: username_user,
@@ -73,6 +75,7 @@ class userApiWise {
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
+          log("userapi read all: ${response.body}");
           adminAccess.userList = jsonDecode(response.body);
           break;
         case 401:
@@ -94,7 +97,8 @@ class userApiWise {
       String email_user = "",
       String password_user = "",
       String photo_user = "",
-      String role = ""}) async {
+      String role = "",
+      bool isAdmin = false}) async {
     log("update userapi");
     try {
       var response = await http.put(
@@ -103,6 +107,16 @@ class userApiWise {
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
+          log("SUKSES UPDATE USERAPI");
+          // jika mengubah akunnya sendiri maka langsung minta auth + mengubah data akun di device
+          if (id_user == userWise.userData['id_user']) {
+            log("mengubah dataUser yang digunakan karena melakukan perubahan di database");
+            authapi().auth(email_user, password_user);
+            userWise().edit(
+                username_user: username_user,
+                email_user: email_user,
+                password_user: password_user);
+          }
           log(response.body);
           break;
         case 401:

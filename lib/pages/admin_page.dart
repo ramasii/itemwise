@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
 import '../allpackages.dart';
@@ -250,7 +251,8 @@ class _AdminPanelState extends State<AdminPanel> {
       });
     }
 
-    return showDialog(
+    return showCupertinoDialog(
+        barrierDismissible: true,
         context: context,
         builder: (_) {
           return StatefulBuilder(builder: (context, setState) {
@@ -514,7 +516,8 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<dynamic> _viewInv(BuildContext context, Map inv) {
-    return showDialog(
+    return showCupertinoDialog(
+        barrierDismissible: true,
         context: context,
         builder: (_) {
           return AlertDialog(
@@ -638,7 +641,8 @@ class _AdminPanelState extends State<AdminPanel> {
         photo_user = user['photo_user'];
       });
     }
-    return showDialog(
+    return showCupertinoDialog(
+        barrierDismissible: true,
         context: context,
         builder: (_) {
           return AlertDialog(
@@ -664,7 +668,7 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _roleDropDown(),
+                  _roleDropDown(roleStater: user['role']),
                   Container(
                     height: 20,
                   ),
@@ -693,29 +697,37 @@ class _AdminPanelState extends State<AdminPanel> {
             });
             switch (tipe) {
               case "user":
+                Map user = adminAccess.userList
+                    .firstWhere((element) => element["id_user"] == id);
                 // jika id_user yang mau dihapus beda dengan yang dipake
-                if (id != userWise.userData['id_user']) {
+                if (id != userWise.userData['id_user'] &&
+                    user['role'] != "admin") {
                   await userApiWise().delete(id);
+                  Navigator.pop(context);
                 }
                 // jika sama
                 else {
                   // ignore: use_build_context_synchronously
-                  showDialog(
+                  Navigator.pop(context);
+                  showCupertinoDialog(
+                    barrierDismissible: true,
                       context: context,
-                      builder: (_) {
+                      builder: (context) {
                         return AlertDialog(
                           content:
-                              Text(AppLocalizations.of(context)!.thisIsYourAcc),
+                              Text(id == userWise.userData['id_user'] ? AppLocalizations.of(context)!.thisIsYourAcc : AppLocalizations.of(context)!.thisIsAdmin),
                         );
                       });
                 }
                 break;
               case "inv":
                 await inventoryApiWise().delete(id);
+                Navigator.pop(context);
                 break;
               case "item":
                 await itemApiWise().delete(id);
                 await photoBarangApiWise().delete(id);
+                Navigator.pop(context);
                 break;
               default:
             }
@@ -724,7 +736,7 @@ class _AdminPanelState extends State<AdminPanel> {
               loading = false;
             });
           }
-          Navigator.pop(context);
+          // Navigator.pop(context);
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -777,8 +789,9 @@ class _AdminPanelState extends State<AdminPanel> {
       passwordUser.clear();
       photo_user = "null";
     });
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         builder: (_) {
           return AlertDialog(
             content: SingleChildScrollView(
@@ -815,7 +828,8 @@ class _AdminPanelState extends State<AdminPanel> {
 
   Future<dynamic> _addInvDialog(BuildContext context) {
     // buat id_inventory
-    String id_inventory ="${userWise.userData['id_user']}inv${DateTime.now().millisecondsSinceEpoch}";
+    String id_inventory =
+        "${userWise.userData['id_user']}inv${DateTime.now().millisecondsSinceEpoch}";
     // bersihkan textController untuk add inv
     setState(() {
       idInv.text = id_inventory;
@@ -823,8 +837,9 @@ class _AdminPanelState extends State<AdminPanel> {
       userState = null;
     });
 
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         builder: (_) {
           return AlertDialog(
             content: SingleChildScrollView(
@@ -866,8 +881,9 @@ class _AdminPanelState extends State<AdminPanel> {
       userState = null;
     });
 
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         builder: (_) {
           return StatefulBuilder(builder: (context, setState) {
             return AlertDialog(
@@ -992,12 +1008,14 @@ class _AdminPanelState extends State<AdminPanel> {
 
               if (cekEmail.isEmpty) {
                 // tambah user
+                log("add userapi: $roleState");
                 await userApiWise().create(
                     id_user: idUser.text.trim(),
                     username_user: usernameUser.text.trim(),
                     email_user: emailUser.text.trim(),
                     photo_user: photo_user,
                     password_user: passwordUser.text.trim(),
+                    role: roleState,
                     isAdmin: true);
               }
               break;
@@ -1049,14 +1067,9 @@ class _AdminPanelState extends State<AdminPanel> {
           setState(() {
             loading = true;
           });
-          // showDialog(
-          //     context: context,
-          //     barrierDismissible: false,
-          //     builder: (_) => Center(
-          //           child: CircularProgressIndicator(),
-          //         ));
-          // ini update user
+
           if (user != null) {
+            log("update role->$roleState");
             await userApiWise().update(
               id_user: user['id_user'],
               username_user: usernameUser.text,
@@ -1064,6 +1077,7 @@ class _AdminPanelState extends State<AdminPanel> {
               password_user: passwordUser.text,
               photo_user: user['photo_user'],
               role: roleState,
+              isAdmin: true,
             );
           }
           // ini update inv
@@ -1114,18 +1128,18 @@ class _AdminPanelState extends State<AdminPanel> {
         ));
   }
 
-  StatefulBuilder _roleDropDown({String roleState = "user"}) {
+  Widget _roleDropDown({String roleStater = "user"}) {
     return StatefulBuilder(builder: ((context, setState) {
       return DropdownButton(
         isExpanded: true,
         onChanged: (value) {
-          log("role berubah");
+          log("role berubah->$value");
           setState(() {
-            log("$value");
             roleState = (value) as String;
+            roleStater = (value) as String;
           });
         },
-        value: roleState,
+        value: roleStater,
         items: List.generate(
             role.length,
             (index) => DropdownMenuItem(
