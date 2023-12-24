@@ -52,6 +52,6 @@ class pengaturan {
     log("START memuat pengaturan");
     loadMataUang();
     loadSorting();
-    log("DONE membuat pengaturan");
+    log("DONE memuat pengaturan");
   }
 }

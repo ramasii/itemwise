@@ -491,7 +491,7 @@ class _MyHomePageState extends State<MyHomePage>
           Navigator.pop(context);
         });
         showCupertinoDialog(
-          barrierDismissible: true,
+            barrierDismissible: true,
             context: context,
             builder: (BuildContext context) => AlertDialog(
                   content: Text(AppLocalizations.of(context)!.noInternet),
@@ -671,7 +671,7 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  Widget stokAndHargaSheet(BuildContext context, String id_barang) {
+  Widget stokDanHargaSheet(BuildContext context, String id_barang) {
     Map barang = filteredItems.firstWhere(
       // Map barang = ItemWise().readByUser().firstWhere(
       (element) => element['id_barang'] == id_barang,
@@ -693,386 +693,360 @@ class _MyHomePageState extends State<MyHomePage>
       }
     }
     idBrgOld = id_barang;
-    return BottomSheet(
-        onClosing: () {
-          Navigator.pop(context);
-        },
-        backgroundColor: Colors.transparent,
-        animationController: bottomSheetAC,
-        builder: (BuildContext context) {
-          return Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20))),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Center(
-                        child: Container(
-                          height: 5,
-                          width: 60,
-                          decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(5)),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 10,
-                          ),
-                          Text(
-                            AppLocalizations.of(context)!.editStockAndPrice,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold),
-                          ),
-                          Container(
-                            height: 20,
-                          ),
-                          Text(
-                            barang['nama_barang'],
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20))),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 5,
+                  width: 60,
+                  decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(5)),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 10,
+                    ),
+                    Text(
+                      AppLocalizations.of(context)!.editStockAndPrice,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(
+                      barang['nama_barang'],
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w500),
+                    ),
+                    Container(
+                      height: 5,
+                    ),
+                    Text(
+                      barang['kode_barang'],
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(AppLocalizations.of(context)!.selPrice,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500)),
+                    TextFormField(
+                      controller: hargaJualController,
+                      textAlign: TextAlign.center,
+                      decoration:
+                          InputDecoration(icon: Text(pengaturan.mataUang)),
+                      onChanged: (value) {
+                        clearNotNumber(value, hargaJualController);
+                        if (value == "") {
+                          setState(() {
+                            hargaJualController.text = "0";
+                          });
+                        } else {
+                          setState(() {
+                            hjalNew = value;
+                          });
+                        }
+                      },
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.stok,
                             style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.w500),
                           ),
-                          Container(
-                            height: 5,
-                          ),
-                          Text(
-                            barang['kode_barang'],
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Container(
-                            height: 20,
-                          ),
-                          Text(AppLocalizations.of(context)!.selPrice,
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w500)),
-                          TextFormField(
-                            controller: hargaJualController,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                                icon: Text(pengaturan.mataUang)),
-                            onChanged: (value) {
-                              clearNotNumber(value, hargaJualController);
-                              if (value == "") {
-                                setState(() {
-                                  hargaJualController.text = "0";
-                                });
-                              } else {
-                                setState(() {
-                                  hjalNew = value;
-                                });
-                              }
-                            },
-                          ),
-                          Container(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                        ),
+                        Expanded(
+                          child: Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)!.stok,
-                                  style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    InkWell(
-                                        onTap: () {
-                                          log("minus");
-                                          int stok =
-                                              int.parse(stokController.text);
-                                          if (stok > 0) {
-                                            setState(() {
-                                              stokController.text =
-                                                  (stok - 1).toString();
-                                            });
-                                          }
-                                          setState(() {
-                                            stokNew = stok.toString();
-                                          });
-                                        },
-                                        child:
-                                            circledIcon(Icons.remove_rounded)),
-                                    Expanded(
-                                      child: TextFormField(
-                                        controller: stokController,
-                                        textAlign: TextAlign.center,
-                                        onChanged: (value) {
-                                          clearNotNumber(value, stokController);
-                                          if (value == "") {
-                                            setState(() {
-                                              stokController.text = "0";
-                                            });
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    InkWell(
-                                        onTap: () {
-                                          log("add");
-                                          int stok =
-                                              int.parse(stokController.text);
-                                          setState(() {
-                                            stokController.text =
-                                                (stok + 1).toString();
-                                            stokNew = stok.toString();
-                                          });
-                                        },
-                                        child: circledIcon(Icons.add_rounded))
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                          Container(
-                            height: 40,
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () async {
-                                    log("simpan lewat bottomsheet");
-                                    await ItemWise().update(id_barang,
-                                        stok_barang: int.parse(
-                                            stokController.text.trim()),
-                                        harga_jual: int.parse(
-                                            hargaJualController.text.trim()),
-                                        id_inventory: barang['id_inventory']);
+                              InkWell(
+                                  onTap: () {
+                                    log("minus");
+                                    int stok = int.parse(stokController.text);
+                                    if (stok > 0) {
+                                      setState(() {
+                                        stokController.text =
+                                            (stok - 1).toString();
+                                      });
+                                    }
                                     setState(() {
-                                      // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                                      filteredItems = ItemWise()
-                                          .readByInventory(invState, id_user);
+                                      stokNew = stok.toString();
                                     });
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      backgroundColor: Colors.green,
-                                      content: Text(
-                                          AppLocalizations.of(context)!
-                                              .successSave),
-                                      duration: const Duration(seconds: 1),
-                                    ));
                                   },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                              color:
-                                                  Color.fromARGB(70, 0, 0, 0),
-                                              blurRadius: 2)
-                                        ]),
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      AppLocalizations.of(context)!.save,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
+                                  child: circledIcon(Icons.remove_rounded)),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: stokController,
+                                  textAlign: TextAlign.center,
+                                  onChanged: (value) {
+                                    clearNotNumber(value, stokController);
+                                    if (value == "") {
+                                      setState(() {
+                                        stokController.text = "0";
+                                      });
+                                    }
+                                  },
                                 ),
                               ),
+                              InkWell(
+                                  onTap: () {
+                                    log("add");
+                                    int stok = int.parse(stokController.text);
+                                    setState(() {
+                                      stokController.text =
+                                          (stok + 1).toString();
+                                      stokNew = stok.toString();
+                                    });
+                                  },
+                                  child: circledIcon(Icons.add_rounded))
                             ],
                           ),
-                          // mendorong bottomsheet ke atas ketika buka keyboard
-                          AnimatedContainer(
-                              height: MediaQuery.of(context).viewInsets.bottom,
-                              duration: const Duration(milliseconds: 200))
-                        ],
-                      ),
-                    ],
-                  ),
+                        )
+                      ],
+                    ),
+                    Container(
+                      height: 40,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              log("simpan lewat bottomsheet");
+                              await ItemWise().update(id_barang,
+                                  stok_barang:
+                                      int.parse(stokController.text.trim()),
+                                  harga_jual: int.parse(
+                                      hargaJualController.text.trim()),
+                                  id_inventory: barang['id_inventory']);
+                              setState(() {
+                                // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                                filteredItems = ItemWise()
+                                    .readByInventory(invState, id_user);
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                backgroundColor: Colors.green,
+                                content: Text(
+                                    AppLocalizations.of(context)!.successSave),
+                                duration: const Duration(seconds: 1),
+                              ));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color.fromARGB(70, 0, 0, 0),
+                                        blurRadius: 2)
+                                  ]),
+                              padding: const EdgeInsets.all(12),
+                              child: Text(
+                                AppLocalizations.of(context)!.save,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // mendorong bottomsheet ke atas ketika buka keyboard
+                    AnimatedContainer(
+                        height: MediaQuery.of(context).viewInsets.bottom,
+                        duration: const Duration(milliseconds: 200))
+                  ],
                 ),
-              ),
-            ],
-          );
-        });
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget moreMenuItem(BuildContext context, String id_barang) {
+  Widget moreMenu(BuildContext context, String id_barang) {
     // dapatkan map berdasarkan id_barang
     Map barang = ItemWise().readByIdBarang(id_barang);
-    return BottomSheet(
-        backgroundColor: Colors.transparent,
-        animationController: bottomSheetAC,
-        onClosing: () {
-          Navigator.pop(context);
-        },
-        builder: (BuildContext context) {
-          return Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20))),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20))),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    height: 5,
+                    width: 60,
+                    decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                ),
+                Container(
+                  height: 20,
+                ),
+                // info barang yang diklik
+                // nama barang
+                Text(
+                  barang['nama_barang'],
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+                Container(
+                  height: 5,
+                ),
+                // kode barang
+                Text(
+                  barang['kode_barang'],
+                  style: const TextStyle(fontSize: 15),
+                ),
+                Container(
+                  height: 20,
+                ),
+                Text(
+                  "${AppLocalizations.of(context)!.action}:",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                Container(
+                  height: 10,
+                ),
+                // menu edit detail
+                InkWell(
+                  onTap: () async {
+                    log("edit detail");
+                    // tutup menu
+                    Navigator.pop(context);
+                    // menuju halaman view/edit
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => ViewItemPage(
+                                  itemMap: barang,
+                                )));
+                  },
+                  child: Row(
                     children: [
-                      Center(
-                        child: Container(
-                          height: 5,
-                          width: 60,
-                          decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(5)),
+                      Expanded(
+                        child: IntrinsicWidth(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  AppLocalizations.of(context)!.editItemDetail),
+                              const Divider(),
+                            ],
+                          ),
                         ),
                       ),
-                      Container(
-                        height: 20,
-                      ),
-                      // info barang yang diklik
-                      // nama barang
-                      Text(
-                        barang['nama_barang'],
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w500),
-                      ),
-                      Container(
-                        height: 5,
-                      ),
-                      // kode barang
-                      Text(
-                        barang['kode_barang'],
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      Container(
-                        height: 20,
-                      ),
-                      Text(
-                        "${AppLocalizations.of(context)!.action}:",
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      // menu edit detail
-                      InkWell(
-                        onTap: () async {
-                          log("edit detail");
-                          // tutup menu
-                          Navigator.pop(context);
-                          // menuju halaman view/edit
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => ViewItemPage(
-                                        itemMap: barang,
-                                      )));
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IntrinsicWidth(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(AppLocalizations.of(context)!
-                                        .editItemDetail),
-                                    const Divider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      // menu pilih
-                      InkWell(
-                        onTap: () {
-                          log("pilih");
-                          setState(() {
-                            selectedItems.add(id_barang);
-                          });
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IntrinsicWidth(
-                                stepHeight: null,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(AppLocalizations.of(context)!
-                                        .selectItem),
-                                    const Divider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      // menu hapus
-                      InkWell(
-                        onTap: () async {
-                          log("hapus");
-                          bool? hapus =
-                              await fungsies().konfirmasiDialog(context);
-                          if (hapus == true) {
-                            await ItemWise().delete(id_barang);
-                            setState(() {
-                              // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                              filteredItems =
-                                  ItemWise().readByInventory(invState, id_user);
-                            });
-                          }
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IntrinsicWidth(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(AppLocalizations.of(context)!.delete),
-                                    const Divider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 50,
-                      )
                     ],
                   ),
                 ),
-              ),
-            ],
-          );
-        });
+                Container(
+                  height: 10,
+                ),
+                // menu pilih
+                InkWell(
+                  onTap: () {
+                    log("pilih");
+                    setState(() {
+                      selectedItems.add(id_barang);
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: IntrinsicWidth(
+                          stepHeight: null,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppLocalizations.of(context)!.selectItem),
+                              const Divider(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 10,
+                ),
+                // menu hapus
+                InkWell(
+                  onTap: () async {
+                    log("hapus");
+                    bool? hapus = await fungsies().konfirmasiDialog(context);
+                    if (hapus == true) {
+                      await ItemWise().delete(id_barang);
+                      setState(() {
+                        // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                        filteredItems =
+                            ItemWise().readByInventory(invState, id_user);
+                      });
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: IntrinsicWidth(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppLocalizations.of(context)!.delete),
+                              const Divider(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 50,
+                )
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void clearNotNumber(String value, TextEditingController controller) {
@@ -1364,14 +1338,8 @@ class _MyHomePageState extends State<MyHomePage>
                       onTap: () {
                         // buka bottomsheet
                         if (selectedItems.isEmpty) {
-                          showModalBottomSheet(
-                              backgroundColor: Colors.transparent,
-                              isScrollControlled: true,
-                              context: context,
-                              builder: (BuildContext context) {
-                                return stokAndHargaSheet(
-                                    context, barang['id_barang']);
-                              });
+                          _tampilkanBottomSheet(context,
+                              stokDanHargaSheet(context, barang['id_barang']));
                         }
                       },
                       child: Container(
@@ -1402,6 +1370,20 @@ class _MyHomePageState extends State<MyHomePage>
         ),
       ),
     );
+  }
+
+  Future<dynamic> _tampilkanBottomSheet(BuildContext context, Widget sheet) {
+    return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return sheet;
+        });
   }
 
   InkWell MyListTile(BuildContext context, int index, id, barang,
@@ -1473,14 +1455,8 @@ class _MyHomePageState extends State<MyHomePage>
                   child: IconButton(
                     onPressed: () {
                       log("tekan more");
-                      showModalBottomSheet(
-                          useSafeArea: true,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          context: context,
-                          builder: (BuildContext context) {
-                            return moreMenuItem(context, barang['id_barang']);
-                          });
+                      _tampilkanBottomSheet(
+                          context, moreMenu(context, barang['id_barang']));
                     },
                     icon: const Icon(Icons.more_horiz_rounded),
                     iconSize: 25,
