@@ -233,10 +233,41 @@ class _MyHomePageState extends State<MyHomePage>
                 break;
               case "adminPanel":
                 log("goto adminPanel");
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AdminPanel()));
+                // loading
+                showCupertinoDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    });
+
+                // tes koneksi internet
+                bool terkonekkah = await isConnected();
+
+                if (terkonekkah) {
+                  // tutup loading
+                  Navigator.pop(context);
+
+                  // menuju admin panel
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminPanel()));
+                } else {
+                  // tutup loading
+                  Navigator.pop(context);
+                  log("ga ada koneksi ke server");
+
+                  // tampilkan info ga ada internet
+                  showCupertinoDialog(
+                      barrierDismissible: true,
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                            content:
+                                Text(AppLocalizations.of(context)!.noInternet),
+                          ));
+                }
                 break;
               case "sort":
                 log("sort");
@@ -257,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage>
                       userWise.isLoggedIn
                           ? AppLocalizations.of(context)!.profile
                           : AppLocalizations.of(context)!.login)),
-              PopupMenuItem(
+              if(filteredItems.isNotEmpty) PopupMenuItem(
                 value: "sort",
                 child: _menuItem(
                     context, Icons.sort, AppLocalizations.of(context)!.sort),
@@ -409,11 +440,11 @@ class _MyHomePageState extends State<MyHomePage>
         addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
     var internet = await a.connectionStatus;
     if (internet == InternetConnectionStatus.connected) {
-      print('Tidak terhubung ke internet');
-      return false;
-    } else {
       print('Terhubung ke internet');
       return true;
+    } else {
+      print('Tidak terhubung ke internet');
+      return false;
     }
   }
 
@@ -1317,7 +1348,7 @@ class _MyHomePageState extends State<MyHomePage>
                       visible: barang['photo_barang'] != "",
                       child: Row(
                         children: [
-                          fungsies().buildFotoBarang(context,barang, id),
+                          fungsies().buildFotoBarang(context, barang, id),
                           Container(
                             width: 5,
                           ),
