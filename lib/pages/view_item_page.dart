@@ -491,6 +491,15 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           });
                         }
                       },
+                      onTap: () {
+                        Uint8List imgBytes =
+                            base64Decode(widget.itemMap!["photo_barang"]);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PhotoViewPage(
+                                    widget.itemMap!['id_barang'], imgBytes)));
+                      },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Hero(

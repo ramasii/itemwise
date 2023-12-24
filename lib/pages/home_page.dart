@@ -1317,7 +1317,7 @@ class _MyHomePageState extends State<MyHomePage>
                       visible: barang['photo_barang'] != "",
                       child: Row(
                         children: [
-                          fungsies().buildFotoBarang(barang, id),
+                          fungsies().buildFotoBarang(context,barang, id),
                           Container(
                             width: 5,
                           ),

@@ -153,7 +153,7 @@ class _AdminPanelState extends State<AdminPanel> {
       child: Row(
         children: [
           item['photo_barang'] != ""
-              ? fungsies().buildFotoBarang(item, "${item['id_barang']}admin")
+              ? fungsies().buildFotoBarang(context,item, "${item['id_barang']}admin")
               : Container(),
           Expanded(
             child: Padding(
