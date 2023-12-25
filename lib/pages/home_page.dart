@@ -243,7 +243,7 @@ class _MyHomePageState extends State<MyHomePage>
                     });
 
                 // tes koneksi internet
-                bool terkonekkah = await isConnected();
+                bool terkonekkah = await fungsies().isConnected();
 
                 if (terkonekkah) {
                   // tutup loading
@@ -288,11 +288,12 @@ class _MyHomePageState extends State<MyHomePage>
                       userWise.isLoggedIn
                           ? AppLocalizations.of(context)!.profile
                           : AppLocalizations.of(context)!.login)),
-              if(filteredItems.isNotEmpty) PopupMenuItem(
-                value: "sort",
-                child: _menuItem(
-                    context, Icons.sort, AppLocalizations.of(context)!.sort),
-              ),
+              if (filteredItems.isNotEmpty)
+                PopupMenuItem(
+                  value: "sort",
+                  child: _menuItem(
+                      context, Icons.sort, AppLocalizations.of(context)!.sort),
+                ),
               if (userWise.isLoggedIn)
                 PopupMenuItem(
                     value: "ekspor",
@@ -434,19 +435,6 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   //-----------------------------------------------------------------------------//
-  // cek koneksi internet
-  static Future<bool> isConnected() async {
-    var a = await InternetConnectionCheckerPlus.createInstance(
-        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
-    var internet = await a.connectionStatus;
-    if (internet == InternetConnectionStatus.connected) {
-      print('Terhubung ke internet');
-      return true;
-    } else {
-      print('Tidak terhubung ke internet');
-      return false;
-    }
-  }
 
   /// reset pencarian
   resetPencarian() {
@@ -469,7 +457,7 @@ class _MyHomePageState extends State<MyHomePage>
           );
         });
 
-    var terkonek = await isConnected();
+    var terkonek = await fungsies().isConnected();
     List inv = inventoryWise().readByUser();
     List itm = ItemWise().readByUser();
 
@@ -546,7 +534,7 @@ class _MyHomePageState extends State<MyHomePage>
     await authapi().auth(
         userWise.userData['email_user'], userWise.userData['password_user']);
 
-    var terkonek = await isConnected();
+    var terkonek = await fungsies().isConnected();
 
     if (terkonek && userWise.isLoggedIn) {
       // load inventory
@@ -725,200 +713,203 @@ class _MyHomePageState extends State<MyHomePage>
     }
     idBrgOld = id_barang;
     return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20))),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  height: 5,
-                  width: 60,
-                  decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(5)),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 10,
-                    ),
-                    Text(
-                      AppLocalizations.of(context)!.editStockAndPrice,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    Container(
-                      height: 20,
-                    ),
-                    Text(
-                      barang['nama_barang'],
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w500),
-                    ),
-                    Container(
-                      height: 5,
-                    ),
-                    Text(
-                      barang['kode_barang'],
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                    Container(
-                      height: 20,
-                    ),
-                    Text(AppLocalizations.of(context)!.selPrice,
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20))),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 5,
+                    width: 60,
+                    decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 10,
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!.editStockAndPrice,
                         style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w500)),
-                    TextFormField(
-                      controller: hargaJualController,
-                      textAlign: TextAlign.center,
-                      decoration:
-                          InputDecoration(icon: Text(pengaturan.mataUang)),
-                      onChanged: (value) {
-                        clearNotNumber(value, hargaJualController);
-                        if (value == "") {
-                          setState(() {
-                            hargaJualController.text = "0";
-                          });
-                        } else {
-                          setState(() {
-                            hjalNew = value;
-                          });
-                        }
-                      },
-                    ),
-                    Container(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(context)!.stok,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
+                            fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Text(
+                        barang['nama_barang'],
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                      Container(
+                        height: 5,
+                      ),
+                      Text(
+                        barang['kode_barang'],
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Text(AppLocalizations.of(context)!.selPrice,
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w500)),
+                      TextFormField(
+                        controller: hargaJualController,
+                        textAlign: TextAlign.center,
+                        decoration:
+                            InputDecoration(icon: Text(pengaturan.mataUang)),
+                        onChanged: (value) {
+                          clearNotNumber(value, hargaJualController);
+                          if (value == "") {
+                            setState(() {
+                              hargaJualController.text = "0";
+                            });
+                          } else {
+                            setState(() {
+                              hjalNew = value;
+                            });
+                          }
+                        },
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              AppLocalizations.of(context)!.stok,
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w500),
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              InkWell(
-                                  onTap: () {
-                                    log("minus");
-                                    int stok = int.parse(stokController.text);
-                                    if (stok > 0) {
+                          Expanded(
+                            child: Row(
+                              children: [
+                                InkWell(
+                                    onTap: () {
+                                      log("minus");
+                                      int stok = int.parse(stokController.text);
+                                      if (stok > 0) {
+                                        setState(() {
+                                          stokController.text =
+                                              (stok - 1).toString();
+                                        });
+                                      }
+                                      setState(() {
+                                        stokNew = stok.toString();
+                                      });
+                                    },
+                                    child: circledIcon(Icons.remove_rounded)),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: stokController,
+                                    textAlign: TextAlign.center,
+                                    onChanged: (value) {
+                                      clearNotNumber(value, stokController);
+                                      if (value == "") {
+                                        setState(() {
+                                          stokController.text = "0";
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                                InkWell(
+                                    onTap: () {
+                                      log("add");
+                                      int stok = int.parse(stokController.text);
                                       setState(() {
                                         stokController.text =
-                                            (stok - 1).toString();
+                                            (stok + 1).toString();
+                                        stokNew = stok.toString();
                                       });
-                                    }
-                                    setState(() {
-                                      stokNew = stok.toString();
-                                    });
-                                  },
-                                  child: circledIcon(Icons.remove_rounded)),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: stokController,
+                                    },
+                                    child: circledIcon(Icons.add_rounded))
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      Container(
+                        height: 40,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                log("simpan lewat bottomsheet");
+                                await ItemWise().update(id_barang,
+                                    stok_barang:
+                                        int.parse(stokController.text.trim()),
+                                    harga_jual: int.parse(
+                                        hargaJualController.text.trim()),
+                                    id_inventory: barang['id_inventory']);
+                                setState(() {
+                                  // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                                  filteredItems = ItemWise()
+                                      .readByInventory(invState, id_user);
+                                });
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  backgroundColor: Colors.green,
+                                  content: Text(AppLocalizations.of(context)!
+                                      .successSave),
+                                  duration: const Duration(seconds: 1),
+                                ));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                          color: Color.fromARGB(70, 0, 0, 0),
+                                          blurRadius: 2)
+                                    ]),
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  AppLocalizations.of(context)!.save,
                                   textAlign: TextAlign.center,
-                                  onChanged: (value) {
-                                    clearNotNumber(value, stokController);
-                                    if (value == "") {
-                                      setState(() {
-                                        stokController.text = "0";
-                                      });
-                                    }
-                                  },
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                              InkWell(
-                                  onTap: () {
-                                    log("add");
-                                    int stok = int.parse(stokController.text);
-                                    setState(() {
-                                      stokController.text =
-                                          (stok + 1).toString();
-                                      stokNew = stok.toString();
-                                    });
-                                  },
-                                  child: circledIcon(Icons.add_rounded))
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    Container(
-                      height: 40,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              log("simpan lewat bottomsheet");
-                              await ItemWise().update(id_barang,
-                                  stok_barang:
-                                      int.parse(stokController.text.trim()),
-                                  harga_jual: int.parse(
-                                      hargaJualController.text.trim()),
-                                  id_inventory: barang['id_inventory']);
-                              setState(() {
-                                // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                                filteredItems = ItemWise()
-                                    .readByInventory(invState, id_user);
-                              });
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                backgroundColor: Colors.green,
-                                content: Text(
-                                    AppLocalizations.of(context)!.successSave),
-                                duration: const Duration(seconds: 1),
-                              ));
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                        color: Color.fromARGB(70, 0, 0, 0),
-                                        blurRadius: 2)
-                                  ]),
-                              padding: const EdgeInsets.all(12),
-                              child: Text(
-                                AppLocalizations.of(context)!.save,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    // mendorong bottomsheet ke atas ketika buka keyboard
-                    AnimatedContainer(
-                        height: MediaQuery.of(context).viewInsets.bottom,
-                        duration: const Duration(milliseconds: 200))
-                  ],
-                ),
-              ],
+                        ],
+                      ),
+                      // mendorong bottomsheet ke atas ketika buka keyboard
+                      AnimatedContainer(
+                          height: MediaQuery.of(context).viewInsets.bottom,
+                          duration: const Duration(milliseconds: 200))
+                    ],
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).viewPadding.bottom,
+                  )
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
   }
 
   Widget moreMenu(BuildContext context, String id_barang) {
@@ -1413,7 +1404,8 @@ class _MyHomePageState extends State<MyHomePage>
         isScrollControlled: true,
         context: context,
         builder: (context) {
-          return sheet;
+          return Container(padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom),child: sheet);
         });
   }
 

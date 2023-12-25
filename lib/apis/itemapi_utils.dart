@@ -70,9 +70,9 @@ class itemApiWise {
   ///
   /// setelah ItemWise().setAll(itms);
   ///
-  /// khusus user
-  ///
   /// lalu load foto barang untuk setiap barang user
+  ///
+  /// `khusus user`
   read() async {
     log("START: IMPORT ITEM CONNECT TO SERVER");
 
@@ -91,8 +91,10 @@ class itemApiWise {
           await ItemWise().setAll(itms);
           log("total barang user: ${ItemWise().readByUser().length}");
 
-          // load foto barang untuk setiap barang user
+          // load foto barang untuk `setiap` barang user
           for (var e in ItemWise().readByUser()) {
+            // seperti yang di class photobarangapiwise(), ini mengembalikan String hasil enkode
+            // kemungkinan mengembalikan null
             String? base64img = await photoBarangApiWise().get(e['id_barang']);
             if (base64img != null) {
               ItemWise().update(e['id_barang'], photo_barang: base64img);

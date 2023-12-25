@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
@@ -890,6 +892,7 @@ class _AdminPanelState extends State<AdminPanel> {
               content: SingleChildScrollView(
                 child: Column(
                   children: [
+                    // photoItem ini adalah base64 hasil enkode byte
                     photoItem != ""
                         // render foto barnag
                         ? Container(

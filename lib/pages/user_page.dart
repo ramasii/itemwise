@@ -92,18 +92,6 @@ class _userPageState extends State<userPage> {
     );
   }
 
-  // cek koneksi internet
-  Future<bool> isConnected() async {
-    var internet = await connection.connectionStatus;
-    if (internet == ConnectionState.done) {
-      print('Tidak terhubung ke internet');
-      return false;
-    } else {
-      print('Terhubung ke internet');
-      return true;
-    }
-  }
-
   TextButton _tombolLogInOut() {
     return TextButton(
         onPressed: () async {
@@ -128,7 +116,7 @@ class _userPageState extends State<userPage> {
                   RegExp(r'^\w+(?=@)').firstMatch(email_user)![0]!;
 
               // cek koneksi internet
-              bool tekonekKah = await isConnected();
+              bool tekonekKah = await fungsies().isConnected();
               if (tekonekKah) {
                 try {
                   // coba hubungkan dengan api

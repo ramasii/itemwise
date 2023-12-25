@@ -50,6 +50,19 @@ class fungsies {
     );
   }
 
+  Future<bool> isConnected() async {
+    var a = await InternetConnectionCheckerPlus.createInstance(
+        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
+    var internet = await a.connectionStatus;
+    if (internet == InternetConnectionStatus.connected) {
+      print('Terhubung ke internet');
+      return true;
+    } else {
+      print('Tidak terhubung ke internet');
+      return false;
+    }
+  }
+
   pickImage({PickImageFrom from = PickImageFrom.gallery}) async {
     log("START _pickImage");
 

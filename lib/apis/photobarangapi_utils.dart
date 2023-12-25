@@ -60,6 +60,7 @@ class photoBarangApiWise {
     }
   }
 
+  /// ini akan me-return base64 hasil enkode gambar yang dibaca sebagai byte
   Future<String?> get(String id_barang) async {
     try {
       var response = await http.get(Uri.parse("$url?id_barang=$id_barang"),
@@ -71,7 +72,7 @@ class photoBarangApiWise {
           // ItemWise().update(id_barang,
           //     photo_barang: base64Encode(response.bodyBytes));
 
-          // return return byte yang sudah dienkode
+          // return byte yang sudah dienkode
           return base64Encode(response.bodyBytes);
         default:
           log(response.statusCode.toString());
