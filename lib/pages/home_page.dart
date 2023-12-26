@@ -218,26 +218,35 @@ class _MyHomePageState extends State<MyHomePage>
             title: Text(AppLocalizations.of(context)!.moveToInv),
             contentPadding: EdgeInsets.all(10),
             content: StatefulBuilder(builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children:
-                    List.generate(inventoryWise().readByUser().length, (index) {
-                  Map inv = inventoryWise().readByUser()[index];
-                  return RadioListTile(
-                      contentPadding: EdgeInsets.all(0),
-                      value: inv['id_inventory'],
-                      title: Text(inv['nama_inventory']),
-                      groupValue: sel,
-                      onChanged: (value) {
-                        log("ubah value->$value");
-                        setState(() {
-                          sel = value;
+              return SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      List.generate(inventoryWise().readByUser().length, (index) {
+                    Map inv = inventoryWise().readByUser()[index];
+                    return RadioListTile(
+                        contentPadding: EdgeInsets.all(0),
+                        value: inv['id_inventory'],
+                        title: Text(inv['nama_inventory']),
+                        groupValue: sel,
+                        onChanged: (value) {
+                          log("ubah value->$value");
+                          setState(() {
+                            sel = value;
+                          });
                         });
-                      });
-                }),
+                  }),
+                ),
               );
             }),
             actions: [
+              TextButton(
+                  onPressed: () {
+                    log("batal pindah inv");
+                    Navigator.of(context).pop(null);
+                  },
+                  child: Text(AppLocalizations.of(context)!.cancel)),
               TextButton(
                   onPressed: () async {
                     log("pindahkan barang ke $sel");
@@ -245,12 +254,6 @@ class _MyHomePageState extends State<MyHomePage>
                     Navigator.of(context).pop(sel);
                   },
                   child: Text(AppLocalizations.of(context)!.save)),
-              TextButton(
-                  onPressed: () {
-                    log("batal pindah inv");
-                    Navigator.of(context).pop(null);
-                  },
-                  child: Text(AppLocalizations.of(context)!.cancel))
             ],
           );
         });
