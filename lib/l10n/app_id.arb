@@ -67,5 +67,6 @@
     "newestAdded":"Ditambahkan terbaru",
     "oldestAdded":"Ditambahkan terlama",
     "ok":"Ok",
-    "thisIsAdmin":"Akun ini milik admin"
+    "thisIsAdmin":"Akun ini milik admin",
+    "moveToInv":"Pindahkan ke inventaris"
 }

@@ -146,17 +146,12 @@ class _MyHomePageState extends State<MyHomePage>
 
   List<Widget> actionsIfSelectedItemsNotEmpty(BuildContext context) {
     return [
+      // tombol hapus
       Stack(
         alignment: Alignment.center,
         children: [
-          const Icon(
-            Icons.circle,
-            color: Colors.white,
-            size: 45,
-          ),
           IconButton(
-              highlightColor: Colors.red,
-              splashColor: Colors.transparent,
+              splashRadius: 20,
               onPressed: () async {
                 log("delete $selectedItems", name: "delete button");
                 bool? hapus = await fungsies().konfirmasiDialog(context,
@@ -176,10 +171,29 @@ class _MyHomePageState extends State<MyHomePage>
               },
               icon: const Icon(
                 Icons.delete,
-                color: Colors.red,
+                color: Colors.white,
               ))
         ],
       ),
+      // tombol pindah inventory
+      IconButton(
+          onPressed: () async {
+            log("tombol pindah inventaris");
+            String? id_inventory = await _dialogPindahInventaris(context);
+            if (id_inventory != null) {
+                for (var e in selectedItems) {
+                  await ItemWise().update(e, id_inventory: id_inventory);
+                }
+
+              setState(() {
+                selectedItems.clear();
+                filteredItems = ItemWise().readByInventory(invState, id_user);
+              });
+            }
+          },
+          splashRadius: 20,
+          icon: Icon(Icons.inventory_2, color: Colors.white)),
+      // tombol bersihkan pilihan
       IconButton(
           onPressed: () {
             log("cancel");
@@ -193,6 +207,59 @@ class _MyHomePageState extends State<MyHomePage>
             color: Colors.white,
           ))
     ];
+  }
+
+  Future<dynamic> _dialogPindahInventaris(BuildContext context) {
+    return showCupertinoDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          // variabel untuk inventaris yang dipilih
+          String sel = "";
+          if (selectedItems.isNotEmpty) {
+            sel = ItemWise().readByIdBarang(selectedItems[0])['id_inventory'] ??
+                "";
+          }
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.moveToInv),
+            contentPadding: EdgeInsets.all(10),
+            content: StatefulBuilder(builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    List.generate(inventoryWise().readByUser().length, (index) {
+                  Map inv = inventoryWise().readByUser()[index];
+                  return RadioListTile(
+                      contentPadding: EdgeInsets.all(0),
+                      value: inv['id_inventory'],
+                      title: Text(inv['nama_inventory']),
+                      groupValue: sel,
+                      onChanged: (value) {
+                        log("ubah value->$value");
+                        setState(() {
+                          sel = value;
+                        });
+                      });
+                }),
+              );
+            }),
+            actions: [
+              TextButton(
+                  onPressed: () async {
+                    log("pindahkan barang ke $sel");
+                    // tutup dialog
+                    Navigator.of(context).pop(sel);
+                  },
+                  child: Text(AppLocalizations.of(context)!.save)),
+              TextButton(
+                  onPressed: () {
+                    log("batal pindah inv");
+                    Navigator.of(context).pop(null);
+                  },
+                  child: Text(AppLocalizations.of(context)!.cancel))
+            ],
+          );
+        });
   }
 
   List<Widget> actionsIfSelectedItemsEmpty(BuildContext context) {
@@ -713,203 +780,203 @@ class _MyHomePageState extends State<MyHomePage>
     }
     idBrgOld = id_barang;
     return Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-              decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20))),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 5,
-                    width: 60,
-                    decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(5)),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 10,
-                      ),
-                      Text(
-                        AppLocalizations.of(context)!.editStockAndPrice,
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20))),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 5,
+                  width: 60,
+                  decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(5)),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 10,
+                    ),
+                    Text(
+                      AppLocalizations.of(context)!.editStockAndPrice,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(
+                      barang['nama_barang'],
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w500),
+                    ),
+                    Container(
+                      height: 5,
+                    ),
+                    Text(
+                      barang['kode_barang'],
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(AppLocalizations.of(context)!.selPrice,
                         style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
-                      Container(
-                        height: 20,
-                      ),
-                      Text(
-                        barang['nama_barang'],
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w500),
-                      ),
-                      Container(
-                        height: 5,
-                      ),
-                      Text(
-                        barang['kode_barang'],
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      Container(
-                        height: 20,
-                      ),
-                      Text(AppLocalizations.of(context)!.selPrice,
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w500)),
-                      TextFormField(
-                        controller: hargaJualController,
-                        textAlign: TextAlign.center,
-                        decoration:
-                            InputDecoration(icon: Text(pengaturan.mataUang)),
-                        onChanged: (value) {
-                          clearNotNumber(value, hargaJualController);
-                          if (value == "") {
-                            setState(() {
-                              hargaJualController.text = "0";
-                            });
-                          } else {
-                            setState(() {
-                              hjalNew = value;
-                            });
-                          }
-                        },
-                      ),
-                      Container(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(context)!.stok,
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w500),
-                            ),
+                            fontSize: 15, fontWeight: FontWeight.w500)),
+                    TextFormField(
+                      controller: hargaJualController,
+                      textAlign: TextAlign.center,
+                      decoration:
+                          InputDecoration(icon: Text(pengaturan.mataUang)),
+                      onChanged: (value) {
+                        clearNotNumber(value, hargaJualController);
+                        if (value == "") {
+                          setState(() {
+                            hargaJualController.text = "0";
+                          });
+                        } else {
+                          setState(() {
+                            hjalNew = value;
+                          });
+                        }
+                      },
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.stok,
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w500),
                           ),
-                          Expanded(
-                            child: Row(
-                              children: [
-                                InkWell(
-                                    onTap: () {
-                                      log("minus");
-                                      int stok = int.parse(stokController.text);
-                                      if (stok > 0) {
-                                        setState(() {
-                                          stokController.text =
-                                              (stok - 1).toString();
-                                        });
-                                      }
-                                      setState(() {
-                                        stokNew = stok.toString();
-                                      });
-                                    },
-                                    child: circledIcon(Icons.remove_rounded)),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: stokController,
-                                    textAlign: TextAlign.center,
-                                    onChanged: (value) {
-                                      clearNotNumber(value, stokController);
-                                      if (value == "") {
-                                        setState(() {
-                                          stokController.text = "0";
-                                        });
-                                      }
-                                    },
-                                  ),
-                                ),
-                                InkWell(
-                                    onTap: () {
-                                      log("add");
-                                      int stok = int.parse(stokController.text);
+                        ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              InkWell(
+                                  onTap: () {
+                                    log("minus");
+                                    int stok = int.parse(stokController.text);
+                                    if (stok > 0) {
                                       setState(() {
                                         stokController.text =
-                                            (stok + 1).toString();
-                                        stokNew = stok.toString();
+                                            (stok - 1).toString();
                                       });
-                                    },
-                                    child: circledIcon(Icons.add_rounded))
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                        height: 40,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                log("simpan lewat bottomsheet");
-                                await ItemWise().update(id_barang,
-                                    stok_barang:
-                                        int.parse(stokController.text.trim()),
-                                    harga_jual: int.parse(
-                                        hargaJualController.text.trim()),
-                                    id_inventory: barang['id_inventory']);
-                                setState(() {
-                                  // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                                  filteredItems = ItemWise()
-                                      .readByInventory(invState, id_user);
-                                });
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  backgroundColor: Colors.green,
-                                  content: Text(AppLocalizations.of(context)!
-                                      .successSave),
-                                  duration: const Duration(seconds: 1),
-                                ));
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                          color: Color.fromARGB(70, 0, 0, 0),
-                                          blurRadius: 2)
-                                    ]),
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  AppLocalizations.of(context)!.save,
+                                    }
+                                    setState(() {
+                                      stokNew = stok.toString();
+                                    });
+                                  },
+                                  child: circledIcon(Icons.remove_rounded)),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: stokController,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
+                                  onChanged: (value) {
+                                    clearNotNumber(value, stokController);
+                                    if (value == "") {
+                                      setState(() {
+                                        stokController.text = "0";
+                                      });
+                                    }
+                                  },
                                 ),
+                              ),
+                              InkWell(
+                                  onTap: () {
+                                    log("add");
+                                    int stok = int.parse(stokController.text);
+                                    setState(() {
+                                      stokController.text =
+                                          (stok + 1).toString();
+                                      stokNew = stok.toString();
+                                    });
+                                  },
+                                  child: circledIcon(Icons.add_rounded))
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    Container(
+                      height: 40,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              log("simpan lewat bottomsheet");
+                              await ItemWise().update(id_barang,
+                                  stok_barang:
+                                      int.parse(stokController.text.trim()),
+                                  harga_jual: int.parse(
+                                      hargaJualController.text.trim()),
+                                  id_inventory: barang['id_inventory']);
+                              setState(() {
+                                // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                                filteredItems = ItemWise()
+                                    .readByInventory(invState, id_user);
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                backgroundColor: Colors.green,
+                                content: Text(
+                                    AppLocalizations.of(context)!.successSave),
+                                duration: const Duration(seconds: 1),
+                              ));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color.fromARGB(70, 0, 0, 0),
+                                        blurRadius: 2)
+                                  ]),
+                              padding: const EdgeInsets.all(12),
+                              child: Text(
+                                AppLocalizations.of(context)!.save,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      // mendorong bottomsheet ke atas ketika buka keyboard
-                      AnimatedContainer(
-                          height: MediaQuery.of(context).viewInsets.bottom,
-                          duration: const Duration(milliseconds: 200))
-                    ],
-                  ),
-                  Container(
-                    height: MediaQuery.of(context).viewPadding.bottom,
-                  )
-                ],
-              ),
+                        ),
+                      ],
+                    ),
+                    // mendorong bottomsheet ke atas ketika buka keyboard
+                    AnimatedContainer(
+                        height: MediaQuery.of(context).viewInsets.bottom,
+                        duration: const Duration(milliseconds: 200))
+                  ],
+                ),
+                Container(
+                  height: MediaQuery.of(context).viewPadding.bottom,
+                )
+              ],
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget moreMenu(BuildContext context, String id_barang) {
@@ -1261,56 +1328,51 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget listItems(BuildContext context) {
+    List brgs = filteredItems;
+
+    // mengurutkan barang
+    brgs.sort((a, b) {
+      String namaA = a['nama_barang'];
+      String namaB = b['nama_barang'];
+      DateTime timeA = DateTime.parse(a['added']);
+      DateTime timeB = DateTime.parse(b['added']);
+
+      switch (pengaturan.sortBy) {
+        case sorter.name12:
+          return namaA.compareTo(namaB);
+        case sorter.name21:
+          return namaB.compareTo(namaA);
+        case sorter.added21:
+          return timeA.compareTo(timeB);
+        case sorter.added12:
+          return timeB.compareTo(timeA);
+        default:
+          return namaA.compareTo(namaB);
+      }
+    });
     return SingleChildScrollView(
-      child: StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-          List brgs = filteredItems;
-
-          // mengurutkan barang
-          brgs.sort((a, b) {
-            String namaA = a['nama_barang'];
-            String namaB = b['nama_barang'];
-            DateTime timeA = DateTime.parse(a['added']);
-            DateTime timeB = DateTime.parse(b['added']);
-
-            switch (pengaturan.sortBy) {
-              case sorter.name12:
-                return namaA.compareTo(namaB);
-              case sorter.name21:
-                return namaB.compareTo(namaA);
-              case sorter.added21:
-                return timeA.compareTo(timeB);
-              case sorter.added12:
-                return timeB.compareTo(timeA);
-              default:
-                return namaA.compareTo(namaB);
-            }
-          });
-
-          return Column(
-            children: [
-              Column(
-                children: List.generate(brgs.length, (index) {
-                  var id = brgs[index]['id_barang'];
-                  var title = brgs[index]['nama_barang'];
-                  return buildItem(index, context, id, title, brgs[index]);
-                }),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  AppLocalizations.of(context)!.tapAndHoldToSelect,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500, color: Colors.blue[200]),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Container(
-                height: 150,
-              )
-            ],
-          );
-        },
+      child: Column(
+        children: [
+          Column(
+            children: List.generate(brgs.length, (index) {
+              var id = brgs[index]['id_barang'];
+              var title = brgs[index]['nama_barang'];
+              return buildItem(index, context, id, title, brgs[index]);
+            }),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              AppLocalizations.of(context)!.tapAndHoldToSelect,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500, color: Colors.blue[200]),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Container(
+            height: 150,
+          )
+        ],
       ),
     );
   }
@@ -1404,8 +1466,10 @@ class _MyHomePageState extends State<MyHomePage>
         isScrollControlled: true,
         context: context,
         builder: (context) {
-          return Container(padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom),child: sheet);
+          return Container(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: sheet);
         });
   }
 
