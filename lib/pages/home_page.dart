@@ -147,43 +147,37 @@ class _MyHomePageState extends State<MyHomePage>
   List<Widget> actionsIfSelectedItemsNotEmpty(BuildContext context) {
     return [
       // tombol hapus
-      Stack(
-        alignment: Alignment.center,
-        children: [
-          IconButton(
-              splashRadius: 20,
-              onPressed: () async {
-                log("delete $selectedItems", name: "delete button");
-                bool? hapus = await fungsies().konfirmasiDialog(context,
-                    msg:
-                        "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
-                if (hapus == true) {
-                  for (String a in selectedItems) {
-                    await ItemWise().delete(a);
-                  }
-                  setState(() {
-                    selectedItems.clear();
-                    // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                    filteredItems =
-                        ItemWise().readByInventory(invState, id_user);
-                  });
-                }
-              },
-              icon: const Icon(
-                Icons.delete,
-                color: Colors.white,
-              ))
-        ],
-      ),
+      IconButton(
+          splashRadius: 20,
+          onPressed: () async {
+            log("delete $selectedItems", name: "delete button");
+            bool? hapus = await fungsies().konfirmasiDialog(context,
+                msg:
+                    "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
+            if (hapus == true) {
+              for (String a in selectedItems) {
+                await ItemWise().delete(a);
+              }
+              setState(() {
+                selectedItems.clear();
+                // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                filteredItems = ItemWise().readByInventory(invState, id_user);
+              });
+            }
+          },
+          icon: const Icon(
+            Icons.delete,
+            color: Colors.white,
+          )),
       // tombol pindah inventory
       IconButton(
           onPressed: () async {
             log("tombol pindah inventaris");
             String? id_inventory = await _dialogPindahInventaris(context);
             if (id_inventory != null) {
-                for (var e in selectedItems) {
-                  await ItemWise().update(e, id_inventory: id_inventory);
-                }
+              for (var e in selectedItems) {
+                await ItemWise().update(e, id_inventory: id_inventory);
+              }
 
               setState(() {
                 selectedItems.clear();
