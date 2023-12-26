@@ -23,6 +23,7 @@ dependencies:
   http: any
   internet_connection_checker_plus: any
   path_provider: any
+  photo_view: ^0.14.0
 
 dev_dependencies:
   flutter_test:

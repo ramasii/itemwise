@@ -17,6 +17,7 @@ class photoBarangApiWise {
     request.headers['Content-Type'] =
         "multipart/form-data; boundary=<calculated when request is sent>";
     request.fields['id_barang'] = id_barang;
+    request.headers['authorization'] = authapi.authorization;
 
     // ini nambah file dari bytes
     log("ini nambah file dari bytes");
@@ -36,7 +37,7 @@ class photoBarangApiWise {
         log("sukses");
         break;
       default:
-        log("${response.statusCode}");
+        log("create photobarang: ${response.statusCode}");
     }
   }
 
@@ -47,20 +48,23 @@ class photoBarangApiWise {
 
     // prepare request
     log("PREPARE RESPONSE");
-    var response = await http.delete(uri);
+    var response = await http
+        .delete(uri, headers: {"authorization": authapi.authorization});
 
     switch (response.statusCode) {
       case 200:
         log("sukses delete: $id_barang");
         break;
       default:
-        log("${response.statusCode}");
+        log("delete photobarang: ${response.statusCode}");
     }
   }
 
+  /// ini akan me-return base64 hasil enkode gambar yang dibaca sebagai byte
   Future<String?> get(String id_barang) async {
     try {
-      var response = await http.get(Uri.parse("$url?id_barang=$id_barang"));
+      var response = await http.get(Uri.parse("$url?id_barang=$id_barang"),
+          headers: {"authorization": authapi.authorization});
 
       switch (response.statusCode) {
         case 200:
@@ -68,13 +72,13 @@ class photoBarangApiWise {
           // ItemWise().update(id_barang,
           //     photo_barang: base64Encode(response.bodyBytes));
 
-          // return return byte yang sudah dienkode
+          // return byte yang sudah dienkode
           return base64Encode(response.bodyBytes);
         default:
           log(response.statusCode.toString());
       }
     } catch (e) {
-      print(e);
+      log("get photobarang: ${e}");
     }
   }
 }

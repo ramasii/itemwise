@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
@@ -312,8 +313,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
   Future<dynamic> invNameDialog(
       BuildContext context, String id_inventory, String mode) {
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         useRootNavigator: false,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -328,8 +330,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
               ),
             ),
             actions: [
-              InkWell(
-                onTap: () async {
+              TextButton(
+                onPressed: () async {
                   log("simpan");
                   if (NamaInvController.text.trim().isNotEmpty) {
                     String id_user = "";
@@ -363,9 +365,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     Navigator.pop(context);
                   }
                 },
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: successButton(AppLocalizations.of(context)!.save)),
+                child: Text(AppLocalizations.of(context)!.save),
               )
             ],
           );
@@ -410,7 +410,9 @@ class _ViewItemPageState extends State<ViewItemPage> {
         height: 700,
         constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width - 10,
-            maxHeight: img != ""  && !isImgLscape ? ((MediaQuery.of(context).size.width - 10)/3)*5 : ((MediaQuery.of(context).size.width - 10)/5)*3),
+            maxHeight: img != "" && !isImgLscape
+                ? ((MediaQuery.of(context).size.width - 10) / 3) * 5
+                : ((MediaQuery.of(context).size.width - 10) / 5) * 3),
         child: Card(
           elevation: 5,
           color: const Color.fromARGB(255, 232, 232, 232),
@@ -489,6 +491,15 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           });
                         }
                       },
+                      onTap: () {
+                        Uint8List imgBytes =
+                            base64Decode(widget.itemMap!["photo_barang"]);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PhotoViewPage(
+                                    widget.itemMap!['id_barang'], imgBytes)));
+                      },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Hero(
@@ -512,7 +523,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
   }
 
   Future<dynamic> confirmDialog(BuildContext context) {
-    return showDialog(
+    return showCupertinoDialog(
+      barrierDismissible: true,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -563,130 +575,128 @@ class _ViewItemPageState extends State<ViewItemPage> {
   }
 
   Widget saveButton(BuildContext context) {
-    return Tooltip(
-      message: "",
-      child: InkWell(
-        onTap: () async {
-          if (itemNameController.text.trim() != "") {
-            // add item
-            if (widget.itemMap == null) {
-              String nama_barang = itemNameController.text;
-              String catatan = itemDescriptionController.text;
-              String stok = itemStockController.text.trim();
-              String hbli = purchasePriceController.text.trim();
-              String hjal = sellingPriceController.text.trim();
-              String kdBrg = kodeBarangController.text.trim();
+    return InkWell(
+      onTap: () async {
+        if (itemNameController.text.trim() != "") {
+          // add item
+          if (widget.itemMap == null) {
+            String nama_barang = itemNameController.text;
+            String catatan = itemDescriptionController.text;
+            String stok = itemStockController.text.trim();
+            String hbli = purchasePriceController.text.trim();
+            String hjal = sellingPriceController.text.trim();
+            String kdBrg = kodeBarangController.text.trim();
 
-              int stok_barang = int.parse(stok == "" ? "0" : stok);
-              int harga_beli = int.parse(hbli == "" ? "0" : hbli);
-              int harga_jual = int.parse(hjal == "" ? "0" : hjal);
-              String id_user = userWise.isLoggedIn
-                  ? userWise.userData["id_user"]
-                  : deviceData.id;
-              String id_barang =
-                  "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
-              String? id_inventory = invDropdownValue;
+            int stok_barang = int.parse(stok == "" ? "0" : stok);
+            int harga_beli = int.parse(hbli == "" ? "0" : hbli);
+            int harga_jual = int.parse(hjal == "" ? "0" : hjal);
+            String id_user = userWise.isLoggedIn
+                ? userWise.userData["id_user"]
+                : deviceData.id;
+            String id_barang =
+                "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
+            String? id_inventory = invDropdownValue;
 
-              log("id_user: $id_user");
+            log("id_user: $id_user");
 
-              setState(() {
-                // print("photobrg:$img");
-                ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
-                    harga_beli, harga_jual,
-                    catatan: catatan,
-                    id_inventory: id_inventory,
-                    kode_barang: kdBrg,
-                    photo_barang: img);
-              });
+            setState(() {
+              // print("photobrg:$img");
+              ItemWise().create(id_barang, id_user, nama_barang, stok_barang,
+                  harga_beli, harga_jual,
+                  catatan: catatan,
+                  id_inventory: id_inventory,
+                  kode_barang: kdBrg,
+                  photo_barang: img);
+            });
 
-              // bersihkan controller
-              clearTextController();
-              // ignore: use_build_context_synchronously
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => MyHomePage(
-                            id_inv: widget.invState,
-                          )),
-                  (route) => false);
-            }
-            // edit item
-            else if (widget.itemMap != null) {
-              String nama_barang = itemNameController.text.trim();
-              String catatan = itemDescriptionController.text.trim();
-              String stok = itemStockController.text.trim();
-              String hbli = purchasePriceController.text.trim();
-              String hjal = sellingPriceController.text.trim();
-              String kdBrg = kodeBarangController.text.trim();
-
-              int stok_barang = int.parse(stok == "" ? "0" : stok);
-              int harga_beli = int.parse(hbli == "" ? "0" : hbli);
-              int harga_jual = int.parse(hjal == "" ? "0" : hjal);
-              // String? id_inventory = invDropdownValue;
-
-              List lama = [
-                widget.itemMap!['nama_barang'],
-                widget.itemMap!["catatan"],
-                widget.itemMap!["stok_barang"],
-                widget.itemMap!["harga_beli"],
-                widget.itemMap!["harga_jual"],
-                widget.itemMap!["photo_barang"],
-                widget.itemMap!["id_inventory"],
-                widget.itemMap!["kode_barang"]
-              ];
-              List baru = [
-                nama_barang,
-                catatan,
-                stok_barang,
-                harga_beli,
-                harga_jual,
-                img,
-                invDropdownValue,
-                kdBrg
-              ];
-
-              // cek apakah data berbeda, jika beda berarti diedit
-              for (var i = 0; i < lama.length; i++) {
-                if (lama[i] != baru[i]) {
-                  isEdited = true;
-                }
-              }
-
-              // jika menekan tombol save dan diedit maka simpan
-              // jadi ketika tidak ada perubahan maka sistem tidak melakukan proses edit
-              if (isEdited) {
-                ItemWise().update(widget.itemMap!['id_barang'],
-                    nama_barang: nama_barang,
-                    kode_barang: kdBrg,
-                    catatan: catatan,
-                    stok_barang: stok_barang,
-                    harga_beli: harga_beli,
-                    harga_jual: harga_jual,
-                    photo_barang: img,
-                    id_inventory: invDropdownValue);
-              }
-            }
+            // bersihkan controller
+            clearTextController();
             // ignore: use_build_context_synchronously
-            ScaffoldMessenger.of(context).showSnackBar(successSnackbar(
-                context, AppLocalizations.of(context)!.successSave));
-          } else {
-            if (itemNameController.text.trim() == "") {
-              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
-                  context, AppLocalizations.of(context)!.itemNameAlert));
-            } else if (itemStockController.text.trim() == "") {
-              ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
-                  context, AppLocalizations.of(context)!.itemStockAlert));
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => MyHomePage(
+                          id_inv: widget.invState,
+                        )),
+                (route) => false);
+          }
+          // edit item
+          else if (widget.itemMap != null) {
+            String nama_barang = itemNameController.text.trim();
+            String catatan = itemDescriptionController.text.trim();
+            String stok = itemStockController.text.trim();
+            String hbli = purchasePriceController.text.trim();
+            String hjal = sellingPriceController.text.trim();
+            String kdBrg = kodeBarangController.text.trim();
+
+            int stok_barang = int.parse(stok == "" ? "0" : stok);
+            int harga_beli = int.parse(hbli == "" ? "0" : hbli);
+            int harga_jual = int.parse(hjal == "" ? "0" : hjal);
+            // String? id_inventory = invDropdownValue;
+
+            List lama = [
+              widget.itemMap!['nama_barang'],
+              widget.itemMap!["catatan"],
+              widget.itemMap!["stok_barang"],
+              widget.itemMap!["harga_beli"],
+              widget.itemMap!["harga_jual"],
+              widget.itemMap!["photo_barang"],
+              widget.itemMap!["id_inventory"],
+              widget.itemMap!["kode_barang"]
+            ];
+            List baru = [
+              nama_barang,
+              catatan,
+              stok_barang,
+              harga_beli,
+              harga_jual,
+              img,
+              invDropdownValue,
+              kdBrg
+            ];
+
+            // cek apakah data berbeda, jika beda berarti diedit
+            for (var i = 0; i < lama.length; i++) {
+              if (lama[i] != baru[i]) {
+                isEdited = true;
+              }
+            }
+
+            // jika menekan tombol save dan diedit maka simpan
+            // jadi ketika tidak ada perubahan maka sistem tidak melakukan proses edit
+            if (isEdited) {
+              ItemWise().update(widget.itemMap!['id_barang'],
+                  nama_barang: nama_barang,
+                  kode_barang: kdBrg,
+                  catatan: catatan,
+                  stok_barang: stok_barang,
+                  harga_beli: harga_beli,
+                  harga_jual: harga_jual,
+                  photo_barang: img,
+                  id_inventory: invDropdownValue ?? "tanpa*inventaris",
+                  edited: DateTime.now().toString());
             }
           }
-        },
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(successSnackbar(
+              context, AppLocalizations.of(context)!.successSave));
+        } else {
+          if (itemNameController.text.trim() == "") {
+            ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
+                context, AppLocalizations.of(context)!.itemNameAlert));
+          } else if (itemStockController.text.trim() == "") {
+            ScaffoldMessenger.of(context).showSnackBar(dangerSnackbar(
+                context, AppLocalizations.of(context)!.itemStockAlert));
+          }
+        }
+      },
+      radius: 35,
+      borderRadius: BorderRadius.circular(30),
+      child: const CircleAvatar(
         radius: 35,
-        borderRadius: BorderRadius.circular(30),
-        child: const CircleAvatar(
-          radius: 35,
-          child: Icon(
-            Icons.save_rounded,
-            size: 30,
-          ),
+        child: Icon(
+          Icons.save_rounded,
+          size: 30,
         ),
       ),
     );

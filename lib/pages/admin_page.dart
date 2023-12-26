@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
 import '../allpackages.dart';
@@ -152,7 +155,7 @@ class _AdminPanelState extends State<AdminPanel> {
       child: Row(
         children: [
           item['photo_barang'] != ""
-              ? fungsies().buildFotoBarang(item, "${item['id_barang']}admin")
+              ? fungsies().buildFotoBarang(context,item, "${item['id_barang']}admin")
               : Container(),
           Expanded(
             child: Padding(
@@ -222,42 +225,36 @@ class _AdminPanelState extends State<AdminPanel> {
         ],
       ),
     );
-    /* return ListTile(
-      leading: item['photo_barang'] == ""
-          ? Icon(Icons.photo_album_rounded)
-          : fungsies().buildFotoBarang(item, item['photo_barang']),
-      title: Text(
-        item['nama_barang'],
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: user != null
-          ? Text(
-              user['email_user'],
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      onTap: () {
-        setState(() {
-          idItem.text = item['id_barang'];
-          namaItem.text = item['nama_barang'];
-          kodeItem.text = item['kode_barang'];
-          catatanItem.text = item['catatan'];
-          stokItem.text = item['stok_barang'].toString();
-          hBliItem.text = item['harga_beli'].toString();
-          hJalItem.text = item['harga_jual'].toString();
-          userState = item['id_user'];
-          invState = item['id_inventory'];
-        });
-        _viewItem(context, item);
-      },
-    ); */
   }
 
-  _viewItem(BuildContext context, Map item) {
+  /// jika parameter [item] == null -> `MENAMBAH` file
+  ///
+  /// jika parameter [item] != null -> `MENGEDIT` file
+  _viewItem(BuildContext context, Map? item) {
     log("buka view item");
-    return showDialog(
+
+    if (item == null) {
+      log("buka view item: nambah");
+      // buat id_barang
+      String id_barang =
+          "${userWise.userData['id_user']}brg${DateTime.now().millisecondsSinceEpoch}";
+      // clear textfieldcontroller untuk membuat item
+      setState(() {
+        idItem.text = id_barang;
+        namaItem.clear();
+        kodeItem.clear();
+        catatanItem.clear();
+        stokItem.clear();
+        hBliItem.clear();
+        hJalItem.clear();
+        photoItem = "";
+        invState = null;
+        userState = null;
+      });
+    }
+
+    return showCupertinoDialog(
+        barrierDismissible: true,
         context: context,
         builder: (_) {
           return StatefulBuilder(builder: (context, setState) {
@@ -266,7 +263,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 child: Column(
                   children: [
                     photoItem != ""
-                        // render foto barnag
+                        // render foto barang
                         ? Container(
                             constraints:
                                 BoxConstraints(maxHeight: 500, maxWidth: 350),
@@ -299,7 +296,7 @@ class _AdminPanelState extends State<AdminPanel> {
                                 borderRadius: BorderRadius.circular(50),
                                 onTap: () async {
                                   setState(() {
-                                    _addPhotoBarang(context,setState);
+                                    _addPhotoBarang(context, setState);
                                   });
                                 },
                                 child: Container(
@@ -328,7 +325,9 @@ class _AdminPanelState extends State<AdminPanel> {
                     Container(
                       height: 20,
                     ),
-                    _fieldInfo("id_barang", ctrler: idItem, enable: false),
+                    _fieldInfo("id_barang",
+                        ctrler: idItem, enable: item == null),
+                    // _fieldInfo("id_barang", ctrler: idItem, enable: false),
                     Container(
                       height: 20,
                     ),
@@ -366,7 +365,11 @@ class _AdminPanelState extends State<AdminPanel> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _deleteButton(context, "item", item['id_barang']),
+                        Visibility(
+                          visible: item != null,
+                          child: _deleteButton(
+                              context, "item", item!['id_barang']),
+                        ),
                         _updateButton(context, item: item),
                       ],
                     )
@@ -515,7 +518,8 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<dynamic> _viewInv(BuildContext context, Map inv) {
-    return showDialog(
+    return showCupertinoDialog(
+        barrierDismissible: true,
         context: context,
         builder: (_) {
           return AlertDialog(
@@ -639,7 +643,8 @@ class _AdminPanelState extends State<AdminPanel> {
         photo_user = user['photo_user'];
       });
     }
-    return showDialog(
+    return showCupertinoDialog(
+        barrierDismissible: true,
         context: context,
         builder: (_) {
           return AlertDialog(
@@ -665,7 +670,7 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _roleDropDown(),
+                  _roleDropDown(roleStater: user['role']),
                   Container(
                     height: 20,
                   ),
@@ -694,29 +699,37 @@ class _AdminPanelState extends State<AdminPanel> {
             });
             switch (tipe) {
               case "user":
+                Map user = adminAccess.userList
+                    .firstWhere((element) => element["id_user"] == id);
                 // jika id_user yang mau dihapus beda dengan yang dipake
-                if (id != userWise.userData['id_user']) {
+                if (id != userWise.userData['id_user'] &&
+                    user['role'] != "admin") {
                   await userApiWise().delete(id);
+                  Navigator.pop(context);
                 }
                 // jika sama
                 else {
                   // ignore: use_build_context_synchronously
-                  showDialog(
+                  Navigator.pop(context);
+                  showCupertinoDialog(
+                    barrierDismissible: true,
                       context: context,
-                      builder: (_) {
+                      builder: (context) {
                         return AlertDialog(
                           content:
-                              Text(AppLocalizations.of(context)!.thisIsYourAcc),
+                              Text(id == userWise.userData['id_user'] ? AppLocalizations.of(context)!.thisIsYourAcc : AppLocalizations.of(context)!.thisIsAdmin),
                         );
                       });
                 }
                 break;
               case "inv":
                 await inventoryApiWise().delete(id);
+                Navigator.pop(context);
                 break;
               case "item":
                 await itemApiWise().delete(id);
                 await photoBarangApiWise().delete(id);
+                Navigator.pop(context);
                 break;
               default:
             }
@@ -725,7 +738,7 @@ class _AdminPanelState extends State<AdminPanel> {
               loading = false;
             });
           }
-          Navigator.pop(context);
+          // Navigator.pop(context);
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -778,8 +791,9 @@ class _AdminPanelState extends State<AdminPanel> {
       passwordUser.clear();
       photo_user = "null";
     });
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         builder: (_) {
           return AlertDialog(
             content: SingleChildScrollView(
@@ -817,7 +831,7 @@ class _AdminPanelState extends State<AdminPanel> {
   Future<dynamic> _addInvDialog(BuildContext context) {
     // buat id_inventory
     String id_inventory =
-        "${deviceData.id}inv${DateTime.now().millisecondsSinceEpoch}";
+        "${userWise.userData['id_user']}inv${DateTime.now().millisecondsSinceEpoch}";
     // bersihkan textController untuk add inv
     setState(() {
       idInv.text = id_inventory;
@@ -825,8 +839,9 @@ class _AdminPanelState extends State<AdminPanel> {
       userState = null;
     });
 
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         builder: (_) {
           return AlertDialog(
             content: SingleChildScrollView(
@@ -868,14 +883,16 @@ class _AdminPanelState extends State<AdminPanel> {
       userState = null;
     });
 
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         builder: (_) {
           return StatefulBuilder(builder: (context, setState) {
             return AlertDialog(
               content: SingleChildScrollView(
                 child: Column(
                   children: [
+                    // photoItem ini adalah base64 hasil enkode byte
                     photoItem != ""
                         // render foto barnag
                         ? Container(
@@ -953,7 +970,8 @@ class _AdminPanelState extends State<AdminPanel> {
         });
   }
 
-  Future<void> _addPhotoBarang(BuildContext context, StateSetter setState) async {
+  Future<void> _addPhotoBarang(
+      BuildContext context, StateSetter setState) async {
     log("add item photo");
     // ambil gambar dari galeri atau dari kamera
     bool? fromCam = await fungsies().konfirmasiDialog(context,
@@ -993,12 +1011,14 @@ class _AdminPanelState extends State<AdminPanel> {
 
               if (cekEmail.isEmpty) {
                 // tambah user
+                log("add userapi: $roleState");
                 await userApiWise().create(
                     id_user: idUser.text.trim(),
                     username_user: usernameUser.text.trim(),
                     email_user: emailUser.text.trim(),
                     photo_user: photo_user,
                     password_user: passwordUser.text.trim(),
+                    role: roleState,
                     isAdmin: true);
               }
               break;
@@ -1050,14 +1070,9 @@ class _AdminPanelState extends State<AdminPanel> {
           setState(() {
             loading = true;
           });
-          // showDialog(
-          //     context: context,
-          //     barrierDismissible: false,
-          //     builder: (_) => Center(
-          //           child: CircularProgressIndicator(),
-          //         ));
-          // ini update user
+
           if (user != null) {
+            log("update role->$roleState");
             await userApiWise().update(
               id_user: user['id_user'],
               username_user: usernameUser.text,
@@ -1065,6 +1080,7 @@ class _AdminPanelState extends State<AdminPanel> {
               password_user: passwordUser.text,
               photo_user: user['photo_user'],
               role: roleState,
+              isAdmin: true,
             );
           }
           // ini update inv
@@ -1115,18 +1131,18 @@ class _AdminPanelState extends State<AdminPanel> {
         ));
   }
 
-  StatefulBuilder _roleDropDown({String roleState = "user"}) {
+  Widget _roleDropDown({String roleStater = "user"}) {
     return StatefulBuilder(builder: ((context, setState) {
       return DropdownButton(
         isExpanded: true,
         onChanged: (value) {
-          log("role berubah");
+          log("role berubah->$value");
           setState(() {
-            log("$value");
             roleState = (value) as String;
+            roleStater = (value) as String;
           });
         },
-        value: roleState,
+        value: roleStater,
         items: List.generate(
             role.length,
             (index) => DropdownMenuItem(

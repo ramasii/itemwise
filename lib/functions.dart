@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
 
@@ -6,35 +8,59 @@ enum PickImageFrom { gallery, camera }
 /// ini sebenernya multifungsi, berisi fungsi atau variabel global
 /// mungkin bisa bikin efisien
 class fungsies {
-  Container buildFotoBarang(barang, id) {
-    return Container(
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
-          color: barang["photo_barang"] != ""
-              ? Colors.transparent
-              : const Color.fromARGB(255, 186, 186, 186),
-          borderRadius: const BorderRadius.all(Radius.circular(15))),
-      child: barang["photo_barang"] != ""
-          ? ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(15)),
-              child: Hero(
-                tag: "image$id",
-                child: Image.memory(
-                  Uint8List.fromList(base64.decode(barang["photo_barang"])),
-                  fit: BoxFit.cover,
-                  gaplessPlayback: true,
+  Widget buildFotoBarang(BuildContext context, Map barang, String id) {
+    return InkWell(
+      onTap: () async {
+        Uint8List imgBytes = base64Decode(barang["photo_barang"]);
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return PhotoViewPage(
+            barang['id_barang'],
+            imgBytes
+          );
+        }));
+      },
+      child: Container(
+        width: 70,
+        height: 70,
+        decoration: BoxDecoration(
+            color: barang["photo_barang"] != ""
+                ? Colors.transparent
+                : const Color.fromARGB(255, 186, 186, 186),
+            borderRadius: const BorderRadius.all(Radius.circular(15))),
+        child: barang["photo_barang"] != ""
+            ? ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                child: Hero(
+                  tag: "image${barang['id_barang']}",
+                  child: Image.memory(
+                    Uint8List.fromList(base64.decode(barang["photo_barang"])),
+                    fit: BoxFit.cover,
+                    gaplessPlayback: true,
+                  ),
+                ),
+              )
+            : const Center(
+                child: Icon(
+                  Icons.image_rounded,
+                  color: Colors.white,
+                  size: 45,
                 ),
               ),
-            )
-          : const Center(
-              child: Icon(
-                Icons.image_rounded,
-                color: Colors.white,
-                size: 45,
-              ),
-            ),
+      ),
     );
+  }
+
+  Future<bool> isConnected() async {
+    var a = await InternetConnectionCheckerPlus.createInstance(
+        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
+    var internet = await a.connectionStatus;
+    if (internet == InternetConnectionStatus.connected) {
+      print('Terhubung ke internet');
+      return true;
+    } else {
+      print('Tidak terhubung ke internet');
+      return false;
+    }
   }
 
   pickImage({PickImageFrom from = PickImageFrom.gallery}) async {
@@ -85,8 +111,9 @@ class fungsies {
     Color? trueColor,
     Color? falseColor,
   }) async {
-    bool? result = await showDialog<bool>(
+    bool? result = await showCupertinoDialog<bool>(
         context: context,
+        barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
             // title: Text(judul ?? AppLocalizations.of(context)!.attention),

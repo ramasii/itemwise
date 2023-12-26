@@ -21,7 +21,7 @@ class _SplashPageState extends State<SplashPage>
     userWise().read();
     ItemWise().read();
     authapi().loadAuth();
-    pengaturan().loadPengaturan;
+    pengaturan().loadPengaturan();
     checkDeviceId();
 
     // anim

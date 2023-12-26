@@ -60,5 +60,13 @@
     "searchItem":"Cari barang",
     "camera":"Kamera",
     "gallery":"Galeri",
-    "choosePhotoSource":"Pilih sumber foto"
+    "choosePhotoSource":"Pilih sumber foto",
+    "sort":"Urutkan",
+    "nameAZ":"Nama A-Z",
+    "nameZA":"Nama Z-A",
+    "newestAdded":"Ditambahkan terbaru",
+    "oldestAdded":"Ditambahkan terlama",
+    "ok":"Ok",
+    "thisIsAdmin":"Akun ini milik admin",
+    "moveToInv":"Pindahkan ke inventaris"
 }

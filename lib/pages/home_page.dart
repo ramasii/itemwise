@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'pages.dart';
@@ -145,40 +146,48 @@ class _MyHomePageState extends State<MyHomePage>
 
   List<Widget> actionsIfSelectedItemsNotEmpty(BuildContext context) {
     return [
-      Stack(
-        alignment: Alignment.center,
-        children: [
-          const Icon(
-            Icons.circle,
+      // tombol hapus
+      IconButton(
+          splashRadius: 20,
+          onPressed: () async {
+            log("delete $selectedItems", name: "delete button");
+            bool? hapus = await fungsies().konfirmasiDialog(context,
+                msg:
+                    "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
+            if (hapus == true) {
+              for (String a in selectedItems) {
+                await ItemWise().delete(a);
+              }
+              setState(() {
+                selectedItems.clear();
+                // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                filteredItems = ItemWise().readByInventory(invState, id_user);
+              });
+            }
+          },
+          icon: const Icon(
+            Icons.delete,
             color: Colors.white,
-            size: 45,
-          ),
-          IconButton(
-              highlightColor: Colors.red,
-              splashColor: Colors.transparent,
-              onPressed: () async {
-                log("delete $selectedItems", name: "delete button");
-                bool? hapus = await fungsies().konfirmasiDialog(context,
-                    msg:
-                        "${AppLocalizations.of(context)!.delete} ${selectedItems.length} ${AppLocalizations.of(context)!.items}?");
-                if (hapus == true) {
-                  for (String a in selectedItems) {
-                    await ItemWise().delete(a);
-                  }
-                  setState(() {
-                    selectedItems.clear();
-                    // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                    filteredItems =
-                        ItemWise().readByInventory(invState, id_user);
-                  });
-                }
-              },
-              icon: const Icon(
-                Icons.delete,
-                color: Colors.red,
-              ))
-        ],
-      ),
+          )),
+      // tombol pindah inventory
+      IconButton(
+          onPressed: () async {
+            log("tombol pindah inventaris");
+            String? id_inventory = await _dialogPindahInventaris(context);
+            if (id_inventory != null) {
+              for (var e in selectedItems) {
+                await ItemWise().update(e, id_inventory: id_inventory);
+              }
+
+              setState(() {
+                selectedItems.clear();
+                filteredItems = ItemWise().readByInventory(invState, id_user);
+              });
+            }
+          },
+          splashRadius: 20,
+          icon: Icon(Icons.inventory_2, color: Colors.white)),
+      // tombol bersihkan pilihan
       IconButton(
           onPressed: () {
             log("cancel");
@@ -192,6 +201,62 @@ class _MyHomePageState extends State<MyHomePage>
             color: Colors.white,
           ))
     ];
+  }
+
+  Future<dynamic> _dialogPindahInventaris(BuildContext context) {
+    return showCupertinoDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          // variabel untuk inventaris yang dipilih
+          String sel = "";
+          if (selectedItems.isNotEmpty) {
+            sel = ItemWise().readByIdBarang(selectedItems[0])['id_inventory'] ??
+                "";
+          }
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.moveToInv),
+            contentPadding: EdgeInsets.all(10),
+            content: StatefulBuilder(builder: (context, setState) {
+              return SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      List.generate(inventoryWise().readByUser().length, (index) {
+                    Map inv = inventoryWise().readByUser()[index];
+                    return RadioListTile(
+                        contentPadding: EdgeInsets.all(0),
+                        value: inv['id_inventory'],
+                        title: Text(inv['nama_inventory']),
+                        groupValue: sel,
+                        onChanged: (value) {
+                          log("ubah value->$value");
+                          setState(() {
+                            sel = value;
+                          });
+                        });
+                  }),
+                ),
+              );
+            }),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    log("batal pindah inv");
+                    Navigator.of(context).pop(null);
+                  },
+                  child: Text(AppLocalizations.of(context)!.cancel)),
+              TextButton(
+                  onPressed: () async {
+                    log("pindahkan barang ke $sel");
+                    // tutup dialog
+                    Navigator.of(context).pop(sel);
+                  },
+                  child: Text(AppLocalizations.of(context)!.save)),
+            ],
+          );
+        });
   }
 
   List<Widget> actionsIfSelectedItemsEmpty(BuildContext context) {
@@ -232,10 +297,45 @@ class _MyHomePageState extends State<MyHomePage>
                 break;
               case "adminPanel":
                 log("goto adminPanel");
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AdminPanel()));
+                // loading
+                showCupertinoDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    });
+
+                // tes koneksi internet
+                bool terkonekkah = await fungsies().isConnected();
+
+                if (terkonekkah) {
+                  // tutup loading
+                  Navigator.pop(context);
+
+                  // menuju admin panel
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminPanel()));
+                } else {
+                  // tutup loading
+                  Navigator.pop(context);
+                  log("ga ada koneksi ke server");
+
+                  // tampilkan info ga ada internet
+                  showCupertinoDialog(
+                      barrierDismissible: true,
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                            content:
+                                Text(AppLocalizations.of(context)!.noInternet),
+                          ));
+                }
+                break;
+              case "sort":
+                log("sort");
+                sortingDialog(context);
                 break;
               default:
             }
@@ -252,6 +352,12 @@ class _MyHomePageState extends State<MyHomePage>
                       userWise.isLoggedIn
                           ? AppLocalizations.of(context)!.profile
                           : AppLocalizations.of(context)!.login)),
+              if (filteredItems.isNotEmpty)
+                PopupMenuItem(
+                  value: "sort",
+                  child: _menuItem(
+                      context, Icons.sort, AppLocalizations.of(context)!.sort),
+                ),
               if (userWise.isLoggedIn)
                 PopupMenuItem(
                     value: "ekspor",
@@ -268,10 +374,80 @@ class _MyHomePageState extends State<MyHomePage>
                   value: "adminPanel",
                   child: _menuItem(context, Icons.admin_panel_settings_rounded,
                       AppLocalizations.of(context)!.adminPanel),
-                )
+                ),
             ];
           }),
     ];
+  }
+
+  Future<dynamic> sortingDialog(BuildContext context) {
+    return showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+            content: StatefulBuilder(builder: ((context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile(
+                      value: sorter.name12,
+                      groupValue: pengaturan.sortBy,
+                      title: Text(AppLocalizations.of(context)!.nameAZ),
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.name21,
+                      title: Text(AppLocalizations.of(context)!.nameZA),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.added12,
+                      title: Text(AppLocalizations.of(context)!.newestAdded),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.added21,
+                      title: Text(AppLocalizations.of(context)!.oldestAdded),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                ],
+              );
+            })),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    log("ok");
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  child: Text(AppLocalizations.of(context)!.ok))
+            ],
+          );
+        });
   }
 
   Column defaultAppBar(BuildContext context) {
@@ -323,19 +499,6 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   //-----------------------------------------------------------------------------//
-  // cek koneksi internet
-  static Future<bool> isConnected() async {
-    var a = await InternetConnectionCheckerPlus.createInstance(
-        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
-    var internet = await a.connectionStatus;
-    if (internet == InternetConnectionStatus.connected) {
-      print('Tidak terhubung ke internet');
-      return false;
-    } else {
-      print('Terhubung ke internet');
-      return true;
-    }
-  }
 
   /// reset pencarian
   resetPencarian() {
@@ -350,16 +513,15 @@ class _MyHomePageState extends State<MyHomePage>
   Future backupAsset() async {
     log("ekspor aset");
 
-    showDialog(
+    showCupertinoDialog(
         context: context,
-        barrierDismissible: false,
         builder: (BuildContext context) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         });
 
-    var terkonek = await isConnected();
+    var terkonek = await fungsies().isConnected();
     List inv = inventoryWise().readByUser();
     List itm = ItemWise().readByUser();
 
@@ -411,7 +573,8 @@ class _MyHomePageState extends State<MyHomePage>
         setState(() {
           Navigator.pop(context);
         });
-        showDialog(
+        showCupertinoDialog(
+            barrierDismissible: true,
             context: context,
             builder: (BuildContext context) => AlertDialog(
                   content: Text(AppLocalizations.of(context)!.noInternet),
@@ -425,9 +588,8 @@ class _MyHomePageState extends State<MyHomePage>
   loadAsset() async {
     log("load aset");
 
-    showDialog(
+    showCupertinoDialog(
         context: context,
-        barrierDismissible: false,
         builder: (BuildContext context) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -436,7 +598,7 @@ class _MyHomePageState extends State<MyHomePage>
     await authapi().auth(
         userWise.userData['email_user'], userWise.userData['password_user']);
 
-    var terkonek = await isConnected();
+    var terkonek = await fungsies().isConnected();
 
     if (terkonek && userWise.isLoggedIn) {
       // load inventory
@@ -558,6 +720,7 @@ class _MyHomePageState extends State<MyHomePage>
               ),
               if (inventoryWise().readByUser().isNotEmpty)
                 Expanded(
+                  // list inventory
                   child: ListView(
                     controller: invScrollController,
                     children: List.generate(inventoryWise().readByUser().length,
@@ -591,7 +754,7 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  Widget stokAndHargaSheet(BuildContext context, String id_barang) {
+  Widget stokDanHargaSheet(BuildContext context, String id_barang) {
     Map barang = filteredItems.firstWhere(
       // Map barang = ItemWise().readByUser().firstWhere(
       (element) => element['id_barang'] == id_barang,
@@ -613,386 +776,363 @@ class _MyHomePageState extends State<MyHomePage>
       }
     }
     idBrgOld = id_barang;
-    return BottomSheet(
-        onClosing: () {
-          Navigator.pop(context);
-        },
-        backgroundColor: Colors.transparent,
-        animationController: bottomSheetAC,
-        builder: (BuildContext context) {
-          return Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20))),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Center(
-                        child: Container(
-                          height: 5,
-                          width: 60,
-                          decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(5)),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 10,
-                          ),
-                          Text(
-                            AppLocalizations.of(context)!.editStockAndPrice,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold),
-                          ),
-                          Container(
-                            height: 20,
-                          ),
-                          Text(
-                            barang['nama_barang'],
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20))),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 5,
+                  width: 60,
+                  decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(5)),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 10,
+                    ),
+                    Text(
+                      AppLocalizations.of(context)!.editStockAndPrice,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(
+                      barang['nama_barang'],
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w500),
+                    ),
+                    Container(
+                      height: 5,
+                    ),
+                    Text(
+                      barang['kode_barang'],
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(AppLocalizations.of(context)!.selPrice,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500)),
+                    TextFormField(
+                      controller: hargaJualController,
+                      textAlign: TextAlign.center,
+                      decoration:
+                          InputDecoration(icon: Text(pengaturan.mataUang)),
+                      onChanged: (value) {
+                        clearNotNumber(value, hargaJualController);
+                        if (value == "") {
+                          setState(() {
+                            hargaJualController.text = "0";
+                          });
+                        } else {
+                          setState(() {
+                            hjalNew = value;
+                          });
+                        }
+                      },
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.stok,
                             style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.w500),
                           ),
-                          Container(
-                            height: 5,
-                          ),
-                          Text(
-                            barang['kode_barang'],
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Container(
-                            height: 20,
-                          ),
-                          Text(AppLocalizations.of(context)!.selPrice,
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w500)),
-                          TextFormField(
-                            controller: hargaJualController,
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                                icon: Text(pengaturan.mataUang)),
-                            onChanged: (value) {
-                              clearNotNumber(value, hargaJualController);
-                              if (value == "") {
-                                setState(() {
-                                  hargaJualController.text = "0";
-                                });
-                              } else {
-                                setState(() {
-                                  hjalNew = value;
-                                });
-                              }
-                            },
-                          ),
-                          Container(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                        ),
+                        Expanded(
+                          child: Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  AppLocalizations.of(context)!.stok,
-                                  style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    InkWell(
-                                        onTap: () {
-                                          log("minus");
-                                          int stok =
-                                              int.parse(stokController.text);
-                                          if (stok > 0) {
-                                            setState(() {
-                                              stokController.text =
-                                                  (stok - 1).toString();
-                                            });
-                                          }
-                                          setState(() {
-                                            stokNew = stok.toString();
-                                          });
-                                        },
-                                        child:
-                                            circledIcon(Icons.remove_rounded)),
-                                    Expanded(
-                                      child: TextFormField(
-                                        controller: stokController,
-                                        textAlign: TextAlign.center,
-                                        onChanged: (value) {
-                                          clearNotNumber(value, stokController);
-                                          if (value == "") {
-                                            setState(() {
-                                              stokController.text = "0";
-                                            });
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    InkWell(
-                                        onTap: () {
-                                          log("add");
-                                          int stok =
-                                              int.parse(stokController.text);
-                                          setState(() {
-                                            stokController.text =
-                                                (stok + 1).toString();
-                                            stokNew = stok.toString();
-                                          });
-                                        },
-                                        child: circledIcon(Icons.add_rounded))
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                          Container(
-                            height: 40,
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: () async {
-                                    log("simpan lewat bottomsheet");
-                                    await ItemWise().update(id_barang,
-                                        stok_barang: int.parse(
-                                            stokController.text.trim()),
-                                        harga_jual: int.parse(
-                                            hargaJualController.text.trim()),
-                                        id_inventory: barang['id_inventory']);
+                              InkWell(
+                                  onTap: () {
+                                    log("minus");
+                                    int stok = int.parse(stokController.text);
+                                    if (stok > 0) {
+                                      setState(() {
+                                        stokController.text =
+                                            (stok - 1).toString();
+                                      });
+                                    }
                                     setState(() {
-                                      // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                                      filteredItems = ItemWise()
-                                          .readByInventory(invState, id_user);
+                                      stokNew = stok.toString();
                                     });
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                      backgroundColor: Colors.green,
-                                      content: Text(
-                                          AppLocalizations.of(context)!
-                                              .successSave),
-                                      duration: const Duration(seconds: 1),
-                                    ));
                                   },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                              color:
-                                                  Color.fromARGB(70, 0, 0, 0),
-                                              blurRadius: 2)
-                                        ]),
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      AppLocalizations.of(context)!.save,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
+                                  child: circledIcon(Icons.remove_rounded)),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: stokController,
+                                  textAlign: TextAlign.center,
+                                  onChanged: (value) {
+                                    clearNotNumber(value, stokController);
+                                    if (value == "") {
+                                      setState(() {
+                                        stokController.text = "0";
+                                      });
+                                    }
+                                  },
                                 ),
                               ),
+                              InkWell(
+                                  onTap: () {
+                                    log("add");
+                                    int stok = int.parse(stokController.text);
+                                    setState(() {
+                                      stokController.text =
+                                          (stok + 1).toString();
+                                      stokNew = stok.toString();
+                                    });
+                                  },
+                                  child: circledIcon(Icons.add_rounded))
                             ],
                           ),
-                          // mendorong bottomsheet ke atas ketika buka keyboard
-                          AnimatedContainer(
-                              height: MediaQuery.of(context).viewInsets.bottom,
-                              duration: const Duration(milliseconds: 200))
-                        ],
-                      ),
-                    ],
-                  ),
+                        )
+                      ],
+                    ),
+                    Container(
+                      height: 40,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              log("simpan lewat bottomsheet");
+                              await ItemWise().update(id_barang,
+                                  stok_barang:
+                                      int.parse(stokController.text.trim()),
+                                  harga_jual: int.parse(
+                                      hargaJualController.text.trim()),
+                                  id_inventory: barang['id_inventory']);
+                              setState(() {
+                                // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                                filteredItems = ItemWise()
+                                    .readByInventory(invState, id_user);
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                backgroundColor: Colors.green,
+                                content: Text(
+                                    AppLocalizations.of(context)!.successSave),
+                                duration: const Duration(seconds: 1),
+                              ));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color.fromARGB(70, 0, 0, 0),
+                                        blurRadius: 2)
+                                  ]),
+                              padding: const EdgeInsets.all(12),
+                              child: Text(
+                                AppLocalizations.of(context)!.save,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // mendorong bottomsheet ke atas ketika buka keyboard
+                    AnimatedContainer(
+                        height: MediaQuery.of(context).viewInsets.bottom,
+                        duration: const Duration(milliseconds: 200))
+                  ],
                 ),
-              ),
-            ],
-          );
-        });
+                Container(
+                  height: MediaQuery.of(context).viewPadding.bottom,
+                )
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget moreMenuItem(BuildContext context, String id_barang) {
+  Widget moreMenu(BuildContext context, String id_barang) {
     // dapatkan map berdasarkan id_barang
     Map barang = ItemWise().readByIdBarang(id_barang);
-    return BottomSheet(
-        backgroundColor: Colors.transparent,
-        animationController: bottomSheetAC,
-        onClosing: () {
-          Navigator.pop(context);
-        },
-        builder: (BuildContext context) {
-          return Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20))),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20))),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    height: 5,
+                    width: 60,
+                    decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                ),
+                Container(
+                  height: 20,
+                ),
+                // info barang yang diklik
+                // nama barang
+                Text(
+                  barang['nama_barang'],
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+                Container(
+                  height: 5,
+                ),
+                // kode barang
+                Text(
+                  barang['kode_barang'],
+                  style: const TextStyle(fontSize: 15),
+                ),
+                Container(
+                  height: 20,
+                ),
+                Text(
+                  "${AppLocalizations.of(context)!.action}:",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                Container(
+                  height: 10,
+                ),
+                // menu edit detail
+                InkWell(
+                  onTap: () async {
+                    log("edit detail");
+                    // tutup menu
+                    Navigator.pop(context);
+                    // menuju halaman view/edit
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => ViewItemPage(
+                                  itemMap: barang,
+                                )));
+                  },
+                  child: Row(
                     children: [
-                      Center(
-                        child: Container(
-                          height: 5,
-                          width: 60,
-                          decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(5)),
+                      Expanded(
+                        child: IntrinsicWidth(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  AppLocalizations.of(context)!.editItemDetail),
+                              const Divider(),
+                            ],
+                          ),
                         ),
                       ),
-                      Container(
-                        height: 20,
-                      ),
-                      // info barang yang diklik
-                      // nama barang
-                      Text(
-                        barang['nama_barang'],
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w500),
-                      ),
-                      Container(
-                        height: 5,
-                      ),
-                      // kode barang
-                      Text(
-                        barang['kode_barang'],
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      Container(
-                        height: 20,
-                      ),
-                      Text(
-                        "${AppLocalizations.of(context)!.action}:",
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      // menu edit detail
-                      InkWell(
-                        onTap: () async {
-                          log("edit detail");
-                          // tutup menu
-                          Navigator.pop(context);
-                          // menuju halaman view/edit
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => ViewItemPage(
-                                        itemMap: barang,
-                                      )));
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IntrinsicWidth(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(AppLocalizations.of(context)!
-                                        .editItemDetail),
-                                    const Divider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      // menu pilih
-                      InkWell(
-                        onTap: () {
-                          log("pilih");
-                          setState(() {
-                            selectedItems.add(id_barang);
-                          });
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IntrinsicWidth(
-                                stepHeight: null,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(AppLocalizations.of(context)!
-                                        .selectItem),
-                                    const Divider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      // menu hapus
-                      InkWell(
-                        onTap: () async {
-                          log("hapus");
-                          bool? hapus =
-                              await fungsies().konfirmasiDialog(context);
-                          if (hapus == true) {
-                            await ItemWise().delete(id_barang);
-                            setState(() {
-                              // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                              filteredItems =
-                                  ItemWise().readByInventory(invState, id_user);
-                            });
-                          }
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: IntrinsicWidth(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(AppLocalizations.of(context)!.delete),
-                                    const Divider(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 50,
-                      )
                     ],
                   ),
                 ),
-              ),
-            ],
-          );
-        });
+                Container(
+                  height: 10,
+                ),
+                // menu pilih
+                InkWell(
+                  onTap: () {
+                    log("pilih");
+                    setState(() {
+                      selectedItems.add(id_barang);
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: IntrinsicWidth(
+                          stepHeight: null,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppLocalizations.of(context)!.selectItem),
+                              const Divider(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 10,
+                ),
+                // menu hapus
+                InkWell(
+                  onTap: () async {
+                    log("hapus");
+                    bool? hapus = await fungsies().konfirmasiDialog(context);
+                    if (hapus == true) {
+                      await ItemWise().delete(id_barang);
+                      setState(() {
+                        // refresh filteredItems karena yang ditampilkan adalah filteredItems
+                        filteredItems =
+                            ItemWise().readByInventory(invState, id_user);
+                      });
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: IntrinsicWidth(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppLocalizations.of(context)!.delete),
+                              const Divider(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 50,
+                )
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void clearNotNumber(String value, TextEditingController controller) {
@@ -1026,8 +1166,9 @@ class _MyHomePageState extends State<MyHomePage>
 
   Future<dynamic> invNameDialog(
       BuildContext context, String id_inventory, String mode) {
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
+        barrierDismissible: true,
         useRootNavigator: false,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -1043,8 +1184,8 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             actions: [
-              InkWell(
-                onTap: () async {
+              TextButton(
+                onPressed: () async {
                   log("simpan");
                   if (NamaInvController.text.trim().isNotEmpty) {
                     setState(() {
@@ -1079,9 +1220,7 @@ class _MyHomePageState extends State<MyHomePage>
                     Navigator.pop(context);
                   }
                 },
-                child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: successButton(AppLocalizations.of(context)!.save)),
+                child: Text(AppLocalizations.of(context)!.save),
               )
             ],
           );
@@ -1095,8 +1234,10 @@ class _MyHomePageState extends State<MyHomePage>
       children: [
         Expanded(
             child: ListTile(
+          // pindah inventaris
           onTap: () {
             log("tap ${id_inventory}");
+            log("jml brg: $jml_brg");
             switch (invEditMode) {
               case false:
                 setState(() {
@@ -1184,38 +1325,51 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Widget listItems(BuildContext context) {
+    List brgs = filteredItems;
+
+    // mengurutkan barang
+    brgs.sort((a, b) {
+      String namaA = a['nama_barang'];
+      String namaB = b['nama_barang'];
+      DateTime timeA = DateTime.parse(a['added']);
+      DateTime timeB = DateTime.parse(b['added']);
+
+      switch (pengaturan.sortBy) {
+        case sorter.name12:
+          return namaA.compareTo(namaB);
+        case sorter.name21:
+          return namaB.compareTo(namaA);
+        case sorter.added21:
+          return timeA.compareTo(timeB);
+        case sorter.added12:
+          return timeB.compareTo(timeA);
+        default:
+          return namaA.compareTo(namaB);
+      }
+    });
     return SingleChildScrollView(
-      child: StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-          List brgs = filteredItems;
-          // List brgs = invState == "all"
-          //     ? filteredItems
-          //     // ? ItemWise().readByUser()
-          //     : ItemWise().readByInventory(invState, id_user);
-          return Column(
-            children: [
-              Column(
-                children: List.generate(brgs.length, (index) {
-                  var id = brgs[index]['id_barang'];
-                  var title = brgs[index]['nama_barang'];
-                  return buildItem(index, context, id, title, brgs[index]);
-                }),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  AppLocalizations.of(context)!.tapAndHoldToSelect,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500, color: Colors.blue[200]),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Container(
-                height: 150,
-              )
-            ],
-          );
-        },
+      child: Column(
+        children: [
+          Column(
+            children: List.generate(brgs.length, (index) {
+              var id = brgs[index]['id_barang'];
+              var title = brgs[index]['nama_barang'];
+              return buildItem(index, context, id, title, brgs[index]);
+            }),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              AppLocalizations.of(context)!.tapAndHoldToSelect,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500, color: Colors.blue[200]),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Container(
+            height: 150,
+          )
+        ],
       ),
     );
   }
@@ -1244,7 +1398,7 @@ class _MyHomePageState extends State<MyHomePage>
                       visible: barang['photo_barang'] != "",
                       child: Row(
                         children: [
-                         fungsies().buildFotoBarang(barang, id),
+                          fungsies().buildFotoBarang(context, barang, id),
                           Container(
                             width: 5,
                           ),
@@ -1265,14 +1419,8 @@ class _MyHomePageState extends State<MyHomePage>
                       onTap: () {
                         // buka bottomsheet
                         if (selectedItems.isEmpty) {
-                          showModalBottomSheet(
-                              backgroundColor: Colors.transparent,
-                              isScrollControlled: true,
-                              context: context,
-                              builder: (BuildContext context) {
-                                return stokAndHargaSheet(
-                                    context, barang['id_barang']);
-                              });
+                          _tampilkanBottomSheet(context,
+                              stokDanHargaSheet(context, barang['id_barang']));
                         }
                       },
                       child: Container(
@@ -1303,6 +1451,23 @@ class _MyHomePageState extends State<MyHomePage>
         ),
       ),
     );
+  }
+
+  Future<dynamic> _tampilkanBottomSheet(BuildContext context, Widget sheet) {
+    return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return Container(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: sheet);
+        });
   }
 
   InkWell MyListTile(BuildContext context, int index, id, barang,
@@ -1374,14 +1539,8 @@ class _MyHomePageState extends State<MyHomePage>
                   child: IconButton(
                     onPressed: () {
                       log("tekan more");
-                      showModalBottomSheet(
-                          useSafeArea: true,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          context: context,
-                          builder: (BuildContext context) {
-                            return moreMenuItem(context, barang['id_barang']);
-                          });
+                      _tampilkanBottomSheet(
+                          context, moreMenu(context, barang['id_barang']));
                     },
                     icon: const Icon(Icons.more_horiz_rounded),
                     iconSize: 25,
@@ -1402,15 +1561,24 @@ class _MyHomePageState extends State<MyHomePage>
             IntrinsicHeight(
               child: Row(
                 children: [
-                  Text(
-                    "${pengaturan.mataUang} ${barang['harga_jual']}",
-                    style: const TextStyle(color: Colors.deepOrange),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${pengaturan.mataUang} ${barang['harga_jual']}",
+                        style: const TextStyle(color: Colors.deepOrange),
+                      ),
+                    ),
                   ),
                   const VerticalDivider(),
-                  Text(
-                    "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[600]),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        "${AppLocalizations.of(context)!.stok}: ${barang['stok_barang']}",
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
                   ),
                 ],
               ),
