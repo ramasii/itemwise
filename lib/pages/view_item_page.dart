@@ -21,6 +21,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
   bool isEdited = false;
   bool isImgLscape = true;
   String? invDropdownValue;
+  late String id_barang;
   String img = "";
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
@@ -39,6 +40,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
     log('in viewItemPage');
     if (widget.itemMap != null) {
       isEdit = true;
+      id_barang = widget.itemMap!['id_barang'];
       itemNameController.text = widget.itemMap!['nama_barang'];
       kodeBarangController.text = widget.itemMap!['kode_barang'];
       itemDescriptionController.text = widget.itemMap!['catatan'];
@@ -71,6 +73,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
         });
       }
     } else if (widget.itemMap == null) {
+      id_barang =
+          "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
       isEdit == false;
       invDropdownValue = widget.invState == "all" ? null : widget.invState;
     }
@@ -491,21 +495,34 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           });
                         }
                       },
-                      onTap: () {
-                        Uint8List imgBytes =
-                            base64Decode(widget.itemMap!["photo_barang"]);
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PhotoViewPage(
-                                    widget.itemMap!['id_barang'], imgBytes)));
+                      onTap: () async {
+                        // ini untuk ngedit
+                        if (widget.itemMap != null) {
+                          Uint8List imgBytes = base64Decode(img);
+                          await Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return PhotoViewPage(id_barang, imgBytes);
+                          })).then((value) => _refreshData());
+                        }
+                        // ini untuk nambah
+                        else {
+                          Uint8List imgBytes = base64Decode(img);
+                          String tempImg = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      PhotoViewPage(id_barang, imgBytes)));
+                          setState(() {
+                            img = tempImg;
+                          });
+                        }
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Hero(
                           tag: widget.itemMap != null
                               ? "image${widget.itemMap!['id_barang']}"
-                              : "image${DateTime.now().millisecondsSinceEpoch}",
+                              : "image${id_barang}",
                           // child: Image.file(
                           //   File(img),
                           //   fit: BoxFit.cover,
@@ -563,6 +580,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
         ));
   }
 
+  /// ini akan melakukan setState biasa
+  void _refreshData() {
+    setState(() {
+      log("melakukan refresh: $id_barang");
+      img = ItemWise().readByIdBarang(id_barang)['photo_barang'];
+    });
+  }
+
   Container greyButton(String msg) {
     return Container(
         padding: const EdgeInsets.all(8),
@@ -593,8 +618,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String id_user = userWise.isLoggedIn
                 ? userWise.userData["id_user"]
                 : deviceData.id;
-            String id_barang =
-                "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
+            // String id_barang =
+            //     "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
             String? id_inventory = invDropdownValue;
 
             log("id_user: $id_user");

@@ -104,9 +104,11 @@ class ItemWise {
     }
   }
 
-  Map readByIdBarang(String id_barang) {
-    Map byIdBarang =
-        readByUser().firstWhere((element) => element['id_barang'] == id_barang);
+  /// jika tidak ditemukan maka akan mengembalikan `-1`
+  readByIdBarang(String id_barang) {
+    // log(readByUser().toString());
+    var byIdBarang =
+        readByUser().firstWhere((element) => element['id_barang'] == id_barang,orElse: () => -1,);
     return byIdBarang;
   }
 

@@ -222,8 +222,8 @@ class _MyHomePageState extends State<MyHomePage>
                 physics: AlwaysScrollableScrollPhysics(),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children:
-                      List.generate(inventoryWise().readByUser().length, (index) {
+                  children: List.generate(inventoryWise().readByUser().length,
+                      (index) {
                     Map inv = inventoryWise().readByUser()[index];
                     return RadioListTile(
                         contentPadding: EdgeInsets.all(0),
@@ -1398,7 +1398,7 @@ class _MyHomePageState extends State<MyHomePage>
                       visible: barang['photo_barang'] != "",
                       child: Row(
                         children: [
-                          fungsies().buildFotoBarang(context, barang, id),
+                          _inkWellPhotoBarang(barang, context, id),
                           Container(
                             width: 5,
                           ),
@@ -1453,6 +1453,17 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
+  InkWell _inkWellPhotoBarang(barang, BuildContext context, id) {
+    return InkWell(
+        onTap: () async {
+          Uint8List imgBytes = base64Decode(barang["photo_barang"]);
+          await Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return PhotoViewPage(barang['id_barang'], imgBytes);
+          })).then((value) => _refreshData());
+        },
+        child: fungsies().buildFotoBarang(context, barang, id));
+  }
+
   Future<dynamic> _tampilkanBottomSheet(BuildContext context, Widget sheet) {
     return showModalBottomSheet(
         shape: RoundedRectangleBorder(
@@ -1475,13 +1486,13 @@ class _MyHomePageState extends State<MyHomePage>
     return InkWell(
       onTap: () async {
         if (selectedItems.isEmpty) {
-          Navigator.push(
+          await Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (ctx) => ViewItemPage(
                         itemMap: barang,
                         invState: invState == "all" ? null : invState,
-                      )));
+                      ))).then((value) => _refreshData());
         } else {
           if (selectedItems.contains(id)) {
             log("deselect $id");
@@ -1587,6 +1598,13 @@ class _MyHomePageState extends State<MyHomePage>
         ),
       ),
     );
+  }
+
+  /// refresh filteredItems
+  void _refreshData() {
+    setState(() {
+      filteredItems = ItemWise().readByInventory(invState, id_user);
+    });
   }
 
   /// cari barang berdasarkan teks lalu set filteredItems

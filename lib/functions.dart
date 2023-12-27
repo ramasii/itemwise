@@ -9,7 +9,7 @@ enum PickImageFrom { gallery, camera }
 /// mungkin bisa bikin efisien
 class fungsies {
   Widget buildFotoBarang(BuildContext context, Map barang, String id) {
-    return InkWell(
+    return /* InkWell(
       onTap: () async {
         Uint8List imgBytes = base64Decode(barang["photo_barang"]);
         Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -19,35 +19,36 @@ class fungsies {
           );
         }));
       },
-      child: Container(
-        width: 70,
-        height: 70,
-        decoration: BoxDecoration(
-            color: barang["photo_barang"] != ""
-                ? Colors.transparent
-                : const Color.fromARGB(255, 186, 186, 186),
-            borderRadius: const BorderRadius.all(Radius.circular(15))),
-        child: barang["photo_barang"] != ""
-            ? ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(15)),
-                child: Hero(
-                  tag: "image${barang['id_barang']}",
-                  child: Image.memory(
-                    Uint8List.fromList(base64.decode(barang["photo_barang"])),
-                    fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                  ),
-                ),
-              )
-            : const Center(
-                child: Icon(
-                  Icons.image_rounded,
-                  color: Colors.white,
-                  size: 45,
+      child: */
+        Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+          color: barang["photo_barang"] != ""
+              ? Colors.transparent
+              : const Color.fromARGB(255, 186, 186, 186),
+          borderRadius: const BorderRadius.all(Radius.circular(15))),
+      child: barang["photo_barang"] != ""
+          ? ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(15)),
+              child: Hero(
+                tag: "image${barang['id_barang']}",
+                child: Image.memory(
+                  Uint8List.fromList(base64.decode(barang["photo_barang"])),
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true,
                 ),
               ),
-      ),
+            )
+          : const Center(
+              child: Icon(
+                Icons.image_rounded,
+                color: Colors.white,
+                size: 45,
+              ),
+            ),
     );
+    /* ); */
   }
 
   Future<bool> isConnected() async {
@@ -63,6 +64,7 @@ class fungsies {
     }
   }
 
+  /// akan mengembalikan String kosongan `""` jika tidak mengambil gambar
   pickImage({PickImageFrom from = PickImageFrom.gallery}) async {
     log("START _pickImage");
 
