@@ -186,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage>
             }
           },
           splashRadius: 20,
-          icon: Icon(Icons.inventory_2, color: Colors.white)),
+          icon: const Icon(Icons.inventory_2, color: Colors.white)),
       // tombol bersihkan pilihan
       IconButton(
           onPressed: () {
@@ -216,17 +216,17 @@ class _MyHomePageState extends State<MyHomePage>
           }
           return AlertDialog(
             title: Text(AppLocalizations.of(context)!.moveToInv),
-            contentPadding: EdgeInsets.all(10),
+            contentPadding: const EdgeInsets.all(10),
             content: StatefulBuilder(builder: (context, setState) {
               return SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(inventoryWise().readByUser().length,
                       (index) {
                     Map inv = inventoryWise().readByUser()[index];
                     return RadioListTile(
-                        contentPadding: EdgeInsets.all(0),
+                        contentPadding: const EdgeInsets.all(0),
                         value: inv['id_inventory'],
                         title: Text(inv['nama_inventory']),
                         groupValue: sel,
@@ -385,7 +385,7 @@ class _MyHomePageState extends State<MyHomePage>
         context: context,
         builder: (context) {
           return AlertDialog(
-            contentPadding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+            contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
             content: StatefulBuilder(builder: ((context, setState) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1466,7 +1466,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   Future<dynamic> _tampilkanBottomSheet(BuildContext context, Widget sheet) {
     return showModalBottomSheet(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20), topRight: Radius.circular(20))),
         useSafeArea: true,
@@ -1474,10 +1474,12 @@ class _MyHomePageState extends State<MyHomePage>
         isScrollControlled: true,
         context: context,
         builder: (context) {
-          return Container(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: sheet);
+          return SingleChildScrollView(
+            child: Container(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: sheet),
+          );
         });
   }
 
