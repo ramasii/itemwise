@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import 'package:image_size_getter/image_size_getter.dart';
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
 

@@ -38,22 +38,17 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
       },
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              _tempatFoto(),
-              _appBar(context),
-            ],
-          ),
-        ),
+        appBar: PreferredSize(
+            child: _appBar(context), preferredSize: const Size.fromHeight(56)),
+        body: _tempatFoto(),
       ),
     );
   }
 
   Widget _appBar(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      height: showAppBar ? 50 : 0,
+    return AnimatedOpacity(
+      opacity: showAppBar ? 1 : 0,
+      duration: const Duration(milliseconds: 150),
       child: AppBar(
         backgroundColor: const Color.fromARGB(84, 0, 0, 0),
         leading: IconButton(
@@ -61,9 +56,9 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
             onPressed: () =>
                 Navigator.of(context).pop(base64Encode(gambarByte)),
             icon: const Icon(
-              Icons.arrow_back_rounded,
-              color: Colors.white,
-            )),
+                Icons.arrow_back_rounded,
+                color: Colors.white,
+              )),
         actions: [
           IconButton(
               onPressed: () async {
@@ -94,9 +89,9 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
                     // jika da berarti sedang mengedit
                     var cek = ItemWise().readByIdBarang(widget.id_barang);
                     // edit photo_barang
-                    if(cek != -1){
+                    if (cek != -1) {
                       await ItemWise()
-                        .update(widget.id_barang, photo_barang: base64img);
+                          .update(widget.id_barang, photo_barang: base64img);
                     }
                     // ubah nilai widget.imgBytes
                     setState(() {
@@ -105,7 +100,7 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
                   }
                 }
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.edit,
                 color: Colors.white,
               ))
