@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-
+import 'package:syncfusion_flutter_xlsio/xlsio.dart'; // HATI HATI!: ini bertabrakan dengan widget Column dari flutter
 import 'package:image_size_getter/image_size_getter.dart';
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
@@ -141,5 +141,103 @@ class fungsies {
           );
         });
     return result;
+  }
+
+  /// fungsi untuk mengubah data menjadi excel, akan mengembalikan List<int> Bytes
+  generateExcel(List dataBarang) async {
+    log("START generate excel");
+    // buat workbook
+    final Workbook workbook = Workbook();
+
+    // buat sheet
+    final Worksheet sheet1 = workbook.worksheets[0];
+
+    // buat header
+    // set style
+    sheet1.getRangeByName('A1:G1').cellStyle.backColor = '#5B9BD5';
+    sheet1.getRangeByName('A1:G1').cellStyle.fontColor = '#FFFFFF';
+    sheet1.getRangeByName('A1:G1').cellStyle.borders.all.lineStyle =
+        LineStyle.thin;
+    sheet1.getRangeByName('A1:G1').cellStyle.borders.all.color = '#000000';
+    // set ukuran
+    sheet1.getRangeByName('A1').columnWidth = 6;
+    sheet1.getRangeByName('B1:G1').columnWidth = 15;
+    // nomor
+    sheet1.getRangeByName('A1').setValue("No.");
+    // nama brg
+    sheet1.getRangeByName('B1').setValue("Nama Barang");
+    // kode brg
+    sheet1.getRangeByName('C1').setValue("Kode Barang");
+    // deskripsi
+    sheet1.getRangeByName('D1').setValue("Deskripsi");
+    // stok
+    sheet1.getRangeByName('E1').setValue("Stok Barang");
+    // hrg beli
+    sheet1.getRangeByName('F1').setValue("Harga Beli");
+    // hrg jual
+    sheet1.getRangeByName('G1').setValue("Harga Jual");
+
+    // untuk setiap data barang, maka tambahkan satu baris
+    for (int idxBarang = 0; idxBarang < dataBarang.length; idxBarang++) {
+      log("menulis data ke-${idxBarang + 1} dari ${dataBarang.length}");
+      // dapatkan barang
+      Map brg = dataBarang[idxBarang];
+      // buat indexBaris
+      int indexBaris =
+          idxBarang + 2; // +1 minimun index, dan +1 karena ada header
+      // set border
+      sheet1
+          .getRangeByIndex(indexBaris, 1, indexBaris, 7)
+          .cellStyle
+          .borders
+          .all
+          .lineStyle = LineStyle.thin;
+      sheet1
+          .getRangeByIndex(indexBaris, 1, indexBaris, 7)
+          .cellStyle
+          .borders
+          .all
+          .color = "#000000";
+
+      // set nilai ke baris(row)
+      sheet1.getRangeByIndex(indexBaris, 1).setValue(idxBarang + 1);
+      sheet1.getRangeByIndex(indexBaris, 2).setValue(brg['nama_barang']);
+      sheet1.getRangeByIndex(indexBaris, 3).setValue(brg['kode_barang']);
+      sheet1.getRangeByIndex(indexBaris, 4).setValue(brg['catatan']);
+      sheet1.getRangeByIndex(indexBaris, 5).setValue(brg['stok_barang']);
+      sheet1.getRangeByIndex(indexBaris, 6).setValue(brg['harga_beli']);
+      sheet1.getRangeByIndex(indexBaris, 7).setValue(brg['harga_jual']);
+    }
+
+    // bytes dari workbook
+    final List<int> bytes = workbook.saveAsStream();
+    // dispose workbook
+    // workbook.dispose();
+
+    log("generate excel done");
+
+    // return bytes
+    return bytes;
+  }
+
+  /// cek akses memori sekaligus mengubahd data direktori pengaturan.ekspordir jika null
+  cekAksesMemori() async {
+    log("cek akses penyimpanan");
+    var status = await Permission.manageExternalStorage.status;
+    if (status.isRestricted || status.isDenied) {
+      status = await Permission.manageExternalStorage.request();
+    }
+
+    // ubah direktori pengaturan.ekspordir jika null
+    if (pengaturan.eksporDir == null) {
+      log("ubah direktori pengaturan.ekspordir jika null");
+      var newDir = await getExternalStorageDirectory();
+      await pengaturan().ubahEksporDir(newDir!);
+    }
+
+    // var storageStatus = await Permission.storage.status;
+    // if (storageStatus.isRestricted || storageStatus.isDenied) {
+    //   storageStatus = await Permission.storage.request();
+    // }
   }
 }

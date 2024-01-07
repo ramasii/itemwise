@@ -7,6 +7,7 @@ enum sorter { name12, name21, added12, added21 }
 class pengaturan {
   static String mataUang = "Rp.";
   static sorter sortBy = sorter.name12;
+  static Directory? eksporDir;
 
   ubahMataUang(var mata) async {
     switch (mata) {
@@ -48,10 +49,29 @@ class pengaturan {
     sortBy = sorter.values.firstWhere((element) => element.name == tempSort);
   }
 
+  ubahEksporDir(Directory newDir) async {
+    log("ubah ekspordir->${newDir.path}");
+    eksporDir = newDir;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("pengaturan.eksporDir", newDir.path);
+  }
+
+  loadEksporDir() async {
+    log("START load ekspordir");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? tempPath = prefs.getString("pengaturan.eksporDir");
+    if (tempPath != null) {
+      log("dir ketemu");
+      eksporDir = Directory(tempPath);
+    }
+  }
+
   loadPengaturan() async {
     log("START memuat pengaturan");
     loadMataUang();
     loadSorting();
+    loadEksporDir();
     log("DONE memuat pengaturan");
   }
 }

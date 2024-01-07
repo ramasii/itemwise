@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'pages.dart';
@@ -27,10 +28,12 @@ class _MyHomePageState extends State<MyHomePage>
   TextEditingController mataUangController = TextEditingController();
   TextEditingController stokController = TextEditingController();
   TextEditingController searchController = TextEditingController();
+  TextEditingController fileNameController = TextEditingController();
   ScrollController invScrollController =
       ScrollController(keepScrollOffset: false);
   bool invEditMode = false;
   bool searchMode = false;
+  bool filenameValid = true;
   GlobalKey namaInvKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late String invState = widget.id_inv ?? "all";
@@ -82,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage>
       drawerEnableOpenDragGesture: selectedItems.isEmpty,
       key: _scaffoldKey,
       appBar: AppBar(
-        toolbarHeight: 55,
+        toolbarHeight: invState != "all" ? 55 : null,
         leading: selectedItems.isEmpty
             ? IconButton(
                 icon: const Icon(Icons.menu),
@@ -261,21 +264,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   List<Widget> actionsIfSelectedItemsEmpty(BuildContext context) {
     return [
-      IconButton(
-          onPressed: () {
-            log("ngubah searchMode");
-            // jika searchMode == true maka akan mereset filteredItems
-            if (searchMode) {
-              log("↳ false");
-              resetPencarian();
-            } else {
-              log("↳ true");
-              setState(() {
-                searchMode = true;
-              });
-            }
-          },
-          icon: const Icon(Icons.search_rounded)),
       PopupMenuButton(
           onOpened: () => resetPencarian(),
           onSelected: (value) async {
@@ -337,6 +325,25 @@ class _MyHomePageState extends State<MyHomePage>
                 log("sort");
                 sortingDialog(context);
                 break;
+              case "cari":
+                log("ngubah searchMode");
+                // jika searchMode == true maka akan mereset filteredItems
+                if (searchMode) {
+                  log("↳ false");
+                  resetPencarian();
+                } else {
+                  log("↳ true");
+                  setState(() {
+                    searchMode = true;
+                  });
+                }
+                break;
+              case "saveExcel":
+                // cek izin penyimpanan
+                await fungsies().cekAksesMemori();
+                await _dialogSimpanExcel(context);
+                // await pickDirectory(context);
+                break;
               default:
             }
           },
@@ -354,10 +361,21 @@ class _MyHomePageState extends State<MyHomePage>
                           : AppLocalizations.of(context)!.login)),
               if (filteredItems.isNotEmpty)
                 PopupMenuItem(
+                  value: "cari",
+                  child: _menuItem(context, Icons.search,
+                      AppLocalizations.of(context)!.searchItem),
+                ),
+              if (filteredItems.isNotEmpty)
+                PopupMenuItem(
                   value: "sort",
                   child: _menuItem(
                       context, Icons.sort, AppLocalizations.of(context)!.sort),
                 ),
+              if (filteredItems.isNotEmpty)
+                PopupMenuItem(
+                    value: "saveExcel",
+                    child: _menuItem(context, Icons.calendar_view_month_rounded,
+                        AppLocalizations.of(context)!.saveAsExcel)),
               if (userWise.isLoggedIn)
                 PopupMenuItem(
                     value: "ekspor",
@@ -1607,6 +1625,157 @@ class _MyHomePageState extends State<MyHomePage>
     setState(() {
       filteredItems = ItemWise().readByInventory(invState, id_user);
     });
+  }
+
+  /// digunakan untuk memilih direktori lalu menyimpannya untuk penggunaan selanjutnya
+  ///
+  /// akan mengembalikan `Directory`
+  Future<Directory?> pickDirectory(BuildContext context) async {
+    // cek akses memori
+    fungsies().cekAksesMemori();
+
+    Directory directory =
+        pengaturan.eksporDir ?? Directory(FolderPicker.rootPath);
+    // log(directory.path);
+
+    Directory? newDirectory = await FolderPicker.pick(
+      allowFolderCreation: true,
+      context: context,
+      rootDirectory: directory,
+      message: "Pilih folder",
+    );
+
+    return newDirectory;
+  }
+
+  _dialogSimpanExcel(BuildContext context) async {
+    fileNameController.text =
+        "ItemWise-${DateTime.now().toString().replaceAll(RegExp(r'\s|:|\.'), "-")}";
+
+    showCupertinoDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.saveAsExcel),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: fileNameController,
+                        decoration: InputDecoration(
+                            label:
+                                Text(AppLocalizations.of(context)!.enterName)),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return AppLocalizations.of(context)!.required;
+                          } else {
+                            bool simbolTerlarang =
+                                RegExp(r'[\\/:\*\?\"<>\|]').hasMatch(value);
+                            if (simbolTerlarang) {
+                              return 'Simbol terlarang #"*:<>?/&]|';
+                            }
+                          }
+                        },
+                        onChanged: (value) {
+                          bool simbolTerlarang =
+                                RegExp(r'[\\/:\*\?\"<>\|]').hasMatch(value);
+                          if (value.trim().isEmpty || simbolTerlarang) {
+                              filenameValid = false;
+                          } else {
+                              filenameValid = true;
+                          }
+                        },
+                      ),
+                    ),
+                    Text(
+                      ".xlsx",
+                      style: TextStyle(color: Colors.grey),
+                    )
+                  ],
+                ),
+                Container(
+                  height: 20,
+                ),
+                Text(AppLocalizations.of(context)!.selectFolder),
+                Container(
+                  height: 10,
+                ),
+                Container(
+                    // padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Color.fromARGB(255, 216, 216, 216)),
+                        borderRadius: BorderRadius.circular(5)),
+                    child: StatefulBuilder(builder: (context, setState) {
+                      return InkWell(
+                        onTap: () async {
+                          log("on tap");
+                          Directory? dir = await pickDirectory(context);
+                          if (dir != null) {
+                            await pengaturan().ubahEksporDir(dir);
+                          }
+                          // mencegah eror `Unhandled Exception: setState() called after dispose()`
+                          if (mounted) {
+                            setState(() {
+                              log("pengaturan ekspor diubah");
+                            });
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            Icon(Icons.folder_rounded),
+                            Container(
+                              width: 5,
+                            ),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                dragStartBehavior: DragStartBehavior.down,
+                                scrollDirection: Axis.horizontal,
+                                child: Text(pengaturan.eksporDir!.path),
+                              ),
+                            )
+                          ],
+                        ),
+                      );
+                    })),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                    style: TextStyle(color: Colors.grey),
+                  )),
+              TextButton(
+                  onPressed: () async {
+                    // cek apakah nama file valid
+                    if (filenameValid) {
+                      // ubah data menjadi excel, ini akan mengembalikan nilai byte
+                      List<int> bytes =
+                          await fungsies().generateExcel(filteredItems);
+
+                      // tulis file
+                      File excelFile = File(
+                          "${pengaturan.eksporDir!.path}/${fileNameController.text.trim()}.xlsx");
+                      log("${pengaturan.eksporDir!.path}/${fileNameController.text.trim()}.xlsx : ${bytes.length}");
+                      await excelFile.writeAsBytes(bytes);
+
+                      // tutup dialog
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text(AppLocalizations.of(context)!.save))
+            ],
+          );
+        });
   }
 
   /// cari barang berdasarkan teks lalu set filteredItems

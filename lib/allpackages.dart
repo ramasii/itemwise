@@ -12,6 +12,8 @@ export 'package:internet_connection_checker_plus/internet_connection_checker_plu
 export 'package:path_provider/path_provider.dart';
 export 'dart:io';
 export 'package:photo_view/photo_view.dart';
+export 'package:easy_folder_picker/FolderPicker.dart';
+export 'package:permission_handler/permission_handler.dart';
 
 export './utils/devicedata_utils.dart';
 export './utils/itemwise_utils.dart';

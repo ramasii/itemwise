@@ -68,5 +68,7 @@
     "oldestAdded":"Ditambahkan terlama",
     "ok":"Ok",
     "thisIsAdmin":"Akun ini milik admin",
-    "moveToInv":"Pindahkan ke inventaris"
+    "moveToInv":"Pindahkan ke inventaris",
+    "saveAsExcel":"Simpan Excel",
+    "selectFolder":"Pilih Folder"
 }
