@@ -1632,7 +1632,7 @@ class _MyHomePageState extends State<MyHomePage>
   /// akan mengembalikan `Directory`
   Future<Directory?> pickDirectory(BuildContext context) async {
     // cek akses memori
-    fungsies().cekAksesMemori();
+    await fungsies().cekAksesMemori();
 
     Directory directory =
         pengaturan.eksporDir ?? Directory(FolderPicker.rootPath);

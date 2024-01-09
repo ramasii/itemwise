@@ -223,9 +223,14 @@ class fungsies {
   /// cek akses memori sekaligus mengubahd data direktori pengaturan.ekspordir jika null
   cekAksesMemori() async {
     log("cek akses penyimpanan");
-    var status = await Permission.manageExternalStorage.status;
-    if (status.isRestricted || status.isDenied) {
-      status = await Permission.manageExternalStorage.request();
+    // var status = await Permission.manageExternalStorage.status;
+    // if (status.isRestricted || status.isDenied) {
+    //   status = await Permission.manageExternalStorage.request();
+    // }
+
+    var storageStatus = await Permission.storage.status;
+    if (storageStatus.isRestricted || storageStatus.isDenied) {
+      storageStatus = await Permission.storage.request();
     }
 
     // ubah direktori pengaturan.ekspordir jika null
@@ -234,10 +239,5 @@ class fungsies {
       var newDir = await getExternalStorageDirectory();
       await pengaturan().ubahEksporDir(newDir!);
     }
-
-    // var storageStatus = await Permission.storage.status;
-    // if (storageStatus.isRestricted || storageStatus.isDenied) {
-    //   storageStatus = await Permission.storage.request();
-    // }
   }
 }
