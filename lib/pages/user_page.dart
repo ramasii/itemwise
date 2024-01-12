@@ -1,13 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:collection';
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
-import 'pages.dart';
 
 class userPage extends StatefulWidget {
   const userPage({super.key});
@@ -17,7 +13,7 @@ class userPage extends StatefulWidget {
 }
 
 class _userPageState extends State<userPage> {
-  TextEditingController usernameController = TextEditingController();
+  // TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -132,7 +128,7 @@ class _userPageState extends State<userPage> {
                       log(tryLogin.body);
                       setState(() {
                         userWise().edit(
-                            username_user: respon['result']['username_user'],
+                            // username_user: respon['result']['username_user'],
                             email_user: respon['result']['email_user'],
                             password_user: respon['result']['password_user'],
                             id_user: respon['result']['id_user'],
@@ -173,7 +169,7 @@ class _userPageState extends State<userPage> {
                       // fungsi ini sekaligus nambahin data user ke device
                       await userApiWise().create(
                           id_user: id_user,
-                          username_user: namaEmail,
+                          // username_user: namaEmail,
                           email_user: email_user,
                           password_user: password_user);
 

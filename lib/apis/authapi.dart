@@ -51,7 +51,7 @@ class authapi {
           log("coba auth");
         }
       } catch (e) {
-        print(e);
+        log(e.toString());
       }
     }
   }

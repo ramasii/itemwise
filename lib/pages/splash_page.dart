@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:itemwise/pages/user_page.dart';

@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:itemwise/allpackages.dart';
@@ -528,6 +530,8 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  /// pertama akan dihapus data berdasarkan id_user di database
+  /// kedua akan ditambahkan data dari device ke database
   Future backupAsset() async {
     log("ekspor aset");
 
@@ -540,15 +544,18 @@ class _MyHomePageState extends State<MyHomePage>
         });
 
     var terkonek = await fungsies().isConnected();
-    List inv = inventoryWise().readByUser();
     List itm = ItemWise().readByUser();
 
     if (inventoryWise().readByUser().isNotEmpty ||
         ItemWise().readByUser().isNotEmpty) {
       if (terkonek && userWise.isLoggedIn) {
-        // auth dulu ajah
+        // auth dulu
         await authapi().auth(userWise.userData['email_user'],
             userWise.userData['password_user']);
+
+        // hapus barang berdasarkan user di DB
+        await itemApiWise().deleteByUser(userWise.userData['id_user']);
+
         // bakcup inventory
         await inventoryApiWise().create();
 
@@ -1685,16 +1692,16 @@ class _MyHomePageState extends State<MyHomePage>
                         },
                         onChanged: (value) {
                           bool simbolTerlarang =
-                                RegExp(r'[\\/:\*\?\"<>\|]').hasMatch(value);
+                              RegExp(r'[\\/:\*\?\"<>\|]').hasMatch(value);
                           if (value.trim().isEmpty || simbolTerlarang) {
-                              filenameValid = false;
+                            filenameValid = false;
                           } else {
-                              filenameValid = true;
+                            filenameValid = true;
                           }
                         },
                       ),
                     ),
-                    Text(
+                    const Text(
                       ".xlsx",
                       style: TextStyle(color: Colors.grey),
                     )
@@ -1711,7 +1718,7 @@ class _MyHomePageState extends State<MyHomePage>
                     // padding: EdgeInsets.all(2),
                     decoration: BoxDecoration(
                         border: Border.all(
-                            color: Color.fromARGB(255, 216, 216, 216)),
+                            color: const Color.fromARGB(255, 216, 216, 216)),
                         borderRadius: BorderRadius.circular(5)),
                     child: StatefulBuilder(builder: (context, setState) {
                       return InkWell(
@@ -1752,7 +1759,7 @@ class _MyHomePageState extends State<MyHomePage>
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     AppLocalizations.of(context)!.cancel,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   )),
               TextButton(
                   onPressed: () async {

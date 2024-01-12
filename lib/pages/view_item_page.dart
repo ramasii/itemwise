@@ -410,7 +410,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
   Widget cardFotoBarang(BuildContext context) {
     return Center(
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 100),
         height: 700,
         constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width - 10,
@@ -732,7 +732,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.redAccent,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
   }
 
@@ -741,7 +741,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.green,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
   }
 }

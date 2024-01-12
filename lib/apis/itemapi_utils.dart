@@ -283,4 +283,28 @@ class itemApiWise {
       print(e);
     }
   }
+
+  deleteByUser(String id_user) async {
+    log("deleteByUser itemapi");
+    try {
+      var response = await http.delete(
+          Uri.parse("${url}/deleteByUser?id_user=$id_user"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          await deleteByUser(id_user);
+          break;
+        default:
+          log("itemapi: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 }

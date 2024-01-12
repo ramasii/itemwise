@@ -53,7 +53,7 @@ class fungsies {
   }
 
   Future<bool> isConnected() async {
-    var a = await InternetConnectionCheckerPlus.createInstance(
+    var a = InternetConnectionCheckerPlus.createInstance(
         addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
     var internet = await a.connectionStatus;
     if (internet == InternetConnectionStatus.connected) {
@@ -228,16 +228,20 @@ class fungsies {
     //   status = await Permission.manageExternalStorage.request();
     // }
 
-    var storageStatus = await Permission.storage.status;
-    if (storageStatus.isRestricted || storageStatus.isDenied) {
-      storageStatus = await Permission.storage.request();
-    }
+    try {
+      var storageStatus = await Permission.storage.status;
+      if (storageStatus.isRestricted || storageStatus.isDenied) {
+        storageStatus = await Permission.storage.request();
+      }
 
-    // ubah direktori pengaturan.ekspordir jika null
-    if (pengaturan.eksporDir == null) {
-      log("ubah direktori pengaturan.ekspordir jika null");
-      var newDir = await getExternalStorageDirectory();
-      await pengaturan().ubahEksporDir(newDir!);
+      // ubah direktori pengaturan.ekspordir jika null
+      if (pengaturan.eksporDir == null) {
+        log("ubah direktori pengaturan.ekspordir jika null");
+        var newDir = await getExternalStorageDirectory();
+        await pengaturan().ubahEksporDir(newDir!);
+      }
+    } catch (e) {
+      log("CEK AKSES MEMORI: $e");
     }
   }
 }

@@ -6,7 +6,7 @@ class userApiWise {
 
   create(
       {String? id_user,
-      String? username_user,
+      // String? username_user,
       String? email_user,
       String? photo_user,
       String? password_user,
@@ -15,7 +15,7 @@ class userApiWise {
     log("create user to API");
     try {
       final response = await http.post(Uri.parse(
-          "$url/add?id_user=$id_user&username_user=$username_user&email_user=$email_user&photo_user=$photo_user&password_user=$password_user&role=$role"));
+          "$url/add?id_user=$id_user&email_user=$email_user&photo_user=$photo_user&password_user=$password_user&role=$role"));
       log(response.body);
       log(email_user!);
 
@@ -24,7 +24,7 @@ class userApiWise {
         // isAdmin == false berarti user login, jika true berarti admin nambah user
         if (isAdmin == false) {
           userWise().edit(
-              username_user: username_user,
+              // username_user: username_user,
               email_user: email_user,
               password_user: password_user,
               id_user: id_user);
@@ -93,7 +93,7 @@ class userApiWise {
 
   update(
       {String id_user = "",
-      String username_user = "",
+      // String username_user = "",
       String email_user = "",
       String password_user = "",
       String photo_user = "",
@@ -103,7 +103,7 @@ class userApiWise {
     try {
       var response = await http.put(
           Uri.parse(
-              "$url/update?id_user=$id_user&username_user=$username_user&email_user=$email_user&password_user=$password_user&photo_user=$photo_user&role=$role"),
+              "$url/update?id_user=$id_user&email_user=$email_user&password_user=$password_user&photo_user=$photo_user&role=$role"),
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
@@ -113,7 +113,7 @@ class userApiWise {
             log("mengubah dataUser yang digunakan karena melakukan perubahan di database");
             authapi().auth(email_user, password_user);
             userWise().edit(
-                username_user: username_user,
+                // username_user: username_user,
                 email_user: email_user,
                 password_user: password_user);
           }
@@ -124,7 +124,7 @@ class userApiWise {
               userWise.userData['password_user']);
           await update(
               id_user: id_user,
-              username_user: username_user,
+              // username_user: username_user,
               email_user: email_user,
               password_user: password_user,
               photo_user: photo_user,

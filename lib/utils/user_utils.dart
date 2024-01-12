@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class userWise {
   static Map userData = {
     "id_user": "",
-    "username_user": "",
+    // "username_user": "",
     "email_user": "",
     "role": "user",
     "photo_user": null,
@@ -12,7 +12,7 @@ class userWise {
   };
   Map resetUserData = {
     "id_user": "",
-    "username_user": "",
+    // "username_user": "",
     "email_user": "",
     "role": "user",
     "photo_user": null,
@@ -24,7 +24,7 @@ class userWise {
   void edit(
       // edit atau create sama saja lo
       {String? id_user,
-      String? username_user,
+      // String? username_user,
       String? email_user,
       String? photo_user,
       String? password_user,
@@ -33,7 +33,7 @@ class userWise {
 
     // ubah data jika tidak null
     userData["id_user"] = id_user ?? userData["id_user"];
-    userData["username_user"] = username_user ?? userData["username_user"];
+    // userData["username_user"] = username_user ?? userData["username_user"];
     userData["email_user"] = email_user ?? userData["email_user"];
     userData["photo_user"] = photo_user ?? userData["photo_user"];
     userData["password_user"] = password_user ?? userData["password_user"];

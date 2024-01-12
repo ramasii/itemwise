@@ -19,7 +19,7 @@ class _AdminPanelState extends State<AdminPanel> {
   // user
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
-  TextEditingController usernameUser = TextEditingController();
+  // TextEditingController usernameUser = TextEditingController();
   TextEditingController passwordUser = TextEditingController();
   String photo_user = "null";
   // inv
@@ -62,13 +62,13 @@ class _AdminPanelState extends State<AdminPanel> {
               ],
             ),
             Container(
-              margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(10)),
               child: loading
                   ? Container(
                       height: 100,
-                      child: Center(child: CircularProgressIndicator()))
+                      child: const Center(child: CircularProgressIndicator()))
                   : _tableControlls(context),
             )
           ],
@@ -116,14 +116,14 @@ class _AdminPanelState extends State<AdminPanel> {
                 print("_controllItems: $e");
               }
               return Padding(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                 child: Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(left: 10, right: 10),
                       child: _customListTile(item, user, context),
                     ),
-                    Divider(
+                    const Divider(
                       indent: 50,
                       endIndent: 50,
                     )
@@ -133,7 +133,7 @@ class _AdminPanelState extends State<AdminPanel> {
             })
           : [
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Container(
                   height: 100,
                   child: Center(
@@ -147,7 +147,7 @@ class _AdminPanelState extends State<AdminPanel> {
 
   Widget _customListTile(Map item, Map? user, BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         // color: Color.fromARGB(255, 244, 250, 255)
@@ -266,7 +266,7 @@ class _AdminPanelState extends State<AdminPanel> {
                         // render foto barang
                         ? Container(
                             constraints:
-                                BoxConstraints(maxHeight: 500, maxWidth: 350),
+                                const BoxConstraints(maxHeight: 500, maxWidth: 350),
                             // child: ClipOval(
                             child: InkWell(
                               onLongPress: () async {
@@ -302,7 +302,7 @@ class _AdminPanelState extends State<AdminPanel> {
                                 child: Container(
                                   decoration:
                                       BoxDecoration(color: Colors.grey[300]),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.add_a_photo_rounded,
                                     color: Colors.grey,
                                   ),
@@ -398,7 +398,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 return DropdownMenuItem(
                   value: user['id_user'],
                   child: Padding(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     child: Container(
                       constraints: BoxConstraints(
                           maxWidth: MediaQuery.of(context).size.width - 155),
@@ -431,7 +431,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 return DropdownMenuItem(
                   value: inv['id_inventory'],
                   child: Padding(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     child: Container(
                       constraints: BoxConstraints(
                           maxWidth: MediaQuery.of(context).size.width - 155),
@@ -469,7 +469,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 );
               }
               return Padding(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Column(
                   children: [
                     ListTile(
@@ -495,7 +495,7 @@ class _AdminPanelState extends State<AdminPanel> {
                         _viewInv(context, inv);
                       },
                     ),
-                    Divider(
+                    const Divider(
                       indent: 50,
                       endIndent: 50,
                     )
@@ -505,7 +505,7 @@ class _AdminPanelState extends State<AdminPanel> {
             })
           : [
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Container(
                   height: 100,
                   child: Center(
@@ -561,7 +561,7 @@ class _AdminPanelState extends State<AdminPanel> {
             return DropdownMenuItem(
               value: user['id_user'],
               child: Padding(
-                padding: EdgeInsets.all(0),
+                padding: const EdgeInsets.all(0),
                 child: Container(
                   constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width - 155),
@@ -591,7 +591,7 @@ class _AdminPanelState extends State<AdminPanel> {
           ? List.generate(adminAccess.userList.length, (index) {
               Map user = adminAccess.userList[index];
               return Padding(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Column(
                   children: [
                     ListTile(
@@ -609,13 +609,13 @@ class _AdminPanelState extends State<AdminPanel> {
                           roleState = user['role'];
                           idUser.text = user['id_user'];
                           emailUser.text = user['email_user'];
-                          usernameUser.text = user['username_user'];
+                          // usernameUser.text = user['username_user'] ?? "";
                           passwordUser.text = user['password_user'];
                         });
                         _viewUser(context, user);
                       },
                     ),
-                    Divider(
+                    const Divider(
                       indent: 50,
                       endIndent: 50,
                     )
@@ -625,7 +625,7 @@ class _AdminPanelState extends State<AdminPanel> {
             })
           : [
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Container(
                   height: 100,
                   child: Center(
@@ -638,7 +638,7 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<dynamic> _viewUser(BuildContext context, Map<dynamic, dynamic> user) {
-    if (user['photo_user'] != "null") {
+    if (user['photo_user'] != null) {
       setState(() {
         photo_user = user['photo_user'];
       });
@@ -662,10 +662,10 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo("username_user", ctrler: usernameUser),
-                  Container(
-                    height: 20,
-                  ),
+                  // _fieldInfo("username_user", ctrler: usernameUser),
+                  // Container(
+                  //   height: 20,
+                  // ),
                   _fieldInfo("password_user", ctrler: passwordUser),
                   Container(
                     height: 20,
@@ -744,18 +744,18 @@ class _AdminPanelState extends State<AdminPanel> {
           padding: const EdgeInsets.all(8.0),
           child: Text(
             AppLocalizations.of(context)!.delete,
-            style: TextStyle(color: Colors.red),
+            style: const TextStyle(color: Colors.red),
           ),
         ));
   }
 
   Widget _addButton(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(5),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10), color: Colors.blue),
       child: IconButton(
-        icon: Icon(
+        icon: const Icon(
           Icons.add,
           color: Colors.white,
         ),
@@ -787,7 +787,7 @@ class _AdminPanelState extends State<AdminPanel> {
     setState(() {
       idUser.text = id_user;
       emailUser.clear();
-      usernameUser.clear();
+      // usernameUser.clear();
       passwordUser.clear();
       photo_user = "null";
     });
@@ -810,10 +810,10 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _fieldInfo("username_user", ctrler: usernameUser),
-                  Container(
-                    height: 20,
-                  ),
+                  // _fieldInfo("username_user", ctrler: usernameUser),
+                  // Container(
+                  //   height: 20,
+                  // ),
                   _fieldInfo("password_user", ctrler: passwordUser),
                   Container(
                     height: 20,
@@ -822,7 +822,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 ],
               ),
             ),
-            actionsPadding: EdgeInsets.all(20),
+            actionsPadding: const EdgeInsets.all(20),
             actions: [postButton(context)],
           );
         });
@@ -859,7 +859,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 ],
               ),
             ),
-            actionsPadding: EdgeInsets.all(20),
+            actionsPadding: const EdgeInsets.all(20),
             actions: [postButton(context)],
           );
         });
@@ -918,7 +918,7 @@ class _AdminPanelState extends State<AdminPanel> {
                                 child: Container(
                                   decoration:
                                       BoxDecoration(color: Colors.grey[300]),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.add_a_photo_rounded,
                                     color: Colors.grey,
                                   ),
@@ -1014,7 +1014,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 log("add userapi: $roleState");
                 await userApiWise().create(
                     id_user: idUser.text.trim(),
-                    username_user: usernameUser.text.trim(),
+                    // username_user: usernameUser.text.trim(),
                     email_user: emailUser.text.trim(),
                     photo_user: photo_user,
                     password_user: passwordUser.text.trim(),
@@ -1075,10 +1075,10 @@ class _AdminPanelState extends State<AdminPanel> {
             log("update role->$roleState");
             await userApiWise().update(
               id_user: user['id_user'],
-              username_user: usernameUser.text,
+              // username_user: usernameUser.text,
               email_user: emailUser.text,
               password_user: passwordUser.text,
-              photo_user: user['photo_user'],
+              // photo_user: user['photo_user'],
               role: roleState,
               isAdmin: true,
             );
@@ -1180,8 +1180,8 @@ class _AdminPanelState extends State<AdminPanel> {
           labelText: "${field}${enable ? '' : '🔒'}",
           labelStyle: TextStyle(color: enable ? Colors.blue : Colors.red),
           enabledBorder:
-              UnderlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
-          disabledBorder: OutlineInputBorder(
+              const UnderlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+          disabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: Colors.red, width: 2))),
     );
   }
@@ -1190,14 +1190,14 @@ class _AdminPanelState extends State<AdminPanel> {
 
   Widget _stateButton(IconData icon, String state) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20), topRight: Radius.circular(20)),
           color: tableState == state ? Colors.white : Colors.transparent),
       child: AnimatedScale(
         scale: tableState == state ? 1.3 : 1,
-        duration: Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
         child: IconButton(
             onPressed: () {
@@ -1226,7 +1226,8 @@ class _AdminPanelState extends State<AdminPanel> {
 
   // selaraskan data dari database
   Future selaraskanData() async {
-    if (await isConnected()) {
+    bool terkonek = await fungsies().isConnected();
+    if (terkonek) {
       // ambil semua data dari database
       await userApiWise().readAll();
       await inventoryApiWise().readAll();
@@ -1243,20 +1244,6 @@ class _AdminPanelState extends State<AdminPanel> {
       setState(() {
         loading = false;
       });
-    }
-  }
-
-  // cek koneksi internet
-  Future<bool> isConnected() async {
-    var a = await InternetConnectionCheckerPlus.createInstance(
-        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
-    var internet = await a.connectionStatus;
-    if (internet == InternetConnectionStatus.connected) {
-      print('Tidak terhubung ke internet');
-      return false;
-    } else {
-      print('Terhubung ke internet');
-      return true;
     }
   }
 }
