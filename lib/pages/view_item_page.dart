@@ -49,14 +49,11 @@ class _ViewItemPageState extends State<ViewItemPage> {
 
       CurrencyFormatterSettings idrSetting =
           CurrencyFormatterSettings(symbol: "", thousandSeparator: ".");
-          
+
       purchasePriceController.text =
           CurrencyFormatter.format(widget.itemMap!['harga_beli'], idrSetting);
       sellingPriceController.text =
           CurrencyFormatter.format(widget.itemMap!['harga_jual'], idrSetting);
-
-      // purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
-      // sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
 
       img = widget.itemMap!["photo_barang"];
       // kalo bukan null, dicek dulu apakah masih ada di inventoryWise
@@ -611,8 +608,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String nama_barang = itemNameController.text;
             String catatan = itemDescriptionController.text;
             String stok = itemStockController.text.trim();
-            String hbli = purchasePriceController.text.trim();
-            String hjal = sellingPriceController.text.trim();
+            String hbli = purchasePriceController.text.trim().replaceAll(".", "");
+            String hjal = sellingPriceController.text.trim().replaceAll(".", "");
             String kdBrg = kodeBarangController.text.trim();
 
             int stok_barang = int.parse(stok == "" ? "0" : stok);
@@ -653,8 +650,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String nama_barang = itemNameController.text.trim();
             String catatan = itemDescriptionController.text.trim();
             String stok = itemStockController.text.trim();
-            String hbli = purchasePriceController.text.trim();
-            String hjal = sellingPriceController.text.trim();
+            String hbli = purchasePriceController.text.trim().replaceAll(".", "");
+            String hjal = sellingPriceController.text.trim().replaceAll(".", "");
             String kdBrg = kodeBarangController.text.trim();
 
             int stok_barang = int.parse(stok == "" ? "0" : stok);
