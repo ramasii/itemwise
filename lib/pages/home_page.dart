@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
-import 'pages.dart';
+import 'package:flutter/services.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, this.title = "Item Wise", this.id_inv});
@@ -27,12 +27,13 @@ class _MyHomePageState extends State<MyHomePage>
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
   TextEditingController NamaInvController = TextEditingController();
   TextEditingController hargaJualController = TextEditingController();
-  TextEditingController mataUangController = TextEditingController();
   TextEditingController stokController = TextEditingController();
   TextEditingController searchController = TextEditingController();
   TextEditingController fileNameController = TextEditingController();
   ScrollController invScrollController =
       ScrollController(keepScrollOffset: false);
+  CurrencyFormatterSettings mataUangSetting =
+      CurrencyFormatterSettings(symbol: "Rp", thousandSeparator: ".");
   bool invEditMode = false;
   bool searchMode = false;
   bool filenameValid = true;
@@ -50,7 +51,6 @@ class _MyHomePageState extends State<MyHomePage>
     authapi().auth(
         userWise.userData['email_user'], userWise.userData['password_user']);
     bottomSheetAC = BottomSheet.createAnimationController(this);
-    mataUangController.text = pengaturan.mataUang;
     filteredItems = ItemWise().readByInventory(invState, id_user);
   }
 
@@ -785,22 +785,23 @@ class _MyHomePageState extends State<MyHomePage>
       (element) => element['id_barang'] == id_barang,
     );
 
-    // ini pencegahan value kena reset ketika render ulang (biasanya terjadi ketika menutup/memunculkan keyboard)
-    // jika id_barang beda berarti ini build id_barang baru
-    if (id_barang != idBrgOld) {
-      hargaJualController.text = barang['harga_jual'].toString();
-      stokController.text = barang['stok_barang'].toString();
-    }
-    // ini kalo sama
-    else {
-      if (hjalNew == "") {
-        hargaJualController.text = barang['harga_jual'].toString();
-      }
-      if (stokNew == "") {
-        stokController.text = barang['stok_barang'].toString();
-      }
-    }
-    idBrgOld = id_barang;
+    // // ini pencegahan value kena reset ketika render ulang (biasanya terjadi ketika menutup/memunculkan keyboard)
+    // // jika id_barang beda berarti ini build id_barang baru
+    // if (id_barang != idBrgOld) {
+    //   hargaJualController.text = barang['harga_jual'].toString();
+    //   stokController.text = barang['stok_barang'].toString();
+    // }
+    // // ini kalo sama
+    // else {
+    //   if (hjalNew == "") {
+    //     hargaJualController.text = barang['harga_jual'].toString();
+    //   }
+    //   if (stokNew == "") {
+    //     stokController.text = barang['stok_barang'].toString();
+    //   }
+    // }
+    // idBrgOld = id_barang;
+
     return Row(
       children: [
         Expanded(
@@ -856,10 +857,11 @@ class _MyHomePageState extends State<MyHomePage>
                     TextFormField(
                       controller: hargaJualController,
                       textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly,CurrencyTextInputFormatter(locale: "id",symbol: "",decimalDigits: 0)],
                       decoration:
                           InputDecoration(icon: Text(pengaturan.mataUang)),
                       onChanged: (value) {
-                        clearNotNumber(value, hargaJualController);
                         if (value == "") {
                           setState(() {
                             hargaJualController.text = "0";
@@ -907,8 +909,11 @@ class _MyHomePageState extends State<MyHomePage>
                                 child: TextFormField(
                                   controller: stokController,
                                   textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
                                   onChanged: (value) {
-                                    clearNotNumber(value, stokController);
                                     if (value == "") {
                                       setState(() {
                                         stokController.text = "0";
@@ -946,7 +951,7 @@ class _MyHomePageState extends State<MyHomePage>
                                   stok_barang:
                                       int.parse(stokController.text.trim()),
                                   harga_jual: int.parse(
-                                      hargaJualController.text.trim()),
+                                      hargaJualController.text.trim().replaceAll(".", "")),
                                   id_inventory: barang['id_inventory']);
                               setState(() {
                                 // refresh filteredItems karena yang ditampilkan adalah filteredItems
@@ -1444,6 +1449,12 @@ class _MyHomePageState extends State<MyHomePage>
                       onTap: () {
                         // buka bottomsheet
                         if (selectedItems.isEmpty) {
+                          // ubah nilai harga jual controller dan stok
+                          hargaJualController.text = CurrencyFormatter.format(barang['harga_jual'], CurrencyFormatterSettings(symbol: "",thousandSeparator: "."));
+                          stokController.text =
+                              barang['stok_barang'].toString();
+
+                          // tampilkan bottom sheet
                           _tampilkanBottomSheet(context,
                               stokDanHargaSheet(context, barang['id_barang']));
                         }
@@ -1603,7 +1614,9 @@ class _MyHomePageState extends State<MyHomePage>
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        "${pengaturan.mataUang} ${barang['harga_jual']}",
+                        CurrencyFormatter.format(
+                            barang['harga_jual'], mataUangSetting),
+                        // "${pengaturan.mataUang} ${barang['harga_jual']}",
                         style: const TextStyle(color: Colors.deepOrange),
                       ),
                     ),

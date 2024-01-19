@@ -3,6 +3,7 @@ import 'package:syncfusion_flutter_xlsio/xlsio.dart'; // HATI HATI!: ini bertabr
 import 'package:image_size_getter/image_size_getter.dart';
 import 'allpackages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 enum PickImageFrom { gallery, camera }
 

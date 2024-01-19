@@ -3,6 +3,7 @@ import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
+import 'package:flutter/services.dart';
 
 class ViewItemPage extends StatefulWidget {
   /// jika itemMap != null maka invState akan dibiarkan, nilai invState akan mengikuti itemMap['id_inventory']
@@ -45,8 +46,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
       kodeBarangController.text = widget.itemMap!['kode_barang'];
       itemDescriptionController.text = widget.itemMap!['catatan'];
       itemStockController.text = widget.itemMap!['stok_barang'].toString();
-      purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
-      sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
+
+      CurrencyFormatterSettings idrSetting =
+          CurrencyFormatterSettings(symbol: "", thousandSeparator: ".");
+          
+      purchasePriceController.text =
+          CurrencyFormatter.format(widget.itemMap!['harga_beli'], idrSetting);
+      sellingPriceController.text =
+          CurrencyFormatter.format(widget.itemMap!['harga_jual'], idrSetting);
+
+      // purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
+      // sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
+
       img = widget.itemMap!["photo_barang"];
       // kalo bukan null, dicek dulu apakah masih ada di inventoryWise
       // takutnya kalo inventorynya dihapus, trs viewItem yang punya id_inventory yang dihapus malah eror
@@ -172,22 +183,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     flex: 5,
                     child: TextFormField(
                       controller: purchasePriceController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Item name is required';
-                        }
-                        return null;
-                      },
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyTextInputFormatter(
+                            locale: "id", symbol: "", decimalDigits: 0)
+                      ],
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.purPrice,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
-                      onChanged: (value) {
-                        clearNotNumber(value, purchasePriceController);
-                      },
                     ),
                   ),
                   const Spacer(),
@@ -196,22 +203,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     flex: 5,
                     child: TextFormField(
                       controller: sellingPriceController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Item name is required';
-                        }
-                        return null;
-                      },
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyTextInputFormatter(
+                            locale: "id", symbol: "", decimalDigits: 0)
+                      ],
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.selPrice,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
-                      onChanged: (value) {
-                        clearNotNumber(value, sellingPriceController);
-                      },
                     ),
                   ),
                 ],

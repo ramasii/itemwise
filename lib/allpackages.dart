@@ -14,6 +14,8 @@ export 'dart:io';
 export 'package:photo_view/photo_view.dart';
 export 'package:easy_folder_picker/FolderPicker.dart';
 export 'package:permission_handler/permission_handler.dart';
+export 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
+export 'package:currency_formatter/currency_formatter.dart';
 
 export './utils/devicedata_utils.dart';
 export './utils/itemwise_utils.dart';
