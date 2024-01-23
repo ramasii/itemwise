@@ -93,10 +93,14 @@ class _MyHomePageState extends State<MyHomePage>
                 icon: const Icon(Icons.menu),
                 onPressed: () => _scaffoldKey.currentState!.openDrawer(),
               )
-            : Container(),
+            : Center(
+              child: Text(
+                  "${selectedItems.length}",
+                  style: const TextStyle(color: Colors.white,fontSize: 24)
+                ),
+            ),
         title: selectedItems.isEmpty
-            // jika tidak ada barang terpilih, maka tampilkan default atau pencarian
-            ? Stack(
+              ? Stack(
                 alignment: Alignment.center,
                 children: [
                   defaultAppBar(context),
@@ -119,16 +123,24 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                 ],
               )
-            // jika ada barang terpilih maka tampilkan jumlah barang dipilih
-            : Text(
-                "${selectedItems.length}",
-                style: const TextStyle(color: Colors.white),
-              ),
+              : Container(),
         centerTitle: selectedItems.isEmpty,
         titleSpacing: 0,
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : null,
         actions: selectedItems.isEmpty
-            ? actionsIfSelectedItemsEmpty(context)
+            ? searchMode
+                ? [
+                    IconButton(
+                        onPressed: () {
+                          setState(() {
+                            searchMode = false;
+                            filteredItems =
+                                ItemWise().readByInventory(invState, id_user);
+                          });
+                        },
+                        icon: Icon(Icons.close))
+                  ]
+                : actionsIfSelectedItemsEmpty(context)
             : actionsIfSelectedItemsNotEmpty(context),
       ),
       body: filteredItems.isNotEmpty
@@ -165,8 +177,14 @@ class _MyHomePageState extends State<MyHomePage>
               }
               setState(() {
                 selectedItems.clear();
-                // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                filteredItems = ItemWise().readByInventory(invState, id_user);
+                // jika dalam mode pencarian
+                if (searchMode) {
+                  cariBarang(searchController.text.trim());
+                }
+                // jika tidak dlm mode pencarian
+                else {
+                  filteredItems = ItemWise().readByInventory(invState, id_user);
+                }
               });
             }
           },
@@ -179,16 +197,22 @@ class _MyHomePageState extends State<MyHomePage>
           onPressed: () async {
             log("tombol pindah inventaris");
             String? id_inventory = await _dialogPindahInventaris(context);
-            if (id_inventory != null) {
+            // if (id_inventory != null) {
               for (var e in selectedItems) {
                 await ItemWise().update(e, id_inventory: id_inventory);
               }
-
               setState(() {
                 selectedItems.clear();
-                filteredItems = ItemWise().readByInventory(invState, id_user);
+                // jika dalam mode pencarian
+                if (searchMode) {
+                  cariBarang(searchController.text.trim());
+                }
+                // jika tidak dlm mode pencarian
+                else {
+                  filteredItems = ItemWise().readByInventory(invState, id_user);
+                }
               });
-            }
+            // }
           },
           splashRadius: 20,
           icon: const Icon(Icons.inventory_2, color: Colors.white)),
@@ -858,7 +882,11 @@ class _MyHomePageState extends State<MyHomePage>
                       controller: hargaJualController,
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly,CurrencyTextInputFormatter(locale: "id",symbol: "",decimalDigits: 0)],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyTextInputFormatter(
+                            locale: "id", symbol: "", decimalDigits: 0)
+                      ],
                       decoration:
                           InputDecoration(icon: Text(pengaturan.mataUang)),
                       onChanged: (value) {
@@ -950,13 +978,23 @@ class _MyHomePageState extends State<MyHomePage>
                               await ItemWise().update(id_barang,
                                   stok_barang:
                                       int.parse(stokController.text.trim()),
-                                  harga_jual: int.parse(
-                                      hargaJualController.text.trim().replaceAll(".", "")),
+                                  harga_jual: int.parse(hargaJualController.text
+                                      .trim()
+                                      .replaceAll(".", "")),
                                   id_inventory: barang['id_inventory']);
                               setState(() {
+                                // jika dalam mode pencarian
+                                if (searchMode) {
+                                  cariBarang(searchController.text.trim());
+                                }
+                                // jika tidak dlm mode pencarian
+                                else {
+                                  filteredItems = ItemWise()
+                                      .readByInventory(invState, id_user);
+                                }
                                 // refresh filteredItems karena yang ditampilkan adalah filteredItems
-                                filteredItems = ItemWise()
-                                    .readByInventory(invState, id_user);
+                                // filteredItems = ItemWise()
+                                //     .readByInventory(invState, id_user);
                               });
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context)
@@ -1450,7 +1488,10 @@ class _MyHomePageState extends State<MyHomePage>
                         // buka bottomsheet
                         if (selectedItems.isEmpty) {
                           // ubah nilai harga jual controller dan stok
-                          hargaJualController.text = CurrencyFormatter.format(barang['harga_jual'], CurrencyFormatterSettings(symbol: "",thousandSeparator: "."));
+                          hargaJualController.text = CurrencyFormatter.format(
+                              barang['harga_jual'],
+                              CurrencyFormatterSettings(
+                                  symbol: "", thousandSeparator: "."));
                           stokController.text =
                               barang['stok_barang'].toString();
 

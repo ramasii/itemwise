@@ -263,10 +263,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
                       // clear pilihan inventaris
                       IconButton(
                           onPressed: () {
-                            log("bersihkan pilihan");
                             setState(() {
                               invDropdownValue = null;
                             });
+                            log("bersihkan pilihan-> $invDropdownValue");
                           },
                           tooltip: AppLocalizations.of(context)!.clearSelection,
                           icon: const Icon(
@@ -608,8 +608,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String nama_barang = itemNameController.text;
             String catatan = itemDescriptionController.text;
             String stok = itemStockController.text.trim();
-            String hbli = purchasePriceController.text.trim().replaceAll(".", "");
-            String hjal = sellingPriceController.text.trim().replaceAll(".", "");
+            String hbli =
+                purchasePriceController.text.trim().replaceAll(".", "");
+            String hjal =
+                sellingPriceController.text.trim().replaceAll(".", "");
             String kdBrg = kodeBarangController.text.trim();
 
             int stok_barang = int.parse(stok == "" ? "0" : stok);
@@ -650,14 +652,17 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String nama_barang = itemNameController.text.trim();
             String catatan = itemDescriptionController.text.trim();
             String stok = itemStockController.text.trim();
-            String hbli = purchasePriceController.text.trim().replaceAll(".", "");
-            String hjal = sellingPriceController.text.trim().replaceAll(".", "");
+            String hbli =
+                purchasePriceController.text.trim().replaceAll(".", "");
+            String hjal =
+                sellingPriceController.text.trim().replaceAll(".", "");
             String kdBrg = kodeBarangController.text.trim();
 
             int stok_barang = int.parse(stok == "" ? "0" : stok);
             int harga_beli = int.parse(hbli == "" ? "0" : hbli);
             int harga_jual = int.parse(hjal == "" ? "0" : hjal);
-            // String? id_inventory = invDropdownValue;
+            String? id_inventory = invDropdownValue;
+            log("id_inventory->$id_inventory");
 
             List lama = [
               widget.itemMap!['nama_barang'],
@@ -676,7 +681,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               harga_beli,
               harga_jual,
               img,
-              invDropdownValue,
+              id_inventory,
               kdBrg
             ];
 
@@ -698,7 +703,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   harga_beli: harga_beli,
                   harga_jual: harga_jual,
                   photo_barang: img,
-                  id_inventory: invDropdownValue ?? "tanpa*inventaris",
+                  id_inventory: id_inventory ?? "tanpa*inventaris",
                   edited: DateTime.now().toString());
             }
           }
