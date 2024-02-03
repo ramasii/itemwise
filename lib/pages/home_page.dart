@@ -94,13 +94,11 @@ class _MyHomePageState extends State<MyHomePage>
                 onPressed: () => _scaffoldKey.currentState!.openDrawer(),
               )
             : Center(
-              child: Text(
-                  "${selectedItems.length}",
-                  style: const TextStyle(color: Colors.white,fontSize: 24)
-                ),
-            ),
+                child: Text("${selectedItems.length}",
+                    style: const TextStyle(color: Colors.white, fontSize: 24)),
+              ),
         title: selectedItems.isEmpty
-              ? Stack(
+            ? Stack(
                 alignment: Alignment.center,
                 children: [
                   defaultAppBar(context),
@@ -123,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                 ],
               )
-              : Container(),
+            : Container(),
         centerTitle: selectedItems.isEmpty,
         titleSpacing: 0,
         backgroundColor: selectedItems.isNotEmpty ? Colors.blue : null,
@@ -198,20 +196,20 @@ class _MyHomePageState extends State<MyHomePage>
             log("tombol pindah inventaris");
             String? id_inventory = await _dialogPindahInventaris(context);
             // if (id_inventory != null) {
-              for (var e in selectedItems) {
-                await ItemWise().update(e, id_inventory: id_inventory);
+            for (var e in selectedItems) {
+              await ItemWise().update(e, id_inventory: id_inventory);
+            }
+            setState(() {
+              selectedItems.clear();
+              // jika dalam mode pencarian
+              if (searchMode) {
+                cariBarang(searchController.text.trim());
               }
-              setState(() {
-                selectedItems.clear();
-                // jika dalam mode pencarian
-                if (searchMode) {
-                  cariBarang(searchController.text.trim());
-                }
-                // jika tidak dlm mode pencarian
-                else {
-                  filteredItems = ItemWise().readByInventory(invState, id_user);
-                }
-              });
+              // jika tidak dlm mode pencarian
+              else {
+                filteredItems = ItemWise().readByInventory(invState, id_user);
+              }
+            });
             // }
           },
           splashRadius: 20,
@@ -577,8 +575,9 @@ class _MyHomePageState extends State<MyHomePage>
         await authapi().auth(userWise.userData['email_user'],
             userWise.userData['password_user']);
 
-        // hapus barang berdasarkan user di DB
+        // hapus barang & inventory berdasarkan user di DB
         await itemApiWise().deleteByUser(userWise.userData['id_user']);
+        await inventoryApiWise().deleteByuser(userWise.userData['id_user']);
 
         // bakcup inventory
         await inventoryApiWise().create();

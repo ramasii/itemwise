@@ -19,7 +19,6 @@ class _AdminPanelState extends State<AdminPanel> {
   // user
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
-  // TextEditingController usernameUser = TextEditingController();
   TextEditingController passwordUser = TextEditingController();
   String photo_user = "null";
   // inv
@@ -34,10 +33,21 @@ class _AdminPanelState extends State<AdminPanel> {
   TextEditingController hBliItem = TextEditingController();
   TextEditingController hJalItem = TextEditingController();
   String photoItem = "";
+  // filtered List
+  /// gunakan hanya di bagian [_controllUser] atau [selaraskanData]
+  List filteredUserList = adminAccess.userList;
+
+  /// gunakan hanya di bagian [_controllInv] atau [selaraskanData]
+  List filteredInvList = adminAccess.invList;
+
+  /// gunakan hanya di bagian [_controllItems] atau [selaraskanData]
+  List filteredItemList = adminAccess.itemList;
 
   String roleState = "";
   List role = ["user", "admin"];
   bool loading = true;
+  bool searchMode = false;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -49,7 +59,12 @@ class _AdminPanelState extends State<AdminPanel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.adminPanel)),
+      appBar: AppBar(
+        title: searchMode
+            ? searchTextFormField(context)
+            : Text(AppLocalizations.of(context)!.adminPanel),
+        actions: [searchButton()],
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -78,6 +93,79 @@ class _AdminPanelState extends State<AdminPanel> {
     );
   }
 
+  TextFormField searchTextFormField(BuildContext context) {
+    return TextFormField(
+      controller: searchController,
+      style: const TextStyle(fontSize: 18),
+      decoration: InputDecoration(
+          hintText: AppLocalizations.of(context)!.searchData,
+          border: InputBorder.none),
+      onChanged: (value) {
+        String searchText = value.toLowerCase().trim();
+        setState(() {
+          switch (tableState) {
+            case "user":
+              filteredUserList = adminAccess.userList
+                  .where((e) =>
+                      (e['email_user'] as String)
+                          .toLowerCase()
+                          .contains(searchText) ||
+                      (e['id_user'] as String)
+                          .toLowerCase()
+                          .contains(searchText))
+                  .toList();
+              break;
+            case "inventory":
+              filteredInvList = adminAccess.invList
+                  .where((e) =>
+                      (e['id_inventory'] as String)
+                          .toLowerCase()
+                          .contains(searchText) ||
+                      (e['nama_inventory'] as String)
+                          .toLowerCase()
+                          .contains(searchText))
+                  .toList();
+              break;
+            case "item":
+              filteredItemList = adminAccess.itemList
+                  .where((e) =>
+                      (e['id_barang'] as String)
+                          .toLowerCase()
+                          .contains(searchText) ||
+                      (e['nama_barang'] as String)
+                          .toLowerCase()
+                          .contains(searchText) ||
+                      (e['kode_barang'] as String)
+                          .toLowerCase()
+                          .contains(searchText))
+                  .toList();
+              break;
+            default:
+          }
+        });
+      },
+    );
+  }
+
+  IconButton searchButton() {
+    return IconButton(
+      onPressed: () {
+        setState(() {
+          searchMode = !searchMode;
+          if (searchMode == false) {
+            searchController.clear();
+            filteredUserList = adminAccess.userList;
+            filteredInvList = adminAccess.invList;
+            filteredItemList = adminAccess.itemList;
+          }
+        });
+        log("ubah searchMode->$searchMode");
+      },
+      icon: Icon(searchMode ? Icons.search_off_rounded : Icons.search),
+      splashRadius: 25,
+    );
+  }
+
   Widget _tableControlls(BuildContext context) {
     switch (tableState) {
       case "user":
@@ -95,9 +183,9 @@ class _AdminPanelState extends State<AdminPanel> {
     // log(jsonEncode(adminAccess.itemList));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: adminAccess.itemList.isNotEmpty
-          ? List.generate(adminAccess.itemList.length, (index) {
-              Map item = adminAccess.itemList[index];
+      children: filteredItemList.isNotEmpty
+          ? List.generate(filteredItemList.length, (index) {
+              Map item = filteredItemList[index];
 
               Map? user;
               try {
@@ -155,7 +243,8 @@ class _AdminPanelState extends State<AdminPanel> {
       child: Row(
         children: [
           item['photo_barang'] != ""
-              ? fungsies().buildFotoBarang(context,item, "${item['id_barang']}admin")
+              ? fungsies()
+                  .buildFotoBarang(context, item, "${item['id_barang']}admin")
               : Container(),
           Expanded(
             child: Padding(
@@ -265,8 +354,8 @@ class _AdminPanelState extends State<AdminPanel> {
                     photoItem != ""
                         // render foto barang
                         ? Container(
-                            constraints:
-                                const BoxConstraints(maxHeight: 500, maxWidth: 350),
+                            constraints: const BoxConstraints(
+                                maxHeight: 500, maxWidth: 350),
                             // child: ClipOval(
                             child: InkWell(
                               onLongPress: () async {
@@ -459,10 +548,10 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _controllInv(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: adminAccess.invList.isNotEmpty
-          ? List.generate(adminAccess.invList.length, (index) {
-              Map inv = adminAccess.invList[index];
-              Map? user = null;
+      children: filteredInvList.isNotEmpty
+          ? List.generate(filteredInvList.length, (index) {
+              Map inv = filteredInvList[index];
+              Map? user;
               if (inv['id_user'] != null) {
                 user = adminAccess.userList.firstWhere(
                   (element) => element['id_user'] == inv['id_user'],
@@ -587,9 +676,9 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _controllUser(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: adminAccess.userList.isNotEmpty
-          ? List.generate(adminAccess.userList.length, (index) {
-              Map user = adminAccess.userList[index];
+      children: filteredUserList.isNotEmpty
+          ? List.generate(filteredUserList.length, (index) {
+              Map user = filteredUserList[index];
               return Padding(
                 padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
                 child: Column(
@@ -712,12 +801,13 @@ class _AdminPanelState extends State<AdminPanel> {
                   // ignore: use_build_context_synchronously
                   Navigator.pop(context);
                   showCupertinoDialog(
-                    barrierDismissible: true,
+                      barrierDismissible: true,
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          content:
-                              Text(id == userWise.userData['id_user'] ? AppLocalizations.of(context)!.thisIsYourAcc : AppLocalizations.of(context)!.thisIsAdmin),
+                          content: Text(id == userWise.userData['id_user']
+                              ? AppLocalizations.of(context)!.thisIsYourAcc
+                              : AppLocalizations.of(context)!.thisIsAdmin),
                         );
                       });
                 }
@@ -1179,8 +1269,8 @@ class _AdminPanelState extends State<AdminPanel> {
       decoration: InputDecoration(
           labelText: "${field}${enable ? '' : '🔒'}",
           labelStyle: TextStyle(color: enable ? Colors.blue : Colors.red),
-          enabledBorder:
-              const UnderlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+          enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue)),
           disabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: Colors.red, width: 2))),
     );
@@ -1232,8 +1322,33 @@ class _AdminPanelState extends State<AdminPanel> {
       await userApiWise().readAll();
       await inventoryApiWise().readAll();
       await itemApiWise().readAll();
+
+      // refresh filtered list
+      String searchText = searchController.text.toLowerCase().trim();
+      filteredUserList = adminAccess.userList
+          .where((e) =>
+              (e['email_user'] as String).toLowerCase().contains(searchText) ||
+              (e['id_user'] as String).toLowerCase().contains(searchText))
+          .toList();
+      filteredInvList = adminAccess.invList
+          .where((e) =>
+              (e['id_inventory'] as String)
+                  .toLowerCase()
+                  .contains(searchText) ||
+              (e['nama_inventory'] as String)
+                  .toLowerCase()
+                  .contains(searchText))
+          .toList();
+      filteredItemList = adminAccess.itemList
+          .where((e) =>
+              (e['id_barang'] as String).toLowerCase().contains(searchText) ||
+              (e['nama_barang'] as String).toLowerCase().contains(searchText) ||
+              (e['kode_barang'] as String).toLowerCase().contains(searchText))
+          .toList();
+
       // simpan list
       await adminAccess().saveList();
+
       // tutup loading
       setState(() {
         loading = false;

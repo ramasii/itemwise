@@ -70,5 +70,6 @@
     "thisIsAdmin":"Akun ini milik admin",
     "moveToInv":"Pindahkan ke inventaris",
     "saveAsExcel":"Simpan Excel",
-    "selectFolder":"Pilih Folder"
+    "selectFolder":"Pilih Folder",
+    "searchData":"Cari data"
 }
