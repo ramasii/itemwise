@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class inventoryApiWise {
-  String url = "${anu.emm}/inventory";
+  String url = "${apiAddress.address}/inventory";
 
   /// ini akan mengirim List inventory, jadi tidak satu persatu
   create() async {

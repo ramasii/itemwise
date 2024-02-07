@@ -4,7 +4,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class photoBarangApiWise {
-  String url = "${anu.emm}/image";
+  String url = "${apiAddress.address}/image";
 
   create(String id_barang, {String? base64photo}) async {
     log("START UPLOAD FOTO BARANG");

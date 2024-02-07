@@ -18,7 +18,7 @@ class _userPageState extends State<userPage> {
   TextEditingController passwordController = TextEditingController();
 
   final connection = InternetConnectionCheckerPlus.createInstance(
-      addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
+      addresses: [AddressCheckOptions(Uri.parse(apiAddress.address))]);
 
   bool emailValid = false;
   bool passwordValid = false;
@@ -68,18 +68,42 @@ class _userPageState extends State<userPage> {
           child: _loginForm(
               AppLocalizations.of(context)!.password, passwordController),
         ),
+        _customSpace(5),
+        // tombol lupa password
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 350),
+          child:
+              Align(alignment: Alignment.centerLeft, child: _tombolLupaPass()),
+        ),
         _customSpace(25),
         Row(
           mainAxisAlignment: userWise.isLoggedIn
               ? MainAxisAlignment.center
               : MainAxisAlignment.spaceEvenly,
           children: [
+            // jika sudah login maka tampilkan kosongan, jika belum login maka tampilkan tombol lewati
             userWise.isLoggedIn ? Container() : _tombolSkip(),
+            // jika sudah login maka otomatis berubah jadi tombol logout, jika belum login maka otomatis menjadi tombol login
             _tombolLogInOut()
           ],
         )
       ]),
     );
+  }
+
+  /// user akan diarahkan ke halaman lupa password
+  TextButton _tombolLupaPass() {
+    return TextButton(
+        onPressed: () async {
+          log("tekan lupa password");
+          // beri await untuk menyederhanakan kode, karena nanti kembali ke sini lagi
+          await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LupaPasswordPage()))
+              .then((value) {
+            log("dari halaman lupa password: $value");
+          });
+        },
+        child: Text("${AppLocalizations.of(context)!.forgetPassword}?"));
   }
 
   Container _customSpace(double pixel) {
@@ -88,6 +112,7 @@ class _userPageState extends State<userPage> {
     );
   }
 
+  /// jika sudah login maka otomatis berubah jadi tombol logout, jika belum login maka otomatis menjadi tombol login
   TextButton _tombolLogInOut() {
     return TextButton(
         onPressed: () async {

@@ -71,5 +71,12 @@
     "moveToInv":"Pindahkan ke inventaris",
     "saveAsExcel":"Simpan Excel",
     "selectFolder":"Pilih Folder",
-    "searchData":"Cari data"
+    "searchData":"Cari data",
+    "forgetPassword":"Lupa password",
+    "insertYourEmail":"Masukkan email Anda",
+    "codeWillBeSentToEmail":"Kode sementara akan dikirim ke email tersebut",
+    "waitToResend":"Tunggu beberapa saat untuk mengirim ulang",
+    "tempCode":"Kode sementara",
+    "sendCode":"Kirim kode",
+    "next":"Lanjutkan"
 }

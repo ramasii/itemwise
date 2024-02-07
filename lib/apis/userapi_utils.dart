@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class userApiWise {
-  String url = "${anu.emm}/users";
+  String url = "${apiAddress.address}/users";
 
   create(
       {String? id_user,
@@ -109,9 +109,8 @@ class userApiWise {
           if (id_user == userWise.userData['id_user']) {
             log("mengubah dataUser yang digunakan karena melakukan perubahan di database");
             authapi().auth(email_user, password_user);
-            userWise().edit(
-                email_user: email_user,
-                password_user: password_user);
+            userWise()
+                .edit(email_user: email_user, password_user: password_user);
           }
           log(response.body);
           break;

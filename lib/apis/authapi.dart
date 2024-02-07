@@ -6,10 +6,10 @@ class authapi {
 
   auth(String email_user, String password_user) async {
     log("start auth: ${userWise.userData}");
-    log("${anu.emm}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}");
+    log("${apiAddress.address}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}");
     try {
       var response = await http.get(Uri.parse(
-          "${anu.emm}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}"));
+          "${apiAddress.address}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}"));
 
       switch (response.statusCode) {
         // sukses

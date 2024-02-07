@@ -55,7 +55,7 @@ class fungsies {
 
   Future<bool> isConnected() async {
     var a = InternetConnectionCheckerPlus.createInstance(
-        addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
+        addresses: [AddressCheckOptions(Uri.parse(apiAddress.address))]);
     var internet = await a.connectionStatus;
     if (internet == InternetConnectionStatus.connected) {
       print('Terhubung ke internet');

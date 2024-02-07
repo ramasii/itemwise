@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class itemApiWise {
-  String url = "${anu.emm}/barang";
+  String url = "${apiAddress.address}/barang";
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
 
