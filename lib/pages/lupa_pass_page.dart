@@ -85,76 +85,80 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
   Row _kembaliAndUbahPass(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        TextButton(
-            onPressed: () async {
-              log("kembali");
-              // tampilkan konfirmasi
-              bool? confirmedBack = await fungsies().konfirmasiDialog(context,
-                  msg: "Yakin ingin kembali?", trueText: "Kembali");
-              if (confirmedBack ?? false) {
-                // bersihkan texteditingcontroller
-                pass1Controller.clear();
-                pass2Controller.clear();
-                emailController.clear();
-                kodeController.clear();
-                // ubah isCodeValid menjadi false untuk kembali ke sebelumnya
-                setState(() {
-                  isCodeValid = false;
-                });
-              }
-            },
-            child: const Text("Kembali")),
-        TextButton(
-            onPressed: () async {
-              log("Ubah password - $isPasswordValid - $isPasswordSame");
-              if (isPasswordSame && isPasswordValid) {
-                log("mulai ubah password");
-                // TODO: lakukan ubah password, jangan lupa rute API untuk ubah password
-                _tampilkanLoading(context);
-
-                bool isConnected = await fungsies().isConnected();
-
-                // jika terhubung dengan server
-                if (isConnected) {
-                  // ubah password di database
-                  Response setPassResponse = await userApiWise().setPassword(
-                      emailController.text.trim(), pass1Controller.text.trim());
-
-                  // jika sukses mengubah password
-                  if (setPassResponse.statusCode == 200) {
-                    log("sukses ubah password");
-                    // tutup loading
-                    Navigator.pop(context);
-
-                    // kembali ke halaman sebelumnya
-                    Navigator.pop(context, "berhasil ubah password");
-                  } else {
-                    // tutup loading
-                    Navigator.pop(context);
-
-                    _showInfoDialog(context,
-                        "Terjadi kesalahan saat mengubah password: ${setPassResponse.statusCode}");
-                  }
-                }
-                // jika tidak terhubung dengan server
-                else {
-                  // tutup loading
-                  Navigator.pop(context);
-
-                  _showInfoDialog(context, "Tidak bisa terhubung ke server");
-                }
-              }
-            },
-            child: Text(
-              "Ubah password",
-              style: TextStyle(
-                  color: (isPasswordSame && isPasswordValid)
-                      ? Colors.blue
-                      : Colors.grey),
-            ))
-      ],
+      children: [_tombolKembali(context), _tombolUbahPassword(context)],
     );
+  }
+
+  TextButton _tombolUbahPassword(BuildContext context) {
+    return TextButton(
+        onPressed: () async {
+          log("Ubah password - $isPasswordValid - $isPasswordSame");
+          if (isPasswordSame && isPasswordValid) {
+            log("mulai ubah password");
+            _tampilkanLoading(context);
+
+            bool isConnected = await fungsies().isConnected();
+
+            // jika terhubung dengan server
+            if (isConnected) {
+              // ubah password di database
+              Response setPassResponse = await userApiWise().setPassword(
+                  emailController.text.trim(), pass1Controller.text.trim());
+
+              // jika sukses mengubah password
+              if (setPassResponse.statusCode == 200) {
+                log("sukses ubah password");
+                // tutup loading
+                Navigator.pop(context);
+
+                // kembali ke halaman sebelumnya
+                Navigator.pop(context, "berhasil ubah password");
+              } else {
+                // tutup loading
+                Navigator.pop(context);
+
+                _showInfoDialog(context,
+                    "Terjadi kesalahan saat mengubah password: ${setPassResponse.statusCode}");
+              }
+            }
+            // jika tidak terhubung dengan server
+            else {
+              // tutup loading
+              Navigator.pop(context);
+
+              _showInfoDialog(context, "Tidak bisa terhubung ke server");
+            }
+          }
+        },
+        child: Text(
+          "Ubah password",
+          style: TextStyle(
+              color: (isPasswordSame && isPasswordValid)
+                  ? Colors.blue
+                  : Colors.grey),
+        ));
+  }
+
+  TextButton _tombolKembali(BuildContext context) {
+    return TextButton(
+        onPressed: () async {
+          log("kembali");
+          // tampilkan konfirmasi
+          bool? confirmedBack = await fungsies().konfirmasiDialog(context,
+              msg: "Yakin ingin kembali?", trueText: "Kembali");
+          if (confirmedBack ?? false) {
+            // bersihkan texteditingcontroller
+            pass1Controller.clear();
+            pass2Controller.clear();
+            emailController.clear();
+            kodeController.clear();
+            // ubah isCodeValid menjadi false untuk kembali ke sebelumnya
+            setState(() {
+              isCodeValid = false;
+            });
+          }
+        },
+        child: const Text("Kembali"));
   }
 
   AnimatedCrossFade _crossFadeInfo(BuildContext context) {
