@@ -22,6 +22,8 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
 
   bool isCodeValid = false;
   bool isPasswordSame = false;
+  bool isPasswordValid = false;
+  bool isShowPassword = false;
 
   @override
   void initState() {
@@ -52,15 +54,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
                 Container(
                   height: MediaQuery.of(context).size.height * 0.30,
                 ),
-                Text(
-                  AppLocalizations.of(context)!.insertYourEmail,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                Text(
-                  AppLocalizations.of(context)!.codeWillBeSentToEmail,
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
+                _crossFadeInfo(context),
                 const Divider(
                   color: Colors.transparent,
                 ),
@@ -69,15 +63,91 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
                 const Divider(
                   color: Colors.transparent,
                 ),
-                // TODO: buat tombol 'kembali' yang mengubah isCodeValid jadi false
-                // di sebelahnya buat tombol 'ubah password' jika kedua password controller sama lalu ditekan maka akan mengubah password yang emailnya sama di database
-                _kirimKodeAndLanjutkan(context)
+                _crossFadeKembaliToUbahPass(context)
               ],
             ),
           ),
         ),
       )),
     );
+  }
+
+  AnimatedCrossFade _crossFadeKembaliToUbahPass(BuildContext context) {
+    return AnimatedCrossFade(
+      firstChild: _kirimKodeAndLanjutkan(context),
+      secondChild: _kembaliAndUbahPass(context),
+      crossFadeState:
+          isCodeValid ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  Row _kembaliAndUbahPass(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        TextButton(
+            onPressed: () async {
+              log("kembali");
+              // tampilkan konfirmasi
+              bool? confirmedBack = await fungsies().konfirmasiDialog(context,
+                  msg: "Yakin ingin kembali?", trueText: "Kembali");
+              if (confirmedBack ?? false) {
+                // bersihkan texteditingcontroller
+                pass1Controller.clear();
+                pass2Controller.clear();
+                emailController.clear();
+                kodeController.clear();
+                // ubah isCodeValid menjadi false untuk kembali ke sebelumnya
+                setState(() {
+                  isCodeValid = false;
+                });
+              }
+            },
+            child: const Text("Kembali")),
+        TextButton(
+            onPressed: () {
+              log("Ubah password - $isPasswordValid - $isPasswordSame");
+              if (isPasswordSame && isPasswordValid) {
+                log("mulai ubah password");
+                // TODO: lakukan ubah password, jangan lupa rute API untuk ubah password
+              }
+            },
+            child: Text(
+              "Ubah password",
+              style: TextStyle(
+                  color: (isPasswordSame && isPasswordValid)
+                      ? Colors.blue
+                      : Colors.grey),
+            ))
+      ],
+    );
+  }
+
+  AnimatedCrossFade _crossFadeInfo(BuildContext context) {
+    return AnimatedCrossFade(
+        firstChild: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.insertYourEmail,
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              AppLocalizations.of(context)!.codeWillBeSentToEmail,
+              style: const TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        secondChild: const Text(
+          "Masukkan password baru",
+          style: TextStyle(fontSize: 16),
+          textAlign: TextAlign.center,
+        ),
+        crossFadeState:
+            isCodeValid ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+        duration: const Duration(milliseconds: 300));
   }
 
   Row _kirimKodeAndLanjutkan(BuildContext context) {
@@ -108,12 +178,58 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
         TextFormField(
           controller: pass1Controller,
           decoration: InputDecoration(
-              label: Text("Password baru"), icon: Icon(Icons.lock_outline)),
+              label: Text("Password baru"),
+              icon: Icon(Icons.lock_outline),
+              suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isShowPassword = !isShowPassword;
+                    });
+                  },
+                  icon: isShowPassword
+                      ? Icon(Icons.visibility)
+                      : Icon(Icons.visibility_off))),
+          onChanged: (value) {
+            setState(() {
+              // password minimal 8 karakter
+              if (value.trim().length < 8) {
+                isPasswordValid = false;
+              }
+              // password tidak boleh lebih dari 50 karakter
+              else if (value.trim().length > 50) {
+                isPasswordValid = false;
+              } else {
+                isPasswordValid = true;
+              }
+            });
+          },
+          validator: (value) {
+            // password minimal 8 karakter
+            if (value!.trim().length < 8) {
+              return AppLocalizations.of(context)!.minimum8Characters;
+            }
+            // password tidak boleh lebih dari 50 karakter
+            else if (value.trim().length > 50) {
+              return AppLocalizations.of(context)!.max50Characters;
+            }
+          },
+          obscureText: !isShowPassword,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
         ),
         TextFormField(
           controller: pass2Controller,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
               label: Text("Ulangi password"), icon: Icon(Icons.lock)),
+          obscureText: !isShowPassword,
+          onChanged: (value) {
+            setState(() {
+              if (value.trim() != pass1Controller.text.trim()) {
+                isPasswordSame = false;
+              } else {
+                isPasswordSame = true;
+              }
+            });
+          },
           validator: (value) {
             if (value!.trim() != pass1Controller.text.trim()) {
               isPasswordSame = false;
@@ -141,55 +257,66 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
             // tampilkan loading
             _tampilkanLoading(context);
 
-            // ambil respon ke API
-            Response response =
-                await lupaPassword().matchingKodeS(email, kode_s);
+            bool isConnected = await fungsies().isConnected();
+            //  jika terhubung dengan server
+            if (isConnected) {
+              // ambil respon ke API
+              Response response =
+                  await lupaPassword().matchingKodeS(email, kode_s);
 
-            // tutup loading
-            Navigator.pop(context);
+              // tutup loading
+              Navigator.pop(context);
 
-            // jika sukses
-            if (response.statusCode == 200) {
-              // jika ketemu
-              if ((jsonDecode(response.body) as List).isNotEmpty) {
-                // ubah response menjadi JSON/List
-                List resBody = jsonDecode(response.body);
+              // jika sukses
+              if (response.statusCode == 200) {
+                // jika ketemu
+                if ((jsonDecode(response.body) as List).isNotEmpty) {
+                  // ubah response menjadi JSON/List
+                  List resBody = jsonDecode(response.body);
 
-                // dapatkan waktu kode sementara ditambahkan
-                DateTime waktuKodeS =
-                    DateTime.parse(resBody[0]['added']).toLocal();
+                  // dapatkan waktu kode sementara ditambahkan
+                  DateTime waktuKodeS =
+                      DateTime.parse(resBody[0]['added']).toLocal();
 
-                // dapatkan waktu sekarang
-                DateTime now = DateTime.now().toLocal();
+                  // dapatkan waktu sekarang
+                  DateTime now = DateTime.now().toLocal();
 
-                // hitung selisih
-                Duration selisih = now.difference(waktuKodeS);
+                  // hitung selisih
+                  Duration selisih = now.difference(waktuKodeS);
 
-                log("now: $now - added: $waktuKodeS");
-                log(selisih.inMinutes.toString());
-                // jika selisih masih dibawah 5 menit (masih berlaku)
-                if (selisih.inMinutes < 5) {
-                  log("kode masih berlaku");
-                  setState(() {
-                    isCodeValid = true;
-                  });
+                  log("now: $now - added: $waktuKodeS");
+                  log(selisih.inMinutes.toString());
+                  // jika selisih masih dibawah 5 menit (masih berlaku)
+                  if (selisih.inMinutes < 5) {
+                    log("kode masih berlaku");
+                    setState(() {
+                      isCodeValid = true;
+                    });
+                  }
+                  // jika tidak (expired)
+                  else {
+                    log("kode sudah expired: ${selisih.inMinutes} menit");
+                    _showInfoDialog(context, "Kode sudah tidak berlaku");
+                  }
                 }
-                // jika tidak (expired)
+                // jika tidak ketemu
                 else {
-                  log("kode sudah expired: ${selisih.inMinutes} menit");
-                  _showInfoDialog(context, "Kode sudah tidak berlaku");
+                  log("kode tidak ketemu");
+                  _showInfoDialog(context,
+                      "Kemungkinan kode salah atau sudah tidak berlaku");
                 }
+              } else {
+                log("lupaPassPage ${response.statusCode}: ${response.body}");
+                _showInfoDialog(context,
+                    "Sepertinya terjadi kesalah di server, coba beberapa saat lagi");
               }
-              // jika tidak ketemu
-              else {
-                log("kode tidak ketemu");
-                _showInfoDialog(
-                    context, "Kemungkinan kode salah atau sudah tidak berlaku");
-              }
-            } else {
-              log("lupaPassPage ${response.statusCode}: ${response.body}");
-              _showInfoDialog(context,
-                  "Sepertinya terjadi kesalah di server, coba beberapa saat lagi");
+            }
+            // jika tidak terhubung dengan server
+            else {
+              // tutup loading
+              Navigator.pop(context);
+
+              _showInfoDialog(context, "Tidak bisa terhubung ke server");
             }
           }
         },
@@ -216,47 +343,35 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
     return TextButton(
         onPressed: () async {
           log("klik kirim kode");
+
           if (emailController.text.trim().isNotEmpty) {
             // tampilkan loading
             _tampilkanLoading(context);
 
-            Response response =
-                await lupaPassword().create(emailController.text.trim());
+            bool isConnected = await fungsies().isConnected();
+            if (isConnected) {
+              log("emil ${emailController.text.trim()}");
+              Response response =
+                  await lupaPassword().create(emailController.text.trim());
 
-            // tutup loading
-            Navigator.pop(context);
+              // tutup loading
+              Navigator.pop(context);
 
-            if (response.statusCode == 200) {
-              log("kode sukses dibuat di database");
-              showCupertinoDialog(
-                  barrierDismissible: true,
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      content: const Text("Kode sudah dikirim"),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(AppLocalizations.of(context)!.ok))
-                      ],
-                    );
-                  });
+              if (response.statusCode == 200) {
+                log("kode sukses dibuat di database");
+                _showInfoDialog(context, "Kode sudah dikirim");
+              } else {
+                log("eror ${response.statusCode}: ${response.body}");
+                // tampilkan popup dialog jika email tidak ditemukan
+                _showInfoDialog(context, "E-mail tidak ditemukan");
+              }
             } else {
-              log("eror ${response.statusCode}: ${response.body}");
-              // tampilkan popup dialog jika email tidak ditemukan
-              showCupertinoDialog(
-                  barrierDismissible: true,
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      content: const Text("E-mail tidak ditemukan"),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(AppLocalizations.of(context)!.ok))
-                      ],
-                    );
-                  });
+              log("tidak terhubung dengan server");
+
+              // tutup loading
+              Navigator.pop(context);
+
+              _showInfoDialog(context, "Tidak bisa terhubung ke server");
             }
           }
         },
