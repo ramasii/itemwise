@@ -106,11 +106,44 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
             },
             child: const Text("Kembali")),
         TextButton(
-            onPressed: () {
+            onPressed: () async {
               log("Ubah password - $isPasswordValid - $isPasswordSame");
               if (isPasswordSame && isPasswordValid) {
                 log("mulai ubah password");
                 // TODO: lakukan ubah password, jangan lupa rute API untuk ubah password
+                _tampilkanLoading(context);
+
+                bool isConnected = await fungsies().isConnected();
+
+                // jika terhubung dengan server
+                if (isConnected) {
+                  // ubah password di database
+                  Response setPassResponse = await userApiWise().setPassword(
+                      emailController.text.trim(), pass1Controller.text.trim());
+
+                  // jika sukses mengubah password
+                  if (setPassResponse.statusCode == 200) {
+                    log("sukses ubah password");
+                    // tutup loading
+                    Navigator.pop(context);
+
+                    // kembali ke halaman sebelumnya
+                    Navigator.pop(context, "berhasil ubah password");
+                  } else {
+                    // tutup loading
+                    Navigator.pop(context);
+
+                    _showInfoDialog(context,
+                        "Terjadi kesalahan saat mengubah password: ${setPassResponse.statusCode}");
+                  }
+                }
+                // jika tidak terhubung dengan server
+                else {
+                  // tutup loading
+                  Navigator.pop(context);
+
+                  _showInfoDialog(context, "Tidak bisa terhubung ke server");
+                }
               }
             },
             child: Text(
@@ -260,55 +293,67 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
             bool isConnected = await fungsies().isConnected();
             //  jika terhubung dengan server
             if (isConnected) {
-              // ambil respon ke API
-              Response response =
-                  await lupaPassword().matchingKodeS(email, kode_s);
+              // dapatkan shortAuth
+              Response shortAuthRes = await authapi().shortAuth(email, kode_s);
 
-              // tutup loading
-              Navigator.pop(context);
+              // jika sukses shortAuth
+              if (shortAuthRes.statusCode == 200) {
+                // ambil respon ke API
+                Response response =
+                    await lupaPassword().matchingKodeS(email, kode_s);
 
-              // jika sukses
-              if (response.statusCode == 200) {
-                // jika ketemu
-                if ((jsonDecode(response.body) as List).isNotEmpty) {
-                  // ubah response menjadi JSON/List
-                  List resBody = jsonDecode(response.body);
+                // tutup loading
+                Navigator.pop(context);
 
-                  // dapatkan waktu kode sementara ditambahkan
-                  DateTime waktuKodeS =
-                      DateTime.parse(resBody[0]['added']).toLocal();
+                // jika sukses
+                if (response.statusCode == 200) {
+                  // jika ketemu
+                  if ((jsonDecode(response.body) as List).isNotEmpty) {
+                    // ubah response menjadi JSON/List
+                    List resBody = jsonDecode(response.body);
 
-                  // dapatkan waktu sekarang
-                  DateTime now = DateTime.now().toLocal();
+                    // dapatkan waktu kode sementara ditambahkan
+                    DateTime waktuKodeS =
+                        DateTime.parse(resBody[0]['added']).toLocal();
 
-                  // hitung selisih
-                  Duration selisih = now.difference(waktuKodeS);
+                    // dapatkan waktu sekarang
+                    DateTime now = DateTime.now().toLocal();
 
-                  log("now: $now - added: $waktuKodeS");
-                  log(selisih.inMinutes.toString());
-                  // jika selisih masih dibawah 5 menit (masih berlaku)
-                  if (selisih.inMinutes < 5) {
-                    log("kode masih berlaku");
-                    setState(() {
-                      isCodeValid = true;
-                    });
+                    // hitung selisih
+                    Duration selisih = now.difference(waktuKodeS);
+
+                    log("now: $now - added: $waktuKodeS");
+                    log(selisih.inMinutes.toString());
+                    // jika selisih masih dibawah 5 menit (masih berlaku)
+                    if (selisih.inMinutes < 5) {
+                      log("kode masih berlaku");
+                      setState(() {
+                        isCodeValid = true;
+                      });
+                    }
+                    // jika tidak (expired)
+                    else {
+                      log("kode sudah expired: ${selisih.inMinutes} menit");
+                      _showInfoDialog(context, "Kode sudah tidak berlaku");
+                    }
                   }
-                  // jika tidak (expired)
+                  // jika tidak ketemu
                   else {
-                    log("kode sudah expired: ${selisih.inMinutes} menit");
-                    _showInfoDialog(context, "Kode sudah tidak berlaku");
+                    log("kode tidak ketemu");
+                    _showInfoDialog(context,
+                        "Kemungkinan kode salah atau sudah tidak berlaku");
                   }
-                }
-                // jika tidak ketemu
-                else {
-                  log("kode tidak ketemu");
+                } else {
+                  log("lupaPassPage ${response.statusCode}: ${response.body}");
                   _showInfoDialog(context,
-                      "Kemungkinan kode salah atau sudah tidak berlaku");
+                      "Sepertinya terjadi kesalah di server, coba beberapa saat lagi");
                 }
-              } else {
-                log("lupaPassPage ${response.statusCode}: ${response.body}");
-                _showInfoDialog(context,
-                    "Sepertinya terjadi kesalah di server, coba beberapa saat lagi");
+              }
+              // jika gagal shortAuth
+              else {
+                // tutup loading
+                Navigator.pop(context);
+                _showInfoDialog(context, "Kesalahan saat autorisasi");
               }
             }
             // jika tidak terhubung dengan server

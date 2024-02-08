@@ -70,11 +70,13 @@ class _userPageState extends State<userPage> {
         ),
         _customSpace(5),
         // tombol lupa password
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 350),
-          child:
-              Align(alignment: Alignment.centerLeft, child: _tombolLupaPass()),
-        ),
+        userWise.isLoggedIn
+            ? Container()
+            : ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 350),
+                child: Align(
+                    alignment: Alignment.centerLeft, child: _tombolLupaPass()),
+              ),
         _customSpace(25),
         Row(
           mainAxisAlignment: userWise.isLoggedIn

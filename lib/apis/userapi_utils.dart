@@ -155,4 +155,23 @@ class userApiWise {
       print(e);
     }
   }
+
+  setPassword(String email, String password) async {
+    log("setPassword");
+    try {
+      var response = await http.put(
+          Uri.parse(
+              "http://localhost:8003/xiirpl1_03/api/users/setPassword?email_user=$email&password=$password"),
+          headers: {"authorization": authapi.authorization});
+      if (response.statusCode == 200) {
+        log("sukses ubah password");
+      } else {
+        log("setPassword api eror ${response.statusCode}: ${response.body}");
+      }
+      return response ;
+    } catch (e) {
+      log("setPassword err: $e");
+      return http.Response("[]", 400);
+    }
+  }
 }
