@@ -22,6 +22,7 @@ class _userPageState extends State<userPage> {
 
   bool emailValid = false;
   bool passwordValid = false;
+  bool showPassword = false;
 
   @override
   void initState() {
@@ -53,7 +54,8 @@ class _userPageState extends State<userPage> {
     }
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-      child: Column(children: [
+      child: Column(
+        children: [
         Container(
           height: MediaQuery.of(context).size.height * 0.30,
         ),
@@ -289,7 +291,7 @@ class _userPageState extends State<userPage> {
   TextFormField _loginForm(String label, TextEditingController controller) {
     bool isPass = controller == passwordController;
     return TextFormField(
-      textAlign: TextAlign.center,
+      // textAlign: TextAlign.center,
       maxLines: 1,
       controller: controller,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -322,8 +324,8 @@ class _userPageState extends State<userPage> {
         }
       },
       onChanged: (value) {
-        RegExp emailExp =
-            RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$');
+        RegExp emailExp = RegExp(r'^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$');
+        // RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$');
         // email
         if (controller == emailController) {
           switch (emailExp.hasMatch(value.trim())) {
@@ -362,10 +364,22 @@ class _userPageState extends State<userPage> {
           }
         }
       },
-      obscureText: isPass && userWise.isLoggedIn == false,
+      obscureText: !showPassword && (isPass && userWise.isLoggedIn == false),
       enabled: userWise.isLoggedIn == false,
       textInputAction: isPass ? TextInputAction.done : TextInputAction.next,
       decoration: InputDecoration(
+          suffixIcon: isPass
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showPassword = !showPassword;
+                    });
+                  },
+                  icon: Icon(
+                      showPassword ? Icons.visibility : Icons.visibility_off),
+                  splashRadius: 25,
+                )
+              : null,
           labelText: label,
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: OutlineInputBorder(
