@@ -48,6 +48,7 @@ class _AdminPanelState extends State<AdminPanel> {
   bool loading = true;
   bool searchMode = false;
   TextEditingController searchController = TextEditingController();
+  FocusNode searchFocus = FocusNode();
 
   @override
   void initState() {
@@ -89,13 +90,19 @@ class _AdminPanelState extends State<AdminPanel> {
           ],
         ),
       ),
-      floatingActionButton: _addButton(context),
+      floatingActionButton: AnimatedScale(
+        curve: Curves.easeIn,
+        scale: searchMode ? 0 : 1,
+        duration: Duration(milliseconds: 200),
+        child: _addButton(context),
+      ),
     );
   }
 
   TextFormField searchTextFormField(BuildContext context) {
     return TextFormField(
       controller: searchController,
+      focusNode: searchFocus,
       style: const TextStyle(fontSize: 18),
       decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.searchData,
@@ -157,6 +164,8 @@ class _AdminPanelState extends State<AdminPanel> {
             filteredUserList = adminAccess.userList;
             filteredInvList = adminAccess.invList;
             filteredItemList = adminAccess.itemList;
+          } else {
+            FocusScope.of(context).requestFocus(searchFocus);
           }
         });
         log("ubah searchMode->$searchMode");
@@ -1292,6 +1301,14 @@ class _AdminPanelState extends State<AdminPanel> {
         child: IconButton(
             onPressed: () {
               setState(() {
+                // reset pencarian
+                searchMode = false;
+                searchController.clear();
+                filteredUserList = adminAccess.userList;
+                filteredInvList = adminAccess.invList;
+                filteredItemList = adminAccess.itemList;
+
+                // ubah state sesuai yg diklik
                 switch (state) {
                   case "user":
                     log("set state to user controll");
