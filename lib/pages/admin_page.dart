@@ -157,6 +157,20 @@ class _AdminPanelState extends State<AdminPanel> {
                           .contains(searchText))
                   .toList();
               break;
+            case "kode":
+              filteredKodeList = adminAccess.kodeList
+                  .where((e) =>
+                      (e['id_kode_s'] as String)
+                          .toLowerCase()
+                          .contains(searchText) ||
+                      (e['kode_s'] as String)
+                          .toLowerCase()
+                          .contains(searchText) ||
+                      (e['email_user'] as String)
+                          .toLowerCase()
+                          .contains(searchText))
+                  .toList();
+              break;
             default:
           }
         });
@@ -292,41 +306,44 @@ class _AdminPanelState extends State<AdminPanel> {
           return AlertDialog(
             content: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                _fieldInfo("id_kode_s", ctrler: idKodeS, enable: false),
-                Container(
-                  height: 20,
-                ),
-                _fieldInfo("kode_s", ctrler: kodeS),
-                Container(
-                  height: 5,
-                ),
-                Text("Maksimal 6 huruf/angka",style: TextStyle(color: Colors.grey, fontSize: 10),),
-                Container(
-                  height: 6,
-                ),
-                _userDropDown(),
-                _statusKodeDropdown(),
-                Container(
-                  height: 20,
-                ),
-                Text(
-                  "Ditambahkan: ${DateTime.parse(kode['added']).toLocal().toString().replaceAll(".000", "")}",
-                  style: const TextStyle(
-                      color: Colors.grey, fontStyle: FontStyle.italic),
-                ),
-                Container(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _deleteButton(context, "kode", kode['id_kode_s']),
-                    _updateButton(context, kode: kode),
-                  ],
-                ),
-              ]),
+                    _fieldInfo("id_kode_s", ctrler: idKodeS, enable: false),
+                    Container(
+                      height: 20,
+                    ),
+                    _fieldInfo("kode_s", ctrler: kodeS),
+                    Container(
+                      height: 5,
+                    ),
+                    Text(
+                      "Maksimal 6 karakter",
+                      style: TextStyle(color: Colors.grey, fontSize: 10),
+                    ),
+                    Container(
+                      height: 6,
+                    ),
+                    _userDropDown(context),
+                    _statusKodeDropdown(),
+                    Container(
+                      height: 20,
+                    ),
+                    Text(
+                      "Ditambahkan: ${DateTime.parse(kode['added']).toLocal().toString().replaceAll(".000", "")}",
+                      style: const TextStyle(
+                          color: Colors.grey, fontStyle: FontStyle.italic),
+                    ),
+                    Container(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _deleteButton(context, "kode", kode['id_kode_s']),
+                        _updateButton(context, kode: kode),
+                      ],
+                    ),
+                  ]),
             ),
           );
         });
@@ -803,7 +820,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 Container(
                   height: 20,
                 ),
-                _userDropDown(),
+                _userDropDown(context),
                 Container(
                   height: 20,
                 ),
@@ -820,7 +837,7 @@ class _AdminPanelState extends State<AdminPanel> {
         });
   }
 
-  StatefulBuilder _userDropDown() {
+  StatefulBuilder _userDropDown(BuildContext context) {
     return StatefulBuilder(builder: (((context, setState) {
       return DropdownButton(
           isExpanded: true,
@@ -1045,6 +1062,9 @@ class _AdminPanelState extends State<AdminPanel> {
             case "item":
               _addItemDialog(context);
               break;
+            case "kode":
+              _addKodeS(context);
+              break;
             default:
               _addUserDialog(context);
           }
@@ -1130,7 +1150,36 @@ class _AdminPanelState extends State<AdminPanel> {
                   Container(
                     height: 20,
                   ),
-                  _userDropDown(),
+                  _userDropDown(context),
+                ],
+              ),
+            ),
+            actionsPadding: const EdgeInsets.all(20),
+            actions: [postButton(context)],
+          );
+        });
+  }
+
+  Future<dynamic> _addKodeS(BuildContext context) {
+    // bersihkan textController untuk add inv
+    setState(() {
+      userState = null;
+    });
+
+    return showCupertinoDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Text(
+                      "Kode sementara akan dibuat secara otomatis dan akan mengirim email kepada user yang dipilih, silahkan pilih user"),
+                  Container(
+                    height: 20,
+                  ),
+                  _userDropDown(context),
                 ],
               ),
             ),
@@ -1271,7 +1320,8 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget postButton(BuildContext context) {
     return TextButton(
         onPressed: () async {
-          // laoding
+          if(userState != null){
+            // laoding
           setState(() {
             loading = true;
           });
@@ -1322,6 +1372,14 @@ class _AdminPanelState extends State<AdminPanel> {
                   added: added,
                   edited: added);
               break;
+            case "kode":
+              // cari user berdasarkan id_user
+              if (userState != null) {
+                Map user = adminAccess.userList
+                    .firstWhere((e) => e['id_user'] == userState);
+                await kodeApiWise().create(user['email_user']);
+              }
+              break;
             default:
           }
           await selaraskanData();
@@ -1331,6 +1389,7 @@ class _AdminPanelState extends State<AdminPanel> {
           });
           // tutup dialog
           Navigator.pop(context);
+          }
         },
         child: Text(AppLocalizations.of(context)!.add));
   }

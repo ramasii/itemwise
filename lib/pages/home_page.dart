@@ -76,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _homeDrawer(context),
+      drawerEdgeDragWidth: MediaQuery.of(context).size.width,
       onDrawerChanged: (isOpened) {
         if (isOpened == false) {
           setState(() {
