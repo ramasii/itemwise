@@ -16,6 +16,8 @@ class _AdminPanelState extends State<AdminPanel> {
   String tableState = "user";
   String? userState;
   String? invState;
+  String? statusKodeState;
+  List statusList = ['tersedia', 'selesai'];
   // user
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
@@ -32,6 +34,10 @@ class _AdminPanelState extends State<AdminPanel> {
   TextEditingController stokItem = TextEditingController();
   TextEditingController hBliItem = TextEditingController();
   TextEditingController hJalItem = TextEditingController();
+  // kode_s
+  TextEditingController idKodeS = TextEditingController();
+  TextEditingController kodeS = TextEditingController();
+
   String photoItem = "";
   // filtered List
   /// gunakan hanya di bagian [_controllUser] atau [selaraskanData]
@@ -42,6 +48,9 @@ class _AdminPanelState extends State<AdminPanel> {
 
   /// gunakan hanya di bagian [_controllItems] atau [selaraskanData]
   List filteredItemList = adminAccess.itemList;
+
+  /// gunakan hanya di bagian [_controllKode] atau [selaraskanData]
+  List filteredKodeList = adminAccess.kodeList;
 
   String roleState = "";
   List role = ["user", "admin"];
@@ -75,6 +84,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 _stateButton(Icons.account_circle, "user"),
                 _stateButton(Icons.inventory_2_rounded, "inventory"),
                 _stateButton(Icons.apps_rounded, "item"),
+                _stateButton(Icons.lock, "kode")
               ],
             ),
             Container(
@@ -183,9 +193,171 @@ class _AdminPanelState extends State<AdminPanel> {
         return _controllInv(context);
       case "item":
         return _controllItems(context);
+      case "kode":
+        return _controllKode(context);
       default:
         return _controllUser(context);
     }
+  }
+
+  Widget _controllKode(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: filteredKodeList.isNotEmpty
+          ? List.generate(filteredKodeList.length, (index) {
+              Map kode = filteredKodeList[index];
+
+              Map? user;
+              try {
+                // jika userlist tidak kosong & kode['email_user'] bukan null
+                if (adminAccess.userList.isNotEmpty &&
+                    kode['email_user'] != null) {
+                  var tempUser = adminAccess.userList.firstWhere(
+                    (element) => element['email_user'] == kode['email_user'],
+                  );
+                  // jika variabel userList mengandung id-nya
+                  if (tempUser != -1) {
+                    user = tempUser;
+                  }
+                }
+              } catch (e) {
+                print("_controllItems: $e");
+              }
+
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        kode['kode_s'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: user != null
+                          ? Text(
+                              user['email_user'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          log("tap kode_s: ${kode['id_kode_s']}");
+                          // ubah idkode controller
+                          idKodeS.text = kode['id_kode_s'];
+
+                          // ubah kode_s controller
+                          kodeS.text = kode['kode_s'];
+
+                          statusKodeState = kode['status'];
+
+                          // ubah userState
+                          Map tempUser = adminAccess.userList.firstWhere(
+                              (element) =>
+                                  element['email_user'] == kode['email_user']);
+                          userState = tempUser['id_user'];
+                        });
+
+                        _viewKode(context, kode);
+                      },
+                    ),
+                    const Divider(
+                      indent: 50,
+                      endIndent: 50,
+                    )
+                  ],
+                ),
+              );
+            })
+          : [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+                child: Container(
+                  height: 100,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.nothing),
+                  ),
+                ),
+              )
+            ],
+    );
+  }
+
+  Future<dynamic> _viewKode(BuildContext context, Map<dynamic, dynamic> kode) {
+    return showCupertinoDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                _fieldInfo("id_kode_s", ctrler: idKodeS, enable: false),
+                Container(
+                  height: 20,
+                ),
+                _fieldInfo("kode_s", ctrler: kodeS),
+                Container(
+                  height: 5,
+                ),
+                Text("Maksimal 6 huruf/angka",style: TextStyle(color: Colors.grey, fontSize: 10),),
+                Container(
+                  height: 6,
+                ),
+                _userDropDown(),
+                _statusKodeDropdown(),
+                Container(
+                  height: 20,
+                ),
+                Text(
+                  "Ditambahkan: ${DateTime.parse(kode['added']).toLocal().toString().replaceAll(".000", "")}",
+                  style: const TextStyle(
+                      color: Colors.grey, fontStyle: FontStyle.italic),
+                ),
+                Container(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _deleteButton(context, "kode", kode['id_kode_s']),
+                    _updateButton(context, kode: kode),
+                  ],
+                ),
+              ]),
+            ),
+          );
+        });
+  }
+
+  StatefulBuilder _statusKodeDropdown() {
+    return StatefulBuilder(builder: ((context, setState) {
+      return DropdownButton(
+          isExpanded: true,
+          value: statusKodeState,
+          hint: const Text("Pilih status"),
+          items: List.generate(
+              2,
+              (index) => DropdownMenuItem(
+                  value: statusList[index],
+                  child: Container(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width - 155),
+                    child: Text(
+                      statusList[index],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ))),
+          onChanged: (value) {
+            log("status kode diubah -> $value");
+            setState(() {
+              statusKodeState = value as String;
+            });
+          });
+    }));
   }
 
   Widget _controllItems(BuildContext context) {
@@ -830,6 +1002,10 @@ class _AdminPanelState extends State<AdminPanel> {
                 await photoBarangApiWise().delete(id);
                 Navigator.pop(context);
                 break;
+              case "kode":
+                await kodeApiWise().delete(id);
+                Navigator.pop(context);
+                break;
               default:
             }
             await selaraskanData();
@@ -1160,7 +1336,7 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   TextButton _updateButton(BuildContext context,
-      {Map? user, Map? inv, Map? item}) {
+      {Map? user, Map? inv, Map? item, Map? kode}) {
     return TextButton(
         onPressed: () async {
           log("update");
@@ -1215,6 +1391,17 @@ class _AdminPanelState extends State<AdminPanel> {
             } else {
               await photoBarangApiWise().delete(item['id_barang']);
             }
+          }
+          // update kode
+          else if (kode != null) {
+            log("update kode");
+            // dapetin user berdasarkan id user
+            Map user = adminAccess.userList.firstWhere(
+              (element) => element['id_user'] == userState,
+            );
+
+            await kodeApiWise().update(kode['id_kode_s'], user['email_user'],
+                kodeS.text.trim(), statusKodeState ?? "null");
           }
           // selaraskan data dengan database
           await selaraskanData();
@@ -1309,21 +1496,26 @@ class _AdminPanelState extends State<AdminPanel> {
                 filteredItemList = adminAccess.itemList;
 
                 // ubah state sesuai yg diklik
-                switch (state) {
-                  case "user":
-                    log("set state to user controll");
-                    tableState = "user";
-                    break;
-                  case "inventory":
-                    log("set state to inventory controll");
-                    tableState = "inventory";
-                    break;
-                  case "item":
-                    log("set state to item controll");
-                    tableState = "item";
-                    break;
-                  default:
-                }
+                tableState = state;
+                log("set tableState -> $tableState");
+                // switch (state) {
+                //   case "user":
+                //     log("set state to user controll");
+                //     tableState = "user";
+                //     break;
+                //   case "inventory":
+                //     log("set state to inventory controll");
+                //     tableState = "inventory";
+                //     break;
+                //   case "item":
+                //     log("set state to item controll");
+                //     tableState = "item";
+                //     break;
+                //   case "kode":
+                //     tableState = ""
+                //     break;
+                //   default:
+                // }
               });
             },
             icon: Icon(icon)),
@@ -1335,10 +1527,14 @@ class _AdminPanelState extends State<AdminPanel> {
   Future selaraskanData() async {
     bool terkonek = await fungsies().isConnected();
     if (terkonek) {
+      // buat auth
+      await authapi().auth(
+          userWise.userData['email_user'], userWise.userData['password_user']);
       // ambil semua data dari database
       await userApiWise().readAll();
       await inventoryApiWise().readAll();
       await itemApiWise().readAll();
+      await kodeApiWise().readAll();
 
       // refresh filtered list
       String searchText = searchController.text.toLowerCase().trim();
@@ -1361,6 +1557,12 @@ class _AdminPanelState extends State<AdminPanel> {
               (e['id_barang'] as String).toLowerCase().contains(searchText) ||
               (e['nama_barang'] as String).toLowerCase().contains(searchText) ||
               (e['kode_barang'] as String).toLowerCase().contains(searchText))
+          .toList();
+      filteredKodeList = adminAccess.kodeList
+          .where((e) =>
+              (e['id_kode_s'] as String).toLowerCase().contains(searchText) ||
+              (e['kode_s'] as String).toLowerCase().contains(searchText) ||
+              (e['email_user'] as String).toLowerCase().contains(searchText))
           .toList();
 
       // simpan list

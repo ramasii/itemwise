@@ -304,7 +304,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
               if (shortAuthRes.statusCode == 200) {
                 // ambil respon ke API
                 Response response =
-                    await lupaPassword().matchingKodeS(email, kode_s);
+                    await kodeApiWise().matchingKodeS(email, kode_s);
 
                 // tutup loading
                 Navigator.pop(context);
@@ -371,6 +371,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
         },
         child: Text(
           AppLocalizations.of(context)!.next,
+          style: TextStyle(color: (emailController.text.trim().isNotEmpty && kodeController.text.trim().isNotEmpty) ? Colors.blue : Colors.grey),
         ));
   }
 
@@ -401,7 +402,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
             if (isConnected) {
               log("emil ${emailController.text.trim()}");
               Response response =
-                  await lupaPassword().create(emailController.text.trim());
+                  await kodeApiWise().create(emailController.text.trim());
 
               // tutup loading
               Navigator.pop(context);

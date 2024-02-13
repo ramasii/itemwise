@@ -73,7 +73,7 @@ class userApiWise {
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
-          log("userapi read all: ${response.body}");
+          log("userapi read all: ${response.statusCode}");
           adminAccess.userList = jsonDecode(response.body);
           break;
         case 401:

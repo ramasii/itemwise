@@ -22,6 +22,7 @@ export './utils/itemwise_utils.dart';
 export './utils/inventory_utils.dart';
 export './utils/user_utils.dart';
 export './utils/admin_utils.dart';
+export './utils/kode_utils.dart';
 export './apis/userapi_utils.dart';
 export 'apis/api_address.dart';
 export './apis/authapi.dart';
