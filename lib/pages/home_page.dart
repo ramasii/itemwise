@@ -1829,6 +1829,14 @@ class _MyHomePageState extends State<MyHomePage>
                       log("${pengaturan.eksporDir!.path}/${fileNameController.text.trim()}.xlsx : ${bytes.length}");
                       await excelFile.writeAsBytes(bytes);
 
+                      // buat snackbar
+                      ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                backgroundColor: Colors.green,
+                                content: Text("Sukses menyimpan ${fileNameController.text.trim()}.xlsx"),
+                                duration: const Duration(seconds: 1, milliseconds: 500),
+                              ));
+
                       // tutup dialog
                       Navigator.of(context).pop();
                     }
