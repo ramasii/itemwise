@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class itemApiWise {
-  String url = "${anu.emm}/barang";
+  String url = "${apiAddress.address}/barang";
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
 
@@ -275,6 +275,30 @@ class itemApiWise {
           await authapi().auth(userWise.userData['email_user'],
               userWise.userData['password_user']);
           await delete(id_barang);
+          break;
+        default:
+          log("itemapi: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  deleteByUser(String id_user) async {
+    log("deleteByUser itemapi");
+    try {
+      var response = await http.delete(
+          Uri.parse("${url}/deleteByUser?id_user=$id_user"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          await deleteByUser(id_user);
           break;
         default:
           log("itemapi: ${response.statusCode}");

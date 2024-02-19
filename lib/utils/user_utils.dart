@@ -4,38 +4,35 @@ import 'package:shared_preferences/shared_preferences.dart';
 class userWise {
   static Map userData = {
     "id_user": "",
-    "username_user": "",
+    // "username_user": "",
     "email_user": "",
     "role": "user",
-    "photo_user": null,
     "password_user": "",
   };
   Map resetUserData = {
     "id_user": "",
-    "username_user": "",
+    // "username_user": "",
     "email_user": "",
     "role": "user",
-    "photo_user": null,
     "password_user": "",
   };
 
   static bool isLoggedIn = false;
 
+  /// edit dan create dijadikan satu
   void edit(
       // edit atau create sama saja lo
       {String? id_user,
-      String? username_user,
+      // String? username_user,
       String? email_user,
-      String? photo_user,
       String? password_user,
       String? role}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // ubah data jika tidak null
     userData["id_user"] = id_user ?? userData["id_user"];
-    userData["username_user"] = username_user ?? userData["username_user"];
+    // userData["username_user"] = username_user ?? userData["username_user"];
     userData["email_user"] = email_user ?? userData["email_user"];
-    userData["photo_user"] = photo_user ?? userData["photo_user"];
     userData["password_user"] = password_user ?? userData["password_user"];
     userData["role"] = role ?? userData["role"];
 

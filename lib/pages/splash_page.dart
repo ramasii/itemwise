@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:itemwise/pages/user_page.dart';
@@ -51,11 +53,18 @@ class _SplashPageState extends State<SplashPage>
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => deviceData.id != ""
+              // jika NOT firstTime maka arahkan ke halaman utama
+              // jika firstTime maka arahkan ke halaman login
+              builder: (context) => !firstTime
                   ? const MyHomePage(
                       title: "Item Wise",
                     )
                   : const userPage() /* MyHomePage(title: 'Item Wise') */,
+              // builder: (context) => deviceData.id != ""
+              //     ? const MyHomePage(
+              //         title: "Item Wise",
+              //       )
+              //     : const userPage() /* MyHomePage(title: 'Item Wise') */,
             ),
           );
         });

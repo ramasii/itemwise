@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class inventoryApiWise {
-  String url = "${anu.emm}/inventory";
+  String url = "${apiAddress.address}/inventory";
 
   /// ini akan mengirim List inventory, jadi tidak satu persatu
   create() async {
@@ -55,7 +55,7 @@ class inventoryApiWise {
     try {
       var response = await http.post(
           Uri.parse(
-              "$url/add?id_inventory=${id_inventory}&nama_inventory=${nama_inventory}&id_user=${id_user}"),
+              "$url/add?id_inventory=$id_inventory&nama_inventory=$nama_inventory&id_user=$id_user"),
           headers: {"authorization": authapi.authorization});
 
       switch (response.statusCode) {
@@ -200,7 +200,7 @@ class inventoryApiWise {
     log("delete inventoryapi");
     try {
       var response = await http.delete(
-          Uri.parse("${url}/delete?id_inventory=$id_inventory"),
+          Uri.parse("$url/delete?id_inventory=$id_inventory"),
           headers: {"authorization": authapi.authorization});
 
       switch (response.statusCode) {
@@ -211,6 +211,30 @@ class inventoryApiWise {
           await authapi().auth(userWise.userData['email_user'],
               userWise.userData['password_user']);
           await delete(id_inventory);
+          break;
+        default:
+          log("inventoryapi: ${response.statusCode}");
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  deleteByuser(String id_user) async {
+    log("delete inventoryapi");
+    try {
+      var response = await http.delete(
+          Uri.parse("$url/deleteByUser?id_user=$id_user"),
+          headers: {"authorization": authapi.authorization});
+
+      switch (response.statusCode) {
+        case 200:
+          log(response.body);
+          break;
+        case 401:
+          await authapi().auth(userWise.userData['email_user'],
+              userWise.userData['password_user']);
+          await deleteByuser(id_user);
           break;
         default:
           log("inventoryapi: ${response.statusCode}");

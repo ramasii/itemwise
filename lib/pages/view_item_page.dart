@@ -3,6 +3,7 @@ import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'package:itemwise/pages/home_page.dart';
+import 'package:flutter/services.dart';
 
 class ViewItemPage extends StatefulWidget {
   /// jika itemMap != null maka invState akan dibiarkan, nilai invState akan mengikuti itemMap['id_inventory']
@@ -21,6 +22,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
   bool isEdited = false;
   bool isImgLscape = true;
   String? invDropdownValue;
+  late String id_barang;
   String img = "";
   String id_user =
       userWise.isLoggedIn ? userWise.userData["id_user"] : deviceData.id;
@@ -39,12 +41,20 @@ class _ViewItemPageState extends State<ViewItemPage> {
     log('in viewItemPage');
     if (widget.itemMap != null) {
       isEdit = true;
+      id_barang = widget.itemMap!['id_barang'];
       itemNameController.text = widget.itemMap!['nama_barang'];
       kodeBarangController.text = widget.itemMap!['kode_barang'];
       itemDescriptionController.text = widget.itemMap!['catatan'];
       itemStockController.text = widget.itemMap!['stok_barang'].toString();
-      purchasePriceController.text = widget.itemMap!['harga_beli'].toString();
-      sellingPriceController.text = widget.itemMap!['harga_jual'].toString();
+
+      CurrencyFormatterSettings idrSetting =
+          CurrencyFormatterSettings(symbol: "", thousandSeparator: ".");
+
+      purchasePriceController.text =
+          CurrencyFormatter.format(widget.itemMap!['harga_beli'], idrSetting);
+      sellingPriceController.text =
+          CurrencyFormatter.format(widget.itemMap!['harga_jual'], idrSetting);
+
       img = widget.itemMap!["photo_barang"];
       // kalo bukan null, dicek dulu apakah masih ada di inventoryWise
       // takutnya kalo inventorynya dihapus, trs viewItem yang punya id_inventory yang dihapus malah eror
@@ -71,6 +81,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
         });
       }
     } else if (widget.itemMap == null) {
+      id_barang =
+          "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
       isEdit == false;
       invDropdownValue = widget.invState == "all" ? null : widget.invState;
     }
@@ -168,22 +180,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     flex: 5,
                     child: TextFormField(
                       controller: purchasePriceController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Item name is required';
-                        }
-                        return null;
-                      },
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyTextInputFormatter(
+                            locale: "id", symbol: "", decimalDigits: 0)
+                      ],
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.purPrice,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
-                      onChanged: (value) {
-                        clearNotNumber(value, purchasePriceController);
-                      },
                     ),
                   ),
                   const Spacer(),
@@ -192,22 +200,18 @@ class _ViewItemPageState extends State<ViewItemPage> {
                     flex: 5,
                     child: TextFormField(
                       controller: sellingPriceController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Item name is required';
-                        }
-                        return null;
-                      },
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        CurrencyTextInputFormatter(
+                            locale: "id", symbol: "", decimalDigits: 0)
+                      ],
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.selPrice,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
-                      onChanged: (value) {
-                        clearNotNumber(value, sellingPriceController);
-                      },
                     ),
                   ),
                 ],
@@ -259,10 +263,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
                       // clear pilihan inventaris
                       IconButton(
                           onPressed: () {
-                            log("bersihkan pilihan");
                             setState(() {
                               invDropdownValue = null;
                             });
+                            log("bersihkan pilihan-> $invDropdownValue");
                           },
                           tooltip: AppLocalizations.of(context)!.clearSelection,
                           icon: const Icon(
@@ -406,7 +410,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
   Widget cardFotoBarang(BuildContext context) {
     return Center(
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 100),
+        duration: const Duration(milliseconds: 100),
         height: 700,
         constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width - 10,
@@ -491,21 +495,34 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           });
                         }
                       },
-                      onTap: () {
-                        Uint8List imgBytes =
-                            base64Decode(widget.itemMap!["photo_barang"]);
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PhotoViewPage(
-                                    widget.itemMap!['id_barang'], imgBytes)));
+                      onTap: () async {
+                        // ini untuk ngedit
+                        if (widget.itemMap != null) {
+                          Uint8List imgBytes = base64Decode(img);
+                          await Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return PhotoViewPage(id_barang, imgBytes);
+                          })).then((value) => _refreshData());
+                        }
+                        // ini untuk nambah
+                        else {
+                          Uint8List imgBytes = base64Decode(img);
+                          String tempImg = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      PhotoViewPage(id_barang, imgBytes)));
+                          setState(() {
+                            img = tempImg;
+                          });
+                        }
                       },
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Hero(
                           tag: widget.itemMap != null
                               ? "image${widget.itemMap!['id_barang']}"
-                              : "image${DateTime.now().millisecondsSinceEpoch}",
+                              : "image${id_barang}",
                           // child: Image.file(
                           //   File(img),
                           //   fit: BoxFit.cover,
@@ -563,6 +580,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
         ));
   }
 
+  /// ini akan melakukan setState biasa
+  void _refreshData() {
+    setState(() {
+      log("melakukan refresh: $id_barang");
+      img = ItemWise().readByIdBarang(id_barang)['photo_barang'];
+    });
+  }
+
   Container greyButton(String msg) {
     return Container(
         padding: const EdgeInsets.all(8),
@@ -583,8 +608,10 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String nama_barang = itemNameController.text;
             String catatan = itemDescriptionController.text;
             String stok = itemStockController.text.trim();
-            String hbli = purchasePriceController.text.trim();
-            String hjal = sellingPriceController.text.trim();
+            String hbli =
+                purchasePriceController.text.trim().replaceAll(".", "");
+            String hjal =
+                sellingPriceController.text.trim().replaceAll(".", "");
             String kdBrg = kodeBarangController.text.trim();
 
             int stok_barang = int.parse(stok == "" ? "0" : stok);
@@ -593,8 +620,8 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String id_user = userWise.isLoggedIn
                 ? userWise.userData["id_user"]
                 : deviceData.id;
-            String id_barang =
-                "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
+            // String id_barang =
+            //     "${id_user}brg${DateTime.now().millisecondsSinceEpoch.toString()}";
             String? id_inventory = invDropdownValue;
 
             log("id_user: $id_user");
@@ -625,14 +652,17 @@ class _ViewItemPageState extends State<ViewItemPage> {
             String nama_barang = itemNameController.text.trim();
             String catatan = itemDescriptionController.text.trim();
             String stok = itemStockController.text.trim();
-            String hbli = purchasePriceController.text.trim();
-            String hjal = sellingPriceController.text.trim();
+            String hbli =
+                purchasePriceController.text.trim().replaceAll(".", "");
+            String hjal =
+                sellingPriceController.text.trim().replaceAll(".", "");
             String kdBrg = kodeBarangController.text.trim();
 
             int stok_barang = int.parse(stok == "" ? "0" : stok);
             int harga_beli = int.parse(hbli == "" ? "0" : hbli);
             int harga_jual = int.parse(hjal == "" ? "0" : hjal);
-            // String? id_inventory = invDropdownValue;
+            String? id_inventory = invDropdownValue;
+            log("id_inventory->$id_inventory");
 
             List lama = [
               widget.itemMap!['nama_barang'],
@@ -651,7 +681,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
               harga_beli,
               harga_jual,
               img,
-              invDropdownValue,
+              id_inventory,
               kdBrg
             ];
 
@@ -673,7 +703,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   harga_beli: harga_beli,
                   harga_jual: harga_jual,
                   photo_barang: img,
-                  id_inventory: invDropdownValue ?? "tanpa*inventaris",
+                  id_inventory: id_inventory ?? "tanpa*inventaris*set",
                   edited: DateTime.now().toString());
             }
           }
@@ -707,7 +737,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.redAccent,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
   }
 
@@ -716,7 +746,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
       content: Text(msg),
       dismissDirection: DismissDirection.horizontal,
       backgroundColor: Colors.green,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
   }
 }

@@ -1,13 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:collection';
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
-import 'pages.dart';
 
 class userPage extends StatefulWidget {
   const userPage({super.key});
@@ -17,15 +13,16 @@ class userPage extends StatefulWidget {
 }
 
 class _userPageState extends State<userPage> {
-  TextEditingController usernameController = TextEditingController();
+  // TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   final connection = InternetConnectionCheckerPlus.createInstance(
-      addresses: [AddressCheckOptions(Uri.parse(anu.emm))]);
+      addresses: [AddressCheckOptions(Uri.parse(apiAddress.address))]);
 
   bool emailValid = false;
   bool passwordValid = false;
+  bool showPassword = false;
 
   @override
   void initState() {
@@ -57,7 +54,8 @@ class _userPageState extends State<userPage> {
     }
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-      child: Column(children: [
+      child: Column(
+        children: [
         Container(
           height: MediaQuery.of(context).size.height * 0.30,
         ),
@@ -72,18 +70,44 @@ class _userPageState extends State<userPage> {
           child: _loginForm(
               AppLocalizations.of(context)!.password, passwordController),
         ),
+        _customSpace(5),
+        // tombol lupa password
+        userWise.isLoggedIn
+            ? Container()
+            : ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 350),
+                child: Align(
+                    alignment: Alignment.centerLeft, child: _tombolLupaPass()),
+              ),
         _customSpace(25),
         Row(
           mainAxisAlignment: userWise.isLoggedIn
               ? MainAxisAlignment.center
               : MainAxisAlignment.spaceEvenly,
           children: [
+            // jika sudah login maka tampilkan kosongan, jika belum login maka tampilkan tombol lewati
             userWise.isLoggedIn ? Container() : _tombolSkip(),
+            // jika sudah login maka otomatis berubah jadi tombol logout, jika belum login maka otomatis menjadi tombol login
             _tombolLogInOut()
           ],
         )
       ]),
     );
+  }
+
+  /// user akan diarahkan ke halaman lupa password
+  TextButton _tombolLupaPass() {
+    return TextButton(
+        onPressed: () async {
+          log("tekan lupa password");
+          // beri await untuk menyederhanakan kode, karena nanti kembali ke sini lagi
+          await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LupaPasswordPage()))
+              .then((value) {
+            log("dari halaman lupa password: $value");
+          });
+        },
+        child: Text("${AppLocalizations.of(context)!.forgetPassword}?"));
   }
 
   Container _customSpace(double pixel) {
@@ -92,6 +116,7 @@ class _userPageState extends State<userPage> {
     );
   }
 
+  /// jika sudah login maka otomatis berubah jadi tombol logout, jika belum login maka otomatis menjadi tombol login
   TextButton _tombolLogInOut() {
     return TextButton(
         onPressed: () async {
@@ -132,11 +157,10 @@ class _userPageState extends State<userPage> {
                       log(tryLogin.body);
                       setState(() {
                         userWise().edit(
-                            username_user: respon['result']['username_user'],
+                            // username_user: respon['result']['username_user'],
                             email_user: respon['result']['email_user'],
                             password_user: respon['result']['password_user'],
                             id_user: respon['result']['id_user'],
-                            photo_user: respon['result']['photo_user'],
                             role: respon['result']['role']);
                         userWise.isLoggedIn = true;
                       });
@@ -173,7 +197,7 @@ class _userPageState extends State<userPage> {
                       // fungsi ini sekaligus nambahin data user ke device
                       await userApiWise().create(
                           id_user: id_user,
-                          username_user: namaEmail,
+                          // username_user: namaEmail,
                           email_user: email_user,
                           password_user: password_user);
 
@@ -266,7 +290,7 @@ class _userPageState extends State<userPage> {
   TextFormField _loginForm(String label, TextEditingController controller) {
     bool isPass = controller == passwordController;
     return TextFormField(
-      textAlign: TextAlign.center,
+      // textAlign: TextAlign.center,
       maxLines: 1,
       controller: controller,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -299,8 +323,8 @@ class _userPageState extends State<userPage> {
         }
       },
       onChanged: (value) {
-        RegExp emailExp =
-            RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$');
+        RegExp emailExp = RegExp(r'^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$');
+        // RegExp(r'[a-zA-Z0-9]+\@(gmail|yahoo)\.(com|co(\.\w(\w|\w\w|)|))$');
         // email
         if (controller == emailController) {
           switch (emailExp.hasMatch(value.trim())) {
@@ -339,10 +363,22 @@ class _userPageState extends State<userPage> {
           }
         }
       },
-      obscureText: isPass && userWise.isLoggedIn == false,
+      obscureText: !showPassword && (isPass && userWise.isLoggedIn == false),
       enabled: userWise.isLoggedIn == false,
       textInputAction: isPass ? TextInputAction.done : TextInputAction.next,
       decoration: InputDecoration(
+          suffixIcon: isPass
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showPassword = !showPassword;
+                    });
+                  },
+                  icon: Icon(
+                      showPassword ? Icons.visibility : Icons.visibility_off),
+                  splashRadius: 25,
+                )
+              : null,
           labelText: label,
           floatingLabelBehavior: FloatingLabelBehavior.always,
           border: OutlineInputBorder(

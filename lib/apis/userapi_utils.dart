@@ -2,20 +2,18 @@ import 'package:itemwise/allpackages.dart';
 import 'package:http/http.dart' as http;
 
 class userApiWise {
-  String url = "${anu.emm}/users";
+  String url = "${apiAddress.address}/users";
 
   create(
       {String? id_user,
-      String? username_user,
       String? email_user,
-      String? photo_user,
       String? password_user,
       String role = "user",
       bool isAdmin = false}) async {
     log("create user to API");
     try {
       final response = await http.post(Uri.parse(
-          "$url/add?id_user=$id_user&username_user=$username_user&email_user=$email_user&photo_user=$photo_user&password_user=$password_user&role=$role"));
+          "$url/add?id_user=$id_user&email_user=$email_user&password_user=$password_user&role=$role"));
       log(response.body);
       log(email_user!);
 
@@ -24,7 +22,6 @@ class userApiWise {
         // isAdmin == false berarti user login, jika true berarti admin nambah user
         if (isAdmin == false) {
           userWise().edit(
-              username_user: username_user,
               email_user: email_user,
               password_user: password_user,
               id_user: id_user);
@@ -43,15 +40,16 @@ class userApiWise {
     }
   }
 
+  /// ini adalah login
   readByEmail(String email_user, String password_user) async {
-    log("read user by email from API");
+    // log("read user by email from API");
     try {
       final response = await http.get(Uri.parse(
           "$url/byEmail?email_user=$email_user&password_user=$password_user"));
 
       switch (response.statusCode) {
         case 200: // ini login berhasil
-          log(response.body);
+          print(response.body);
           return response;
         case 406:
           log("password salah");
@@ -75,7 +73,7 @@ class userApiWise {
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
-          log("userapi read all: ${response.body}");
+          log("userapi read all: ${response.statusCode}");
           adminAccess.userList = jsonDecode(response.body);
           break;
         case 401:
@@ -93,17 +91,15 @@ class userApiWise {
 
   update(
       {String id_user = "",
-      String username_user = "",
       String email_user = "",
       String password_user = "",
-      String photo_user = "",
       String role = "",
       bool isAdmin = false}) async {
     log("update userapi");
     try {
       var response = await http.put(
           Uri.parse(
-              "$url/update?id_user=$id_user&username_user=$username_user&email_user=$email_user&password_user=$password_user&photo_user=$photo_user&role=$role"),
+              "$url/update?id_user=$id_user&email_user=$email_user&password_user=$password_user&role=$role"),
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
@@ -112,10 +108,8 @@ class userApiWise {
           if (id_user == userWise.userData['id_user']) {
             log("mengubah dataUser yang digunakan karena melakukan perubahan di database");
             authapi().auth(email_user, password_user);
-            userWise().edit(
-                username_user: username_user,
-                email_user: email_user,
-                password_user: password_user);
+            userWise()
+                .edit(email_user: email_user, password_user: password_user);
           }
           log(response.body);
           break;
@@ -124,10 +118,8 @@ class userApiWise {
               userWise.userData['password_user']);
           await update(
               id_user: id_user,
-              username_user: username_user,
               email_user: email_user,
               password_user: password_user,
-              photo_user: photo_user,
               role: role);
           break;
         default:
@@ -159,6 +151,25 @@ class userApiWise {
       }
     } catch (e) {
       print(e);
+    }
+  }
+
+  setPassword(String email, String password) async {
+    log("setPassword");
+    try {
+      var response = await http.put(
+          Uri.parse(
+              "http://localhost:8003/xiirpl1_03/api/users/setPassword?email_user=$email&password=$password"),
+          headers: {"authorization": authapi.authorization});
+      if (response.statusCode == 200) {
+        log("sukses ubah password");
+      } else {
+        log("setPassword api eror ${response.statusCode}: ${response.body}");
+      }
+      return response ;
+    } catch (e) {
+      log("setPassword err: $e");
+      return http.Response("[]", 400);
     }
   }
 }

@@ -104,15 +104,19 @@ class ItemWise {
     }
   }
 
-  Map readByIdBarang(String id_barang) {
-    Map byIdBarang =
-        readByUser().firstWhere((element) => element['id_barang'] == id_barang);
+  /// jika tidak ditemukan maka akan mengembalikan `-1`
+  readByIdBarang(String id_barang) {
+    // log(readByUser().toString());
+    var byIdBarang = readByUser().firstWhere(
+      (element) => element['id_barang'] == id_barang,
+      orElse: () => -1,
+    );
     return byIdBarang;
   }
 
   /// jika [id_inventory] == `null` maka [id_inventory] tidak akan diubah
   ///
-  /// jika [id_inventory] == `"tanpa*inventaris"` maka [id_inventory] = `null`
+  /// jika [id_inventory] == `"tanpa*inventaris*set"` maka [id_inventory] = `null`
   update(String id_barang,
       {String? id_user,
       String? id_inventory,
@@ -129,15 +133,22 @@ class ItemWise {
     // cari index berdasarkan id_barang
     var idx = items.indexWhere((element) => element["id_barang"] == id_barang);
 
-    // jika id_inventory == "tanpa*inventaris" maka ubah jadi null
-    if (id_inventory == "tanpa*inventaris") {
+    // jika id_inventory == "tanpa*inventaris*set" maka ubah jadi null
+    if (id_inventory == "tanpa*inventaris*set") {
+      log("update tanpa inv");
       id_inventory = null;
     }
+    // jika id_inventory awalnya null maka tidak perlu diubah
+    else {
+      id_inventory ??= items[idx]["id_inventory"];
+    }
+
+    log("update inv-> $id_inventory");
 
     // ubah nilai element berdasarkan index
     items[idx]["id_barang"] = id_barang;
     items[idx]["id_user"] = id_user ?? items[idx]["id_user"];
-    items[idx]["id_inventory"] = id_inventory ?? items[idx]["id_inventory"];
+    items[idx]["id_inventory"] = id_inventory;
     items[idx]["nama_barang"] = nama_barang ?? items[idx]["nama_barang"];
     items[idx]["stok_barang"] = stok_barang ?? items[idx]["stok_barang"];
     items[idx]["harga_beli"] = harga_beli ?? items[idx]["harga_beli"];
