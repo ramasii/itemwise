@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:itemwise/allpackages.dart';
@@ -42,6 +44,9 @@ class _MyHomePageState extends State<MyHomePage>
   late String invState = widget.id_inv ?? "all";
   late AnimationController bottomSheetAC;
 
+  // timer
+  late Timer _timer;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -52,6 +57,18 @@ class _MyHomePageState extends State<MyHomePage>
         userWise.userData['email_user'], userWise.userData['password_user']);
     bottomSheetAC = BottomSheet.createAnimationController(this);
     filteredItems = ItemWise().readByInventory(invState, id_user);
+
+    // ini adalah pengulangan tiap sekian detik
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
+      log("message");
+      _misalSelaraskanData();
+    });
+  }
+
+  _misalSelaraskanData() {
+    setState(() {
+      log("misal selaraskan data");
+    });
   }
 
   void checkDeviceId() async {
@@ -1830,12 +1847,12 @@ class _MyHomePageState extends State<MyHomePage>
                       await excelFile.writeAsBytes(bytes);
 
                       // buat snackbar
-                      ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                backgroundColor: Colors.green,
-                                content: Text("Sukses menyimpan ${fileNameController.text.trim()}.xlsx"),
-                                duration: const Duration(seconds: 1, milliseconds: 500),
-                              ));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        backgroundColor: Colors.green,
+                        content: Text(
+                            "Sukses menyimpan ${fileNameController.text.trim()}.xlsx"),
+                        duration: const Duration(seconds: 1, milliseconds: 500),
+                      ));
 
                       // tutup dialog
                       Navigator.of(context).pop();

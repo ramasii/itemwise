@@ -30,7 +30,7 @@ class kodeApiWise {
     log("start getByEmailKode: $email - $kode_s");
     try {
       final response = await http
-          .get(Uri.parse("$url/matching?email_user=$email&kode_s=$kode_s"));
+          .get(Uri.parse("$url/matching?email_user=$email&kode_s=$kode_s"),headers: {"authorization":authapi.authorization});
 
       switch (response.statusCode) {
         case 200:

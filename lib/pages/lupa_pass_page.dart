@@ -302,6 +302,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
 
               // jika sukses shortAuth
               if (shortAuthRes.statusCode == 200) {
+                log("sukses short auth");
                 // ambil respon ke API
                 Response response =
                     await kodeApiWise().matchingKodeS(email, kode_s);
@@ -311,6 +312,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
 
                 // jika sukses
                 if (response.statusCode == 200) {
+                  log("sukses matching");
                   // jika ketemu
                   if ((jsonDecode(response.body) as List).isNotEmpty) {
                     // ubah response menjadi JSON/List
@@ -350,7 +352,7 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
                 } else {
                   log("lupaPassPage ${response.statusCode}: ${response.body}");
                   _showInfoDialog(context,
-                      "Sepertinya terjadi kesalah di server, coba beberapa saat lagi");
+                      "Sepertinya terjadi kesalah di server, coba beberapa saat lagi: ${response.body}");
                 }
               }
               // jika gagal shortAuth
@@ -371,7 +373,11 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
         },
         child: Text(
           AppLocalizations.of(context)!.next,
-          style: TextStyle(color: (emailController.text.trim().isNotEmpty && kodeController.text.trim().isNotEmpty) ? Colors.blue : Colors.grey),
+          style: TextStyle(
+              color: (emailController.text.trim().isNotEmpty &&
+                      kodeController.text.trim().isNotEmpty)
+                  ? Colors.blue
+                  : Colors.grey),
         ));
   }
 
