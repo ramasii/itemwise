@@ -1,9 +1,10 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
 
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
+import 'package:http/http.dart';
 import 'package:itemwise/allpackages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,16 +60,67 @@ class _MyHomePageState extends State<MyHomePage>
     filteredItems = ItemWise().readByInventory(invState, id_user);
 
     // ini adalah pengulangan tiap sekian detik
-    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-      log("message");
-      _misalSelaraskanData();
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      _selaraskanAkun();
     });
   }
 
-  _misalSelaraskanData() {
-    setState(() {
-      log("misal selaraskan data");
-    });
+  _selaraskanAkun() async {
+    print("selaraskan akun: ${DateTime.now()}");
+
+    // cek koneksi ke server
+    bool isConnected = await fungsies().isConnected();
+
+    // jika bisa menyambung ke server
+    if (isConnected) {
+      final Response responLogin = await userApiWise().readByEmail(
+          userWise.userData['email_user'], userWise.userData['password_user']);
+
+      final Map decodedResponLogin = jsonDecode(responLogin.body);
+
+      final Map userData = decodedResponLogin['result'];
+
+      // cek jika sebelumnya user dan respon dari API rolenya admin
+      if (userWise.userData['role'] == "user" && userData['role'] == "admin") {
+        // tampilkan dialog
+        showCupertinoDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  content: Text("Anda sekarang adalah admin"),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(AppLocalizations.of(context)!.ok))
+                  ],
+                ));
+      }
+      // jika sebelumnya admin dan respon dari API rolenya user
+      else if (userWise.userData['role'] == "admin" &&
+          userData['role'] == "user") {
+        showCupertinoDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  content: Text("Anda sekarang adalah pengguna"),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(AppLocalizations.of(context)!.ok))
+                  ],
+                ));
+      }
+
+      userWise().edit(
+          id_user: userData['id_user'],
+          email_user: userData['email_user'],
+          password_user: userData['password_user'],
+          role: userData['role']);
+
+      setState(() {
+        log("selesai _selaraskanAkun");
+      });
+    } else {
+      print("tidak bisa menyambung ke server");
+    }
   }
 
   void checkDeviceId() async {

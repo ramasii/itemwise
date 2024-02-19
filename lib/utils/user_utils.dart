@@ -21,12 +21,12 @@ class userWise {
 
   static bool isLoggedIn = false;
 
+  /// edit dan create dijadikan satu
   void edit(
       // edit atau create sama saja lo
       {String? id_user,
       // String? username_user,
       String? email_user,
-      String? photo_user,
       String? password_user,
       String? role}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -35,7 +35,6 @@ class userWise {
     userData["id_user"] = id_user ?? userData["id_user"];
     // userData["username_user"] = username_user ?? userData["username_user"];
     userData["email_user"] = email_user ?? userData["email_user"];
-    userData["photo_user"] = photo_user ?? userData["photo_user"];
     userData["password_user"] = password_user ?? userData["password_user"];
     userData["role"] = role ?? userData["role"];
 

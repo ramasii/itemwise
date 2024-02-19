@@ -41,15 +41,16 @@ class userApiWise {
     }
   }
 
+  /// ini adalah login
   readByEmail(String email_user, String password_user) async {
-    log("read user by email from API");
+    // log("read user by email from API");
     try {
       final response = await http.get(Uri.parse(
           "$url/byEmail?email_user=$email_user&password_user=$password_user"));
 
       switch (response.statusCode) {
         case 200: // ini login berhasil
-          log(response.body);
+          print(response.body);
           return response;
         case 406:
           log("password salah");

@@ -161,7 +161,6 @@ class _userPageState extends State<userPage> {
                             email_user: respon['result']['email_user'],
                             password_user: respon['result']['password_user'],
                             id_user: respon['result']['id_user'],
-                            photo_user: respon['result']['photo_user'],
                             role: respon['result']['role']);
                         userWise.isLoggedIn = true;
                       });
