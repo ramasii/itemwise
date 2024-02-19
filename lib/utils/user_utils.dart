@@ -7,7 +7,6 @@ class userWise {
     // "username_user": "",
     "email_user": "",
     "role": "user",
-    "photo_user": null,
     "password_user": "",
   };
   Map resetUserData = {
@@ -15,7 +14,6 @@ class userWise {
     // "username_user": "",
     "email_user": "",
     "role": "user",
-    "photo_user": null,
     "password_user": "",
   };
 

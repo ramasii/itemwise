@@ -22,7 +22,6 @@ class _AdminPanelState extends State<AdminPanel> {
   TextEditingController idUser = TextEditingController();
   TextEditingController emailUser = TextEditingController();
   TextEditingController passwordUser = TextEditingController();
-  String photo_user = "null";
   // inv
   TextEditingController idInv = TextEditingController();
   TextEditingController namaInv = TextEditingController();
@@ -925,11 +924,6 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<dynamic> _viewUser(BuildContext context, Map<dynamic, dynamic> user) {
-    if (user['photo_user'] != null) {
-      setState(() {
-        photo_user = user['photo_user'];
-      });
-    }
     return showCupertinoDialog(
         barrierDismissible: true,
         context: context,
@@ -1084,7 +1078,6 @@ class _AdminPanelState extends State<AdminPanel> {
       emailUser.clear();
       // usernameUser.clear();
       passwordUser.clear();
-      photo_user = "null";
     });
     return showCupertinoDialog(
         context: context,
@@ -1320,75 +1313,75 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget postButton(BuildContext context) {
     return TextButton(
         onPressed: () async {
-          if(userState != null){
+          if (userState != null) {
             // laoding
-          setState(() {
-            loading = true;
-          });
-          switch (tableState) {
-            case "user":
-              // cek apakah ada email yang sama, jika ada maka batalkan pembuatan akun
-              List cekEmail = adminAccess.userList
-                  .where(
-                    (element) => element['email_user'] == emailUser.text.trim(),
-                  )
-                  .toList();
+            setState(() {
+              loading = true;
+            });
+            switch (tableState) {
+              case "user":
+                // cek apakah ada email yang sama, jika ada maka batalkan pembuatan akun
+                List cekEmail = adminAccess.userList
+                    .where(
+                      (element) =>
+                          element['email_user'] == emailUser.text.trim(),
+                    )
+                    .toList();
 
-              if (cekEmail.isEmpty) {
-                // tambah user
-                log("add userapi: $roleState");
-                await userApiWise().create(
-                    id_user: idUser.text.trim(),
-                    // username_user: usernameUser.text.trim(),
-                    email_user: emailUser.text.trim(),
-                    photo_user: photo_user,
-                    password_user: passwordUser.text.trim(),
-                    role: roleState,
-                    isAdmin: true);
-              }
-              break;
-            case "inventory":
-              // tambah inv
-              await inventoryApiWise()
-                  .createOne(idInv.text.trim(), namaInv.text.trim(), userState);
-              break;
-            // tambah item
-            case "item":
-              String added = DateTime.now().millisecondsSinceEpoch.toString();
-              await itemApiWise().create(
-                  id_barang: idItem.text.trim(),
-                  id_user: userState,
-                  id_inventory: invState,
-                  kode_barang: kodeItem.text.trim(),
-                  nama_barang: namaItem.text.trim(),
-                  catatan: catatanItem.text.trim(),
-                  stok_barang:
-                      stokItem.text.trim() == "" ? "0" : stokItem.text.trim(),
-                  harga_beli:
-                      hBliItem.text.trim() == "" ? "0" : hBliItem.text.trim(),
-                  harga_jual:
-                      hJalItem.text.trim() == "" ? "0" : hJalItem.text.trim(),
-                  photo_barang: photoItem,
-                  added: added,
-                  edited: added);
-              break;
-            case "kode":
-              // cari user berdasarkan id_user
-              if (userState != null) {
-                Map user = adminAccess.userList
-                    .firstWhere((e) => e['id_user'] == userState);
-                await kodeApiWise().create(user['email_user']);
-              }
-              break;
-            default:
-          }
-          await selaraskanData();
-          // tutup loading
-          setState(() {
-            loading = false;
-          });
-          // tutup dialog
-          Navigator.pop(context);
+                if (cekEmail.isEmpty) {
+                  // tambah user
+                  log("add userapi: $roleState");
+                  await userApiWise().create(
+                      id_user: idUser.text.trim(),
+                      // username_user: usernameUser.text.trim(),
+                      email_user: emailUser.text.trim(),
+                      password_user: passwordUser.text.trim(),
+                      role: roleState,
+                      isAdmin: true);
+                }
+                break;
+              case "inventory":
+                // tambah inv
+                await inventoryApiWise().createOne(
+                    idInv.text.trim(), namaInv.text.trim(), userState);
+                break;
+              // tambah item
+              case "item":
+                String added = DateTime.now().millisecondsSinceEpoch.toString();
+                await itemApiWise().create(
+                    id_barang: idItem.text.trim(),
+                    id_user: userState,
+                    id_inventory: invState,
+                    kode_barang: kodeItem.text.trim(),
+                    nama_barang: namaItem.text.trim(),
+                    catatan: catatanItem.text.trim(),
+                    stok_barang:
+                        stokItem.text.trim() == "" ? "0" : stokItem.text.trim(),
+                    harga_beli:
+                        hBliItem.text.trim() == "" ? "0" : hBliItem.text.trim(),
+                    harga_jual:
+                        hJalItem.text.trim() == "" ? "0" : hJalItem.text.trim(),
+                    photo_barang: photoItem,
+                    added: added,
+                    edited: added);
+                break;
+              case "kode":
+                // cari user berdasarkan id_user
+                if (userState != null) {
+                  Map user = adminAccess.userList
+                      .firstWhere((e) => e['id_user'] == userState);
+                  await kodeApiWise().create(user['email_user']);
+                }
+                break;
+              default:
+            }
+            await selaraskanData();
+            // tutup loading
+            setState(() {
+              loading = false;
+            });
+            // tutup dialog
+            Navigator.pop(context);
           }
         },
         child: Text(AppLocalizations.of(context)!.add));
@@ -1412,7 +1405,6 @@ class _AdminPanelState extends State<AdminPanel> {
               // username_user: usernameUser.text,
               email_user: emailUser.text,
               password_user: passwordUser.text,
-              // photo_user: user['photo_user'],
               role: roleState,
               isAdmin: true,
             );
@@ -1480,14 +1472,17 @@ class _AdminPanelState extends State<AdminPanel> {
     return StatefulBuilder(builder: ((context, setState) {
       return DropdownButton(
         isExpanded: true,
-        onChanged: (value) {
-          log("role berubah->$value");
-          setState(() {
-            roleState = (value) as String;
-            roleStater = (value) as String;
-          });
-        },
+        onChanged: roleStater == "admin"
+            ? null
+            : (value) {
+                log("role berubah->$value");
+                setState(() {
+                  roleState = (value) as String;
+                  roleStater = (value) as String;
+                });
+              },
         value: roleStater,
+        disabledHint: Text("Akun ini milik admin"),
         items: List.generate(
             role.length,
             (index) => DropdownMenuItem(

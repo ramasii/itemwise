@@ -7,14 +7,13 @@ class userApiWise {
   create(
       {String? id_user,
       String? email_user,
-      String? photo_user,
       String? password_user,
       String role = "user",
       bool isAdmin = false}) async {
     log("create user to API");
     try {
       final response = await http.post(Uri.parse(
-          "$url/add?id_user=$id_user&email_user=$email_user&photo_user=$photo_user&password_user=$password_user&role=$role"));
+          "$url/add?id_user=$id_user&email_user=$email_user&password_user=$password_user&role=$role"));
       log(response.body);
       log(email_user!);
 
@@ -94,14 +93,13 @@ class userApiWise {
       {String id_user = "",
       String email_user = "",
       String password_user = "",
-      String photo_user = "",
       String role = "",
       bool isAdmin = false}) async {
     log("update userapi");
     try {
       var response = await http.put(
           Uri.parse(
-              "$url/update?id_user=$id_user&email_user=$email_user&password_user=$password_user&photo_user=$photo_user&role=$role"),
+              "$url/update?id_user=$id_user&email_user=$email_user&password_user=$password_user&role=$role"),
           headers: {"authorization": authapi.authorization});
       switch (response.statusCode) {
         case 200:
@@ -122,7 +120,6 @@ class userApiWise {
               id_user: id_user,
               email_user: email_user,
               password_user: password_user,
-              photo_user: photo_user,
               role: role);
           break;
         default:
