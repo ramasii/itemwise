@@ -5,5 +5,7 @@
         "Tambah",
         "tampilkan"
     ],
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "editor.minimap.autohide": true,
+    "editor.minimap.showSlider": "mouseover"
 }
