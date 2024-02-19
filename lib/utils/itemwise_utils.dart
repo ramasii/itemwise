@@ -116,7 +116,7 @@ class ItemWise {
 
   /// jika [id_inventory] == `null` maka [id_inventory] tidak akan diubah
   ///
-  /// jika [id_inventory] == `"tanpa*inventaris"` maka [id_inventory] = `null`
+  /// jika [id_inventory] == `"tanpa*inventaris*set"` maka [id_inventory] = `null`
   update(String id_barang,
       {String? id_user,
       String? id_inventory,
@@ -133,8 +133,8 @@ class ItemWise {
     // cari index berdasarkan id_barang
     var idx = items.indexWhere((element) => element["id_barang"] == id_barang);
 
-    // jika id_inventory == "tanpa*inventaris" maka ubah jadi null
-    if (id_inventory == "tanpa*inventaris") {
+    // jika id_inventory == "tanpa*inventaris*set" maka ubah jadi null
+    if (id_inventory == "tanpa*inventaris*set") {
       log("update tanpa inv");
       id_inventory = null;
     }

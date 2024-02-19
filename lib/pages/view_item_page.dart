@@ -703,7 +703,7 @@ class _ViewItemPageState extends State<ViewItemPage> {
                   harga_beli: harga_beli,
                   harga_jual: harga_jual,
                   photo_barang: img,
-                  id_inventory: id_inventory ?? "tanpa*inventaris",
+                  id_inventory: id_inventory ?? "tanpa*inventaris*set",
                   edited: DateTime.now().toString());
             }
           }
