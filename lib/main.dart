@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Item Wise',
       supportedLocales: L10n.all,
       locale: const Locale('id'),
@@ -24,7 +25,6 @@ class MyApp extends StatelessWidget {
       ],
       theme: _themeData(),
       home: SplashPage(),
-      
     );
   }
 
@@ -32,19 +32,18 @@ class MyApp extends StatelessWidget {
 
   ThemeData _themeData() {
     return ThemeData(
-      fontFamily: "Montserrat",
-      primarySwatch: Colors.blue,
-      secondaryHeaderColor: Colors.lightBlue,
-      hoverColor: Colors.transparent,
-      splashColor: Colors.transparent,
-      canvasColor: Colors.white,
-      scaffoldBackgroundColor: const Color.fromARGB(255, 244, 250, 255),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        elevation: 0,
-      ),
-      appBarTheme: _appBarTheme(),
-      iconTheme: const IconThemeData(color: Colors.blue, size: 35)
-    );
+        fontFamily: "Montserrat",
+        primarySwatch: Colors.blue,
+        secondaryHeaderColor: Colors.lightBlue,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        canvasColor: Colors.white,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 244, 250, 255),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          elevation: 0,
+        ),
+        appBarTheme: _appBarTheme(),
+        iconTheme: const IconThemeData(color: Colors.blue, size: 35));
   }
 
   AppBarTheme _appBarTheme() {

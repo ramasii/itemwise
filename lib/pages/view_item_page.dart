@@ -305,9 +305,14 @@ class _ViewItemPageState extends State<ViewItemPage> {
                           color: Colors.grey),
                     )
                   : Container(),
+              const Divider(),
+              // jika itemMap bukan null
+              if (widget.itemMap != null)
+                Text(
+                    "Terakhir diubah ${DateTime.parse(widget.itemMap!['edited']).toLocal().toString().replaceAll(RegExp(r'\.(?<=\.).+'), '')}"),
               Container(
                 height: isImgLscape == true || img == "" ? 250 : 100,
-              )
+              ),
             ],
           ),
         ),

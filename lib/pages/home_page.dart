@@ -50,7 +50,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     log('in homePage');
     checkDeviceId();
@@ -65,61 +64,77 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  // dispose akan dipanggil jika menutup halaman ini
+  // tidak berpengaruh oleh push, kecuali pushAndRemove atau navigator yang tidak menutup halaman ini
+  @override
+  void dispose() {
+    super.dispose();
+    _timer.cancel();
+  }
+
   _selaraskanAkun() async {
     print("selaraskan akun: ${DateTime.now()}");
 
     // cek koneksi ke server
     bool isConnected = await fungsies().isConnected();
 
-    // jika bisa menyambung ke server
-    if (isConnected) {
-      final Response responLogin = await userApiWise().readByEmail(
-          userWise.userData['email_user'], userWise.userData['password_user']);
+    if (userWise.isLoggedIn) {
+      // jika bisa menyambung ke server
+      if (isConnected) {
+        final Response responLogin = await userApiWise().readByEmail(
+            userWise.userData['email_user'],
+            userWise.userData['password_user']);
 
-      final Map decodedResponLogin = jsonDecode(responLogin.body);
+        final Map decodedResponLogin = jsonDecode(responLogin.body);
 
-      final Map userData = decodedResponLogin['result'];
+        final Map userData = decodedResponLogin['result'];
 
-      // cek jika sebelumnya user dan respon dari API rolenya admin
-      if (userWise.userData['role'] == "user" && userData['role'] == "admin") {
-        // tampilkan dialog
-        showCupertinoDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  content: Text("Anda sekarang adalah admin"),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(AppLocalizations.of(context)!.ok))
-                  ],
-                ));
+        // cek jika sebelumnya user dan respon dari API rolenya admin
+        if (userWise.userData['role'] == "user" &&
+            userData['role'] == "admin") {
+          // tampilkan dialog
+          showCupertinoDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    content: Text("Anda sekarang adalah admin"),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(AppLocalizations.of(context)!.ok))
+                    ],
+                  ));
+        }
+        // jika sebelumnya admin dan respon dari API rolenya user
+        else if (userWise.userData['role'] == "admin" &&
+            userData['role'] == "user") {
+          showCupertinoDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    content: Text("Anda sekarang adalah pengguna"),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(AppLocalizations.of(context)!.ok))
+                    ],
+                  ));
+        }
+
+        userWise().edit(
+            id_user: userData['id_user'],
+            email_user: userData['email_user'],
+            password_user: userData['password_user'],
+            role: userData['role']);
+
+        await authapi().auth(userData['email_user'], userData['password_user']);
+
+        if (mounted) {
+          setState(() {
+            log("selesai _selaraskanAkun");
+          });
+        }
+      } else {
+        print("tidak bisa menyambung ke server");
       }
-      // jika sebelumnya admin dan respon dari API rolenya user
-      else if (userWise.userData['role'] == "admin" &&
-          userData['role'] == "user") {
-        showCupertinoDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  content: Text("Anda sekarang adalah pengguna"),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(AppLocalizations.of(context)!.ok))
-                  ],
-                ));
-      }
-
-      userWise().edit(
-          id_user: userData['id_user'],
-          email_user: userData['email_user'],
-          password_user: userData['password_user'],
-          role: userData['role']);
-
-      setState(() {
-        log("selesai _selaraskanAkun");
-      });
-    } else {
-      print("tidak bisa menyambung ke server");
     }
   }
 
@@ -538,6 +553,52 @@ class _MyHomePageState extends State<MyHomePage>
                   RadioListTile(
                       value: sorter.added21,
                       title: Text(AppLocalizations.of(context)!.oldestAdded),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+
+                  // TODO: tambah urutkan berdasarkan stok dan harga
+                  RadioListTile(
+                      value: sorter.stock12,
+                      title: Text("Stok  paling sedikit"),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.stock21,
+                      title: Text("Stok terbanyak"),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.hjual12,
+                      title: Text("Harga Jual terkecil"),
+                      groupValue: pengaturan.sortBy,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            pengaturan().ubahSorting(value);
+                          }
+                        });
+                      }),
+                  RadioListTile(
+                      value: sorter.hjual21,
+                      title: Text("Harga Jual terbesar"),
                       groupValue: pengaturan.sortBy,
                       onChanged: (value) {
                         setState(() {
@@ -1471,6 +1532,12 @@ class _MyHomePageState extends State<MyHomePage>
       DateTime timeA = DateTime.parse(a['added']);
       DateTime timeB = DateTime.parse(b['added']);
 
+      // TODO: tambahkan variabel stok dan harga untuk sort
+      int stokA = a['stok_barang'];
+      int stokB = b['stok_barang'];
+      int hJualA = a['harga_jual'];
+      int hJualB = b['harga_jual'];
+
       switch (pengaturan.sortBy) {
         case sorter.name12:
           return namaA.compareTo(namaB);
@@ -1480,6 +1547,16 @@ class _MyHomePageState extends State<MyHomePage>
           return timeA.compareTo(timeB);
         case sorter.added12:
           return timeB.compareTo(timeA);
+
+        // TODO: tambah urutkan berdasarkan stok dan harga
+        case sorter.stock12:
+          return stokA.compareTo(stokB);
+        case sorter.stock21:
+          return stokB.compareTo(stokA);
+        case sorter.hjual12:
+          return hJualA.compareTo(hJualB);
+        case sorter.hjual21:
+          return hJualB.compareTo(hJualA);
         default:
           return namaA.compareTo(namaB);
       }

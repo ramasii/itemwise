@@ -108,7 +108,7 @@ class fungsies {
 
   Future<bool?> konfirmasiDialog(
     BuildContext context, {
-    // String? judul,
+    String? judul,
     String? msg,
     String? trueText,
     String? falseText,
@@ -120,7 +120,7 @@ class fungsies {
         barrierDismissible: true,
         builder: (BuildContext context) {
           return AlertDialog(
-            // title: Text(judul ?? AppLocalizations.of(context)!.attention),
+            title: judul != null ? Text(judul) : null,
             content:
                 Text(msg ?? AppLocalizations.of(context)!.delDataCantRecover),
             actions: [

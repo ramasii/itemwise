@@ -24,7 +24,6 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     gambarByte = widget.imgBytes;
   }

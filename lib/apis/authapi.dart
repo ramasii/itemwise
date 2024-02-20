@@ -5,8 +5,9 @@ class authapi {
   static String authorization = "";
 
   auth(String email_user, String password_user) async {
-    log("start auth: ${userWise.userData}");
-    log("${apiAddress.address}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}");
+    log("start auth");
+    // log("start auth: ${userWise.userData}");
+    // log("${apiAddress.address}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}");
     try {
       var response = await http.get(Uri.parse(
           "${apiAddress.address}/auth?email_user=${userWise.userData['email_user']}&password_user=${userWise.userData['password_user']}"));
@@ -39,7 +40,7 @@ class authapi {
   shortAuth(String email_user, String kode_s) async {
     try {
       var response = await http.get(Uri.parse(
-          "http://localhost:8003/xiirpl1_03/api/auth/shortAuth?email_user=$email_user&kode_s=$kode_s"));
+          "${apiAddress.address}/auth/shortAuth?email_user=$email_user&kode_s=$kode_s"));
 
       if (response.statusCode == 200) {
         log("dapet short authorization");
