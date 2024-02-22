@@ -26,7 +26,6 @@ class _userPageState extends State<userPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     log("---\n${userWise.userData}\n${userWise.isLoggedIn}\n---");
   }
@@ -40,9 +39,7 @@ class _userPageState extends State<userPage> {
             : AppLocalizations.of(context)!.login),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: _tampilanUser(),
-        ),
+        child: _tampilanUser(),
       ),
     );
   }
@@ -54,10 +51,14 @@ class _userPageState extends State<userPage> {
     }
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-      child: Column(
-        children: [
-        Container(
-          height: MediaQuery.of(context).size.height * 0.30,
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        // Container(
+        //   height: MediaQuery.of(context).size.height * 0.30,
+        // ),
+        // jika belum login tampilkan intro
+        if (userWise.isLoggedIn == false) _introWidget(),
+        Divider(
+          color: Colors.transparent,
         ),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 350),
@@ -86,12 +87,37 @@ class _userPageState extends State<userPage> {
               : MainAxisAlignment.spaceEvenly,
           children: [
             // jika sudah login maka tampilkan kosongan, jika belum login maka tampilkan tombol lewati
-            userWise.isLoggedIn ? Container() : _tombolSkip(),
+            // TODO : wajib login
+            // userWise.isLoggedIn ? Container() : _tombolSkip(),
+
             // jika sudah login maka otomatis berubah jadi tombol logout, jika belum login maka otomatis menjadi tombol login
             _tombolLogInOut()
           ],
         )
       ]),
+    );
+  }
+
+  Padding _introWidget() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            "Hai, Selamat datang di\nItem Wise!",
+            style: TextStyle(fontSize: 30),
+          ),
+          Divider(
+            color: Colors.transparent,
+          ),
+          Text(
+            "Silahkan buat akun atau masuk ke akun yang sudah ada",
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 
@@ -194,21 +220,39 @@ class _userPageState extends State<userPage> {
                     // kalo user ga ada, maka tambahkan user
                     case 202:
                       log("user ga ada");
-                      // fungsi ini sekaligus nambahin data user ke device
-                      await userApiWise().create(
-                          id_user: id_user,
-                          // username_user: namaEmail,
-                          email_user: email_user,
-                          password_user: password_user);
 
-                      // tutup loading
-                      Navigator.pop(context);
+                      // TODO: info kalau email atau akun belum ada
+                      bool? setujuRegister = await fungsies().konfirmasiDialog(
+                          context,
+                          judul: "Akun belum ditambahkan",
+                          msg:
+                              "Akun akan didaftarkan, pastikan data berikut benar\n \n📧: ${emailController.text.trim()}\n🔑: ${passwordController.text.trim()}\n \nEmail akan digunakan jika anda lupa password",
+                          trueText: "Daftar",
+                          trueColor: Colors.blue,
+                          falseText: "Batal",
+                          falseColor: Colors.grey);
 
-                      Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const MyHomePage()),
-                          (route) {
-                        return true;
-                      });
+                      // jika setuju register
+                      if (setujuRegister == true) {
+                        log("setuju register");
+                        // fungsi ini sekaligus nambahin data user ke device
+                        await userApiWise().create(
+                            id_user: id_user,
+                            // username_user: namaEmail,
+                            email_user: emailController.text.trim(),
+                            password_user: passwordController.text.trim());
+
+                        Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                                builder: (_) => const MyHomePage()), (route) {
+                          return true;
+                        });
+                      } else {
+                        log("tidak register");
+                        // tutup loading
+                        Navigator.pop(context);
+                      }
+
                       break;
                     default:
                       log('mungkin server eror: ${tryLogin.statusCode}');
@@ -233,18 +277,28 @@ class _userPageState extends State<userPage> {
           // logout
           else {
             log("logging-out");
-            setState(() {
-              userWise().logout();
-              emailController.clear();
-              passwordController.clear();
-            });
-            // tutup loading
-            Navigator.pop(context);
-            Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const MyHomePage()), (route) {
-              return true;
-            });
-            log("logged-out");
+
+            // tampilkan dialog konfirmasi logout
+            bool? setujuLogout = await fungsies().konfirmasiDialog(context,
+                msg: "Apakah anda yakin ingin logout?",
+                trueText: "Logout",
+                falseText: "Batal");
+
+            if (setujuLogout == true) {
+              setState(() {
+                userWise().logout();
+                emailController.clear();
+                passwordController.clear();
+              });
+              log("logged-out");
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const userPage()), (route) {
+                return false;
+              });
+            } else {
+              // tutup loading
+              Navigator.pop(context);
+            }
           }
         },
         child: Container(
@@ -363,11 +417,11 @@ class _userPageState extends State<userPage> {
           }
         }
       },
-      obscureText: !showPassword && (isPass && userWise.isLoggedIn == false),
+      obscureText: !showPassword && isPass && userWise.isLoggedIn == false,
       enabled: userWise.isLoggedIn == false,
       textInputAction: isPass ? TextInputAction.done : TextInputAction.next,
       decoration: InputDecoration(
-          suffixIcon: isPass
+          suffixIcon: isPass && userWise.isLoggedIn == false
               ? IconButton(
                   onPressed: () {
                     setState(() {

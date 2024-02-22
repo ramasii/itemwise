@@ -24,7 +24,6 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     gambarByte = widget.imgBytes;
   }
@@ -56,9 +55,9 @@ class _PhotoViewPageState extends State<PhotoViewPage> {
             onPressed: () =>
                 Navigator.of(context).pop(base64Encode(gambarByte)),
             icon: const Icon(
-                Icons.arrow_back_rounded,
-                color: Colors.white,
-              )),
+              Icons.arrow_back_rounded,
+              color: Colors.white,
+            )),
         actions: [
           IconButton(
               onPressed: () async {

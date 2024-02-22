@@ -2,7 +2,7 @@ import 'package:itemwise/allpackages.dart';
 
 enum currencies { rupiah, dollar, ringgit, yen }
 
-enum sorter { name12, name21, added12, added21 }
+enum sorter { name12, name21, added12, added21, stock12, stock21, hjual12, hjual21 }
 
 class pengaturan {
   static String mataUang = "Rp.";

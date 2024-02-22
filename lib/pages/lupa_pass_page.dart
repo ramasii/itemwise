@@ -27,7 +27,6 @@ class _LupaPasswordPageState extends State<LupaPasswordPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     log("di lupa pass page");
   }

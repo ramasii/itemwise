@@ -159,7 +159,7 @@ class userApiWise {
     try {
       var response = await http.put(
           Uri.parse(
-              "http://localhost:8003/xiirpl1_03/api/users/setPassword?email_user=$email&password=$password"),
+              "${apiAddress.address}/users/setPassword?email_user=$email&password=$password"),
           headers: {"authorization": authapi.authorization});
       if (response.statusCode == 200) {
         log("sukses ubah password");
