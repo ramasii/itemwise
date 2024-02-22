@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage>
   late String invState = widget.id_inv ?? "all";
   late AnimationController bottomSheetAC;
 
-  // timer
+  // buat variabel timer
   late Timer _timer;
 
   @override
@@ -66,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   // dispose akan dipanggil jika menutup halaman ini
   // tidak berpengaruh oleh push, kecuali pushAndRemove atau navigator yang tidak menutup halaman ini
+  // (maksudnya kalo kena pop bakal dipanggil)
   @override
   void dispose() {
     super.dispose();
@@ -81,17 +82,33 @@ class _MyHomePageState extends State<MyHomePage>
     if (userWise.isLoggedIn) {
       // jika bisa menyambung ke server
       if (isConnected) {
+        // dapatkan data akun berdasarkan email + password
         final Response responLogin = await userApiWise().readByEmail(
             userWise.userData['email_user'],
             userWise.userData['password_user']);
 
+        // convert response menjadi json
         final Map decodedResponLogin = jsonDecode(responLogin.body);
 
+        // response:  
+        // {
+        //  "msg":"success",
+        //  "result":{
+        //            "id_user":"FFAA4576076C48EF912ADE0AC4E8EF1816996772984971701343042764",
+        //            "email_user":"amdramadhani221005@gmail.com",
+        //            "role":"user",
+        //            "password_user":"ramatokdeh"
+        //            }
+        // }
+
+        // ambil elemen 'result' karena isinya adalah data akun yg dibuat login
         final Map userData = decodedResponLogin['result'];
 
-        // cek jika sebelumnya user dan respon dari API rolenya admin
+        // cek jika role sebelumnya adalah user DAN respon dari API rolenya admin
+        // artinya role dari dataLogin di device berbeda dengan yg diterima dari API
         if (userWise.userData['role'] == "user" &&
             userData['role'] == "admin") {
+
           // tampilkan dialog
           showCupertinoDialog(
               context: context,
@@ -119,22 +136,41 @@ class _MyHomePageState extends State<MyHomePage>
                   ));
         }
 
+        // setelah mendapatkan response dari API maka ubah dataLogin
+        // userData ini respon yg diconvert jadi json
         userWise().edit(
             id_user: userData['id_user'],
             email_user: userData['email_user'],
             password_user: userData['password_user'],
             role: userData['role']);
 
+        // (OPSIONAL) lakukan autorisasi lagi menggunakan email+password
         await authapi().auth(userData['email_user'], userData['password_user']);
 
+        // 'mounted' mencegah eror `Unhandled Exception: setState() called after dispose()`
+        // ini yg aku maksud "setState tabrakan dengan pop"
         if (mounted) {
           setState(() {
             log("selesai _selaraskanAkun");
           });
         }
+
       } else {
         print("tidak bisa menyambung ke server");
       }
+    }
+  }
+
+  
+  _selaraskanDataBarang() async {
+    print("selaraskan data barang: ${DateTime.now()}");
+
+    // cek koneksi ke server
+    bool isConnected = await fungsies().isConnected();
+
+    // jika terkoneksi
+    if(isConnected){
+
     }
   }
 
